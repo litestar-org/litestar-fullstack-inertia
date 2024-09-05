@@ -41,9 +41,9 @@ version = "0.2.0"
 
 [project.urls]
 Discord = "https://discord.gg/litestar"
-Homepage = "https://github.com/litestar-org/litestar-fullstack"
-Issue = "https://github.com/litestar-org/litestar-fullstack/issues/"
-Source = "https://github.com/litestar-org/litestar-fullstack"
+Homepage = "https://github.com/litestar-org/litestar-fullstack-inertia"
+Issue = "https://github.com/litestar-org/litestar-fullstack-inertia/issues/"
+Source = "https://github.com/litestar-org/litestar-fullstack-inertia"
 
 [project.scripts]
 app = "app.__main__:run_cli"
@@ -330,25 +330,25 @@ include = ["src/app", "tests"]
 [tool.git-cliff.changelog]
 body = """
 {% if version %}\
-    `Release [v{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }} <https://github.com/litestar-org/litestar-fullstack/releases/tag/v{{ version | trim_start_matches(pat="v") }}>`_
+    `Release [v{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }} <https://github.com/litestar-org/litestar-fullstack-inertia/releases/tag/v{{ version | trim_start_matches(pat="v") }}>`_
     ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    * `See All commits in v{{ version | trim_start_matches(pat="v") }} <https://github.com/litestar-org/litestar-fullstack/commits/v{{ version | trim_start_matches(pat="v") }}>`_
+    * `See All commits in v{{ version | trim_start_matches(pat="v") }} <https://github.com/litestar-org/litestar-fullstack-inertia/commits/v{{ version | trim_start_matches(pat="v") }}>`_
 {% else %}\
     [unreleased]
     ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 {% endif %}\
 {% if previous %}\
     {% if previous.commit_id %}
-        `{{ previous.commit_id | truncate(length=7, end="") }} <https://github.com/litestar-org/litestar-fullstack/commit/{{ previous.commit_id }}>`_ ... \
-            `{{ previous.commit_id | truncate(length=7, end="") }} <https://github.com/litestar-org/litestar-fullstack/commit/{{ commit_id }}>`_ \
-            | `See diff for {{ version }} <https://github.com/litestar-org/litestar-fullstack/compare/{{ previous.commit_id }}...{{ commit_id }}>`_
+        `{{ previous.commit_id | truncate(length=7, end="") }} <https://github.com/litestar-org/litestar-fullstack-inertia/commit/{{ previous.commit_id }}>`_ ... \
+            `{{ previous.commit_id | truncate(length=7, end="") }} <https://github.com/litestar-org/litestar-fullstack-inertia/commit/{{ commit_id }}>`_ \
+            | `See diff for {{ version }} <https://github.com/litestar-org/litestar-fullstack-inertia/compare/{{ previous.commit_id }}...{{ commit_id }}>`_
     {% endif %}\
 {% endif %}\
 {% for group, commits in commits | group_by(attribute="group") %}
     {{ group | upper_first }}
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     {% for commit in commits %}
-        * (`{{ commit.id | truncate(length=7, end="") }} <https://github.com/litestar-org/litestar-fullstack/commit/{{ commit.id }}>`_) {% if commit.breaking %}[**breaking**] {% endif %} - {{ commit.message | upper_first }} ({{ commit.author.name }})\
+        * (`{{ commit.id | truncate(length=7, end="") }} <https://github.com/litestar-org/litestar-fullstack-inertia/commit/{{ commit.id }}>`_) {% if commit.breaking %}[**breaking**] {% endif %} - {{ commit.message | upper_first }} ({{ commit.author.name }})\
           {% for footer in commit.footers -%}
             , {{ footer.token }}{{ footer.separator }}{{ footer.value }}\
           {% endfor %}\

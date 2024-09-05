@@ -18,7 +18,7 @@ Code contributions
 Workflow
 ++++++++
 
-1. `Fork <https://github.com/litestar-org/litestar-fullstack/fork>`_ the `fullstack repository <https://github.com/litestar-org/litestar-fullstack>`_
+1. `Fork <https://github.com/litestar-org/litestar-fullstack-inertia/fork>`_ the `fullstack repository <https://github.com/litestar-org/litestar-fullstack-inertia>`_
 2. Clone your fork locally with git
 3. `Set up the environment <#setting-up-the-environment>`_
 4. Make your changes
@@ -80,10 +80,10 @@ Creating a new release
 1. Increment the version in `pyproject.toml <pyproject.toml>`_
     .. note:: The version should follow `semantic versioning <https://semver.org/>`_ and `PEP 440 <https://www.python.org/dev/peps/pep-0440/>`_.
 2. Commit and push.
-3. In GitHub go to the `releases tab <https://github.com/litestar-org/litestar-fullstack/releases>`_
-4. Pick "`Draft a new release <https://github.com/litestar-org/litestar-fullstack/releases/new>`_"
+3. In GitHub go to the `releases tab <https://github.com/litestar-org/litestar-fullstack-inertia/releases>`_
+4. Pick "`Draft a new release <https://github.com/litestar-org/litestar-fullstack-inertia/releases/new>`_"
 5. Give it a title and a tag, both ``vX.X.X``
 6. Fill in the release description. You can let GitHub do it for you and then edit as needed.
 7. Publish the release.
-8. Go to `Actions <https://github.com/litestar-org/litestar-fullstack/actions>`_ and approve the workflow
+8. Go to `Actions <https://github.com/litestar-org/litestar-fullstack-inertia/actions>`_ and approve the workflow
 9. Check that the workflow runs successfully

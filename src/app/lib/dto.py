@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, TypeVar, overload
+from typing import TYPE_CHECKING, Literal, overload
 
 from advanced_alchemy.extensions.litestar.dto import SQLAlchemyDTO, SQLAlchemyDTOConfig
 from litestar.dto import DataclassDTO, dto_field
 from litestar.dto.config import DTOConfig
-from litestar.types.protocols import DataclassProtocol
-from sqlalchemy.orm import DeclarativeBase
 
 if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
@@ -14,12 +12,6 @@ if TYPE_CHECKING:
     from litestar.dto import RenameStrategy
 
 __all__ = ("config", "dto_field", "DTOConfig", "SQLAlchemyDTO", "DataclassDTO")
-
-DTOT = TypeVar("DTOT", bound=DataclassProtocol | DeclarativeBase)
-DTOFactoryT = TypeVar("DTOFactoryT", bound=DataclassDTO | SQLAlchemyDTO)
-SQLAlchemyModelT = TypeVar("SQLAlchemyModelT", bound=DeclarativeBase)
-DataclassModelT = TypeVar("DataclassModelT", bound=DataclassProtocol)
-ModelT = SQLAlchemyModelT | DataclassModelT
 
 
 @overload
@@ -30,8 +22,7 @@ def config(
     rename_strategy: RenameStrategy | None = None,
     max_nested_depth: int | None = None,
     partial: bool | None = None,
-) -> SQLAlchemyDTOConfig:
-    ...
+) -> SQLAlchemyDTOConfig: ...
 
 
 @overload
@@ -42,8 +33,7 @@ def config(
     rename_strategy: RenameStrategy | None = None,
     max_nested_depth: int | None = None,
     partial: bool | None = None,
-) -> DTOConfig:
-    ...
+) -> DTOConfig: ...
 
 
 def config(
@@ -70,4 +60,6 @@ def config(
         default_kwargs["max_nested_depth"] = max_nested_depth
     if partial:
         default_kwargs["partial"] = partial
-    return DTOConfig(**default_kwargs)
+    if backend == "sqlalchemy":
+        return SQLAlchemyDTOConfig(**default_kwargs)  # type: ignore[arg-type]
+    return DTOConfig(**default_kwargs)  # type: ignore[arg-type]

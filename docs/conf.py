@@ -1,4 +1,5 @@
 """Sphinx configuration."""
+
 from __future__ import annotations
 
 import importlib.metadata
@@ -81,14 +82,14 @@ html_show_sourcelink = True
 html_title = "Litestar Fullstack Docs"
 html_context = {
     "github_user": "litestar-org",
-    "github_repo": "litestar-fullstack",
+    "github_repo": "litestar-fullstack-inertia",
     "github_version": "main",
     "doc_path": "docs",
 }
 html_theme_options = {
     "use_page_nav": False,
     "use_edit_page_button": True,
-    "github_repo_name": "litestar-fullstack",
+    "github_repo_name": "litestar-fullstack-inertia",
     "logo": {
         "link": "https://docs.fullstack.litestar.dev",
     },

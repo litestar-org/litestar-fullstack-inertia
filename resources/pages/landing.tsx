@@ -52,7 +52,7 @@ export default function Home() {
           <div className="mt-16 grid gap-4 xl:grid-cols-2">
             <div className="rounded-xl border bg-secondary/20 p-8">
               <a
-                href="https://github.com/litestar-org/litestar-fullstack"
+                href="https://github.com/litestar-org/litestar-fullstack-inertia"
                 className="flex items-center gap-x-2 font-semibold text-primary"
                 target="_blank"
               >
@@ -70,7 +70,7 @@ export default function Home() {
                 </a>
                 , if you want to contribute to this project, please visit the{" "}
                 <a
-                  href="https://github.com/litestar-org/litestar-fullstack"
+                  href="https://github.com/litestar-org/litestar-fullstack-inertia"
                   target="_blank"
                   className="text-foreground font-semibold"
                 >

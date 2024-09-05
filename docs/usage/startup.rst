@@ -16,7 +16,7 @@ Additionally, when you start the application with ``VITE_HOT_RELOAD`` set to tru
 
   .. code-block:: bash
 
-      (.venv) cody@localtop:~/Code/Litestar/litestar-fullstack$ pdm run app run -p 8089
+      (.venv) cody@localtop:~/Code/Litestar/litestar-fullstack-inertia$ pdm run app run -p 8089
       Using Litestar app from env: 'app.asgi:app'
       Loading environment configuration from .env
       Starting Granian server process ───────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ To manually rebuild assets, use the following:
 .. code-block:: bash
   :caption: Generates static assets from Vite and runs the application.
 
-    (.venv) cody@localtop:~/Code/Litestar/litestar-fullstack$ app assets build
+    (.venv) cody@localtop:~/Code/Litestar/litestar-fullstack-inertia$ app assets build
     Using Litestar app from env: 'app.asgi:app'
     Loading environment configuration from .env
     Starting Vite build process ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -88,7 +88,7 @@ To manually rebuild assets, use the following:
 
   .. code-block:: bash
 
-      (.venv) cody@localtop:~/Code/Litestar/litestar-fullstack$ app run -p 8089
+      (.venv) cody@localtop:~/Code/Litestar/litestar-fullstack-inertia$ app run -p 8089
       Using Litestar app from env: 'app.asgi:app'
       Loading environment configuration from .env
       Starting Granian server process ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -103,7 +103,7 @@ To manually rebuild assets, use the following:
       │ Template engine              │ ViteTemplateEngine                                   │
       │ Middlewares                  │ JWTCookieAuthenticationMiddleware, LoggingMiddleware │
       └──────────────────────────────┴──────────────────────────────────────────────────────┘
-      Serving assets using manifest at `/home/cody/Code/Litestar/litestar-fullstack/src/app/domain/web/public/manifest.json`. ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+      Serving assets using manifest at `/home/cody/Code/Litestar/litestar-fullstack-inertia/src/app/domain/web/public/manifest.json`. ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
       Starting SAQ Workers ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
       [INFO] Starting granian (main PID: 47755)
       [INFO] Listening at: http://0.0.0.0:8089
