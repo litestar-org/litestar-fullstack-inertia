@@ -18,6 +18,12 @@
 <!-- prettier-ignore-end -->
 </div>
 
+> [!WARNING]
+>
+> Please note that this project is currently in a pre-release stage of development. This means the library is still under
+> active development and some things may not be functional. We encourage developers to experiment with this project and provide
+> feedback`
+
 # Litestar Fullstack Reference Application
 
 This is a reference application that you can use to get your next Litestar application running quickly.
