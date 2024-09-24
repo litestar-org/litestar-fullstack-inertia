@@ -6,7 +6,7 @@ import click
 
 
 @click.group(name="users", invoke_without_command=False, help="Manage application users and roles.")
-@click.pass_context
+@click.pass_context  # pyright: ignore[reportArgumentType]
 def user_management_app(_: dict[str, Any]) -> None:
     """Manage application users."""
 
@@ -109,7 +109,7 @@ def create_user(
     password = password or click.prompt("Password", hide_input=True, confirmation_prompt=True)
     superuser = superuser or click.prompt("Create as superuser?", show_default=True, type=click.BOOL)
 
-    anyio.run(_create_user, email, name, password, superuser)
+    anyio.run(_create_user, email, name, password, superuser)  # pyright: ignore[reportArgumentType]
 
 
 @user_management_app.command(name="promote-to-superuser", help="Promotes a user to application superuser")

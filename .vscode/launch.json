@@ -1,0 +1,29 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "pythonArgs": ["-Xfrozen_modules=off"],
+    "configurations": [
+        {
+          "name": "Litestar Run",
+          "type": "debugpy",
+          "request": "launch",
+          "module": "litestar",
+          "envFile": "${workspaceFolder}/.env",
+          "args": [
+            "--app-dir",
+            "${workspaceFolder}/src/",
+            "--app",
+            "app.asgi:app",
+            "run",
+            "--port",
+            "8088",
+            "--web-concurrency",
+            "1"
+          ],
+          "justMyCode": false,
+          "console": "integratedTerminal"
+        },
+    ]
+}
