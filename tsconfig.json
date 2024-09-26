@@ -17,19 +17,18 @@
     /* Linting */
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": "src/resources",
+    "baseUrl": "resources",
     "paths": {
       "@/*": ["./*"]
     },
     "types": ["vite/client","node","md5"]
   },
   "include": [
-    "src/resources/**/*.d.ts",
-    "src/resources/**/*.tsx",
-    "src/resources/**/*.jsx",
-    "src/resources/**/*.js",
-    "src/resources/**/*.ts",
-    "src/vite.config.ts",
+    "resources/**/*.d.ts",
+    "resources/**/*.tsx",
+    "resources/**/*.jsx",
+    "resources/**/*.js",
+    "resources/**/*.ts",
     "vite.config.js"
   ]
 }

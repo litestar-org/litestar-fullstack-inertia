@@ -6,7 +6,6 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
   "Natural Language :: English",
   "Operating System :: OS Independent",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python",
   "Topic :: Internet :: WWW/HTTP",
@@ -20,7 +19,7 @@ dependencies = [
   "python-dotenv>=1.0.0",
   "litestar-saq>=0.1.3",
   "litestar-vite[nodeenv]",
-  "litestar-granian",
+  "litestar-granian @ git+https://github.com/cofin/litestar-granian.git",
   "aiosqlite>=0.19.0",
   "httptools",
   "pwdlib[argon2]>=0.2.0",
@@ -36,7 +35,7 @@ keywords = ["litestar", "sqlalchemy", "alembic", "fullstack", "api", "asgi", "li
 license = { text = "MIT" }
 name = "app"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 version = "0.2.0"
 
 [project.urls]
@@ -46,7 +45,7 @@ Issue = "https://github.com/litestar-org/litestar-fullstack-inertia/issues/"
 Source = "https://github.com/litestar-org/litestar-fullstack-inertia"
 
 [project.scripts]
-app = "app.__main__:run_cli"
+app = "app.__init__:run_cli"
 
 [build-system]
 build-backend = "hatchling.build"
@@ -56,9 +55,8 @@ requires = ["hatchling", "nodeenv"]
 allow-direct-references = true
 
 [tool.hatch.build]
-dev-mode-dirs = ["src/"]
-include = ["CHANGELOG.md", "/public/**/*", "src/app/**/*.sql", "src/app/db/**/*.ini"]
-packages = ["src/app"]
+include = ["CHANGELOG.md", "/public/**/*", "/app/**/*.sql", "/app/db/**/*.ini"]
+packages = ["app"]
 
 [tool.hatch.build.targets.app]
 
@@ -87,11 +85,11 @@ linting = [
   "pre-commit>=3.4.0",
   "mypy>=1.5.1",
   "ruff>=0.0.287",
-  "slotscheck",
   "types-click",
   "types-pyyaml",
   "types-redis",
   "asyncpg-stubs",
+  "pyright",
 ]
 test = [
   "pytest",
@@ -102,23 +100,6 @@ test = [
   "pytest-sugar",
   "pytest-databases[postgres,redis]>=0.1.0",
 ]
-
-[tool.black]
-exclude = '''
-/(
-    \.git
-  | \.mypy_cache
-  | \.tox
-  | venv
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
-include = '\.pyi?$'
-line-length = 120
 
 [tool.coverage.report]
 exclude_lines = [
@@ -179,7 +160,7 @@ exclude = [
   "node_modules",
   "venv",
   '__pycache__',
-  "src/app/db/migrations/versions/*.py",
+  "app/db/migrations/versions/*.py",
 ]
 fix = true
 line-length = 120
@@ -236,7 +217,7 @@ lint.ignore = [
 lint.select = ["ALL"]
 # Allow unused variables when underscore-prefixed.
 lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-src = ["src", "tests/"]
+src = ["."]
 target-version = "py311"
 
 [tool.ruff.lint.pydocstyle]
@@ -257,13 +238,13 @@ classmethod-decorators = [
 known-first-party = ['tests', 'app', 'config']
 
 [tool.ruff.lint.per-file-ignores]
-"*/migrations/*.py" = ['D104', 'D103', 'D205', 'D212']
+"**/*/migrations/*.py" = ['D104', 'D103', 'D205', 'D212']
 "__init__.py" = ['F401', 'D104']
+"app/db/migrations/versions/*.py" = ["ANN201", "INP001"]
 "docs/**/*.*" = ["S", "B", "DTZ", "A", "TCH", "ERA", "D", "RET", "E731", "RUF012", "FA100", "ARG001"]
 "docs/conf.py" = ["FIX002", "ARG001", "INP001"]
 "scripts/**/*.*" = ["D", "ARG", "EM", "TRY", "G", "FBT", "INP001"]
 "scripts/*.py" = ["INP001", "ERA001"]
-"src/app/db/migrations/versions/*.py" = ["ANN201", "INP001"]
 "tests/*.py" = ['D103', 'S101', 'D104']
 
 [tool.slotscheck]
@@ -325,7 +306,7 @@ module = ["app.db.migrations.*", "app.lib.dto.*"]
 
 [tool.pyright]
 exclude = ["scripts", "docs"]
-include = ["src/app", "tests"]
+include = ["app", "tests"]
 
 [tool.git-cliff.changelog]
 body = """

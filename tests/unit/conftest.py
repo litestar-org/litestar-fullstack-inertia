@@ -53,8 +53,7 @@ def http_scope(app: Litestar) -> HTTPScope:
     """Minimal ASGI HTTP connection scope."""
 
     @get()
-    async def handler() -> None:
-        ...
+    async def handler() -> None: ...
 
     return {
         "headers": [],
@@ -66,6 +65,7 @@ def http_scope(app: Litestar) -> HTTPScope:
         "http_version": "3",
         "path": "/wherever",
         "path_params": {},
+        "path_template": "template.j2",
         "query_string": b"",
         "raw_path": b"/wherever",
         "root_path": "/",

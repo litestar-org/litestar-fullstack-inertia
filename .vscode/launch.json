@@ -13,9 +13,9 @@
           "envFile": "${workspaceFolder}/.env",
           "args": [
             "--app-dir",
-            "${workspaceFolder}/src/",
+            "${workspaceFolder}/",
             "--app",
-            "app.asgi:app",
+            "app.asgi:create_app",
             "run",
             "--port",
             "8088",

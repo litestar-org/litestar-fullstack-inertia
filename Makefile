@@ -10,8 +10,6 @@ USING_NPM             		= $(shell python3 -c "if __import__('pathlib').Path('pac
 ENV_PREFIX		        	=.venv/bin/
 VENV_EXISTS           		=	$(shell python3 -c "if __import__('pathlib').Path('.venv/bin/activate').exists(): print('yes')")
 NODE_MODULES_EXISTS			=	$(shell python3 -c "if __import__('pathlib').Path('node_modules').exists(): print('yes')")
-SRC_DIR               		=src
-BUILD_DIR             		=dist
 PDM_OPTS 		          	?=
 PDM 			            ?= 	pdm $(PDM_OPTS)
 
@@ -65,7 +63,7 @@ install:											## Install the project and
 	if [ "$(VENV_EXISTS)" ]; then $(MAKE) clean; fi
 	@if [ "$(NODE_MODULES_EXISTS)" ]; then echo "=> Removing existing node modules"; fi
 	if [ "$(NODE_MODULES_EXISTS)" ]; then $(MAKE) destroy-node_modules; fi
-	@if [ "$(USING_PDM)" ]; then $(PDM) config venv.in_project true && python3 -m venv --copies .venv && . $(ENV_PREFIX)/activate && $(ENV_PREFIX)/pip install --quiet -U wheel setuptools cython pip mypy nodeenv; fi
+	@if [ "$(USING_PDM)" ]; then $(PDM) config venv.in_project true; fi
 	@if [ "$(USING_PDM)" ]; then $(PDM) install -G:all; fi
 	@echo "=> Install complete! Note: If you want to re-install re-run 'make install'"
 
@@ -161,7 +159,7 @@ docs-clean: 										## Dump the existing built docs
 
 docs-serve: docs-clean 								## Serve the docs locally
 	@echo "=> Serving documentation"
-	$(PDM_RUN_BIN) sphinx-autobuild docs docs/_build/ -j auto --watch src --watch docs --watch tests --watch CONTRIBUTING.rst --port 8002
+	$(PDM_RUN_BIN) sphinx-autobuild docs docs/_build/ -j auto --watch app --watch docs --watch tests --watch CONTRIBUTING.rst --port 8002
 
 docs: docs-clean 									## Dump the existing built docs and rebuild them
 	@echo "=> Building documentation"
