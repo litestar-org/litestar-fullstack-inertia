@@ -55,7 +55,7 @@ COPY resources ./resources/
 RUN python -m venv --copies /workspace/app/.venv \
   && /workspace/app/.venv/bin/pip install cython pdm nodeenv  \
   && pdm install ${PDM_INSTALL_ARGS} --no-self
-COPY src ./src/
+COPY app ./app/
 
 ## ---------------------------------------------------------------------------------- ##
 ## -------------------------------- development build ------------------------------- ##
@@ -81,7 +81,7 @@ ENV PATH="/workspace/app/.venv/bin:$PATH" \
 WORKDIR /workspace/app
 COPY docs/ docs/
 COPY tests/ tests/
-COPY src src/
+COPY app app/
 RUN pdm install $PDM_INSTALL_ARGS
 STOPSIGNAL SIGINT
 EXPOSE 8000

@@ -5,6 +5,17 @@
     "ms-python.vscode-pylance",
     "ms-python.python",
     "charliermarsh.ruff",
-    "ms-python.mypy-type-checker"
+    "ms-python.mypy-type-checker",
+    "njpwerner.autodocstring",
+    "samuelcolvin.jinjahtml",
+    "formulahendry.code-runner",
+    "editorconfig.editorconfig",
+    "irongeek.vscode-env",
+    "dbaeumer.vscode-eslint",
+    "xyz.plsql-language",
+    "davidanson.vscode-markdownlint",
+    "bradlc.vscode-tailwindcss",
+    "esbenp.prettier-vscode",
+    "ms-python.pylint"
   ]
 }

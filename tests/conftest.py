@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import pytest
 from redis.asyncio import Redis
 
-from app.config import base
+from app.lib import settings as base
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
