@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.11","3.12"]
+        python-version: ["3.11", "3.12"]
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

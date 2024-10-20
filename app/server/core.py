@@ -2,8 +2,12 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, TypeVar
+from uuid import UUID
 
 from litestar.config.response_cache import ResponseCacheConfig, default_cache_key_builder
+from litestar.di import Provide
+from litestar.openapi.config import OpenAPIConfig
+from litestar.openapi.plugins import ScalarRenderPlugin, SwaggerRenderPlugin
 from litestar.plugins import CLIPluginProtocol, InitPluginProtocol
 from litestar.stores.redis import RedisStore
 from litestar.stores.registry import StoreRegistry
@@ -51,9 +55,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         Args:
             app_config: The :class:`AppConfig <.config.app.AppConfig>` instance.
         """
-        from litestar.di import Provide
-        from litestar.openapi.config import OpenAPIConfig
-        from litestar.openapi.plugins import ScalarRenderPlugin, SwaggerRenderPlugin
+
 
         from app import config
         from app.__metadata__ import __version__ as current_version
@@ -135,7 +137,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             ],
         )
         # signatures
-        app_config.signature_namespace.update({"UserModel": UserModel})
+        app_config.signature_namespace.update({"UserModel": UserModel, "UUID":UUID})
         # caching & redis
         app_config.response_cache_config = ResponseCacheConfig(
             default_expiration=120,
