@@ -56,7 +56,7 @@ RUN python -m venv --copies /workspace/app/.venv \
   && /workspace/app/.venv/bin/pip install --quiet pdm nodeenv cython  \
   && pdm install ${PDM_INSTALL_ARGS} --no-self  \
   && pdm export ${PDM_INSTALL_ARGS} --without-hashes --prod --output=requirements.txt
-COPY src ./src/
+COPY app ./app/
 RUN pdm build
 
 

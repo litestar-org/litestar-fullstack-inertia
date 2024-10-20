@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-ast
       - id: check-case-conflict
@@ -11,24 +11,22 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.5.6
+    rev: v0.7.0
     hooks:
       - id: ruff
         args:
           - --fix
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.8
+  - repo: local
     hooks:
-      - id: prettier
+      - id: local-biome-check
+        name: biome check
+        entry: npx biome check --write --files-ignore-unknown=true --no-errors-on-unmatched
+        language: system
+        types: [text]
+        files: "\\.(jsx?|tsx?|c(js|ts)|m(js|ts)|d\\.(ts|cts|mts)|jsonc?|css|svelte|vue|astro|graphql|gql)$"
         exclude: templates|migrations|scripts|docs|dist|.venv|public
-  - repo: https://github.com/ariebovenberg/slotscheck
-    rev: v0.19.0
-    hooks:
-      - id: slotscheck
-        exclude: test_*|docs|migrations|scripts
-        entry: env PYTHONPATH=src slotscheck
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.1
+    rev: v1.12.0
     hooks:
       - id: mypy
         exclude: scripts/

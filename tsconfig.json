@@ -1,35 +1,26 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
 
+		/* Bundler mode */
+		"esModuleInterop": true,
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": true,
+		"jsx": "react-jsx",
+		"allowJs": true,
 
-    /* Bundler mode */
-    "esModuleInterop": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "allowJs": true,
-
-    /* Linting */
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "baseUrl": "resources",
-    "paths": {
-      "@/*": ["./*"]
-    },
-    "types": ["vite/client","node","md5"]
-  },
-  "include": [
-    "resources/**/*.d.ts",
-    "resources/**/*.tsx",
-    "resources/**/*.jsx",
-    "resources/**/*.js",
-    "resources/**/*.ts",
-    "vite.config.ts",
-    "vite.config.js"
-  ]
+		/* Linting */
+		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+		"baseUrl": "resources",
+		"paths": {
+			"@/*": ["./*"]
+		},
+		"types": ["vite/client", "node", "md5"]
+	},
+	"include": ["resources/**/*.d.ts", "resources/**/*.tsx", "resources/**/*.jsx", "resources/**/*.js", "resources/**/*.ts", "vite.config.js"]
 }

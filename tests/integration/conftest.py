@@ -13,11 +13,11 @@ from sqlalchemy.engine import URL
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.config import get_settings
 from app.db.models import Team, User
 from app.domain.accounts.services import RoleService, UserService
 from app.domain.teams.services import TeamService
-from app.server.builder import ApplicationConfigurator
+from app.lib.settings import get_settings
+from app.server.core import ApplicationCore
 from app.server.plugins import alchemy
 
 here = Path(__file__).parent
@@ -132,7 +132,7 @@ def _patch_redis(app: "Litestar", redis: Redis, monkeypatch: pytest.MonkeyPatch)
     cache_config = app.response_cache_config
     assert cache_config is not None
     saq_plugin = get_saq_plugin(app)
-    app_plugin = app.plugins.get(ApplicationConfigurator)
+    app_plugin = app.plugins.get(ApplicationCore)
     monkeypatch.setattr(app_plugin, "redis", redis)
     monkeypatch.setattr(app.stores.get(cache_config.store), "_redis", redis)
     if saq_plugin._config.queue_instances is not None:
