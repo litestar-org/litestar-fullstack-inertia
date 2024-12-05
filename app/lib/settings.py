@@ -217,8 +217,6 @@ class ServerSettings:
 
     APP_LOC: str = "app.asgi:app"
     """Path to app executable, or factory."""
-    APP_LOC_IS_FACTORY: bool = False
-    """Indicate if APP_LOC points to an executable or factory."""
     HOST: str = field(default_factory=lambda: os.getenv("LITESTAR_HOST", "0.0.0.0"))  # noqa: S104
     """Server network host."""
     PORT: int = field(default_factory=lambda: int(os.getenv("LITESTAR_PORT", "8000")))
