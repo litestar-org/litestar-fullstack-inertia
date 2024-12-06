@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
-from uuid import UUID  # noqa: TCH003
+from uuid import UUID  # noqa: TC003
 
 from advanced_alchemy.repository import Empty, EmptyType, ErrorMessages
 from advanced_alchemy.service import (

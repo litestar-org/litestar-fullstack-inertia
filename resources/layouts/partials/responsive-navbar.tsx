@@ -18,7 +18,7 @@ const ResponsiveNavbar = () => {
 				<div className="flex items-center gap-x-1">
 					<DropdownMenu modal={false}>
 						<DropdownMenuTrigger asChild className="focus:outline-none">
-							<button className="flex items-center focus:outline-none">
+							<button type="button" className="flex items-center focus:outline-none">
 								{auth?.user?.id ? getFirstWord(auth?.user.name ?? auth.user.email) : "Menu"}
 								<ChevronDownIcon className="ml-2 size-4" />
 							</button>

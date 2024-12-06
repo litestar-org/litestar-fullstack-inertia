@@ -17,4 +17,4 @@ export default function TeamShow({ about }: { about: string }) {
 	)
 }
 
-TeamShow.layout = (page: React.ReactNode) => <AppLayout children={page} />
+TeamShow.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>

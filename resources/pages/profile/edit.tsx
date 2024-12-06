@@ -28,4 +28,4 @@ export default function Edit({ mustVerifyEmail, status }: Props) {
 	)
 }
 
-Edit.layout = (page: any) => <AppLayout children={page} />
+Edit.layout = (page: any) => <AppLayout>{page}</AppLayout>

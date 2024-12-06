@@ -391,6 +391,10 @@ class AppSettings:
         default_factory=lambda: os.getenv("OPENTELEMETRY_ENABLED", "False") in TRUE_VALUES,
     )
     """Enable Opentelemetry configuration."""
+    LOGFIRE_ENABLED: bool = field(
+        default_factory=lambda: os.getenv("LOGFIRE_ENABLED", "False") in TRUE_VALUES,
+    )
+    """Enable Logfire configuration."""
     GITHUB_OAUTH2_CLIENT_ID: str = field(default_factory=lambda: os.getenv("GITHUB_OAUTH2_CLIENT_ID", ""))
     """GitHub Client ID"""
     GITHUB_OAUTH2_CLIENT_SECRET: str = field(default_factory=lambda: os.getenv("GITHUB_OAUTH2_CLIENT_SECRET", ""))

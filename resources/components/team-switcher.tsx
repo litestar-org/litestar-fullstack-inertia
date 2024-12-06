@@ -53,7 +53,15 @@ export function TeamSwitcher({ className }: TeamSwitcherProps) {
 		<Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog} modal>
 			<Popover open={open} onOpenChange={setOpen}>
 				<PopoverTrigger asChild>
-					<Button variant="ghost" size="sm" role="combobox" aria-expanded={open} aria-label="Select a team" className={cn("w-[200px] justify-between opacity-50", className)}>
+					<Button
+						variant="ghost"
+						size="sm"
+						type="button"
+						aria-haspopup="listbox"
+						aria-expanded={open}
+						aria-label="Select a team"
+						className={cn("w-[200px] justify-between opacity-50", className)}
+					>
 						{currentTeam === undefined ? (
 							<>
 								<PlusIcon className="mr-2 h-4 w-4" />

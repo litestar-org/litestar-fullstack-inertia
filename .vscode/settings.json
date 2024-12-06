@@ -100,4 +100,5 @@
 	"python.analysis.regenerateStdLibIndices": true,
 	"editor.defaultFoldingRangeProvider": "charliermarsh.ruff",
 	"python.analysis.enableSyncServer": false,
+	"python.analysis.extraPaths": ["${workspaceFolder}"]
 }

@@ -6,7 +6,7 @@ import pytest
 from httpx import AsyncClient
 from litestar import get
 
-from app.config import app as config
+from app import config
 
 if TYPE_CHECKING:
     from litestar import Litestar
@@ -52,6 +52,6 @@ async def test_db_session_dependency(app: "Litestar", engine: "AsyncEngine") -> 
 
     app.register(db_session_dependency_patched)
     # can't use test client as it always starts its own event loop
-    async with AsyncClient(app=app, base_url="http://testserver", timeout=10) as client:
+    async with AsyncClient(app, base_url="http://testserver", timeout=10) as client:  # type: ignore[arg-type,misc]
         response = await client.get("/db-session-test")
         assert response.json()["result"] == "db_session.bind is engine = True"

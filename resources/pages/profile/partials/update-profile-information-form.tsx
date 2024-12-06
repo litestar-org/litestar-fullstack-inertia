@@ -70,8 +70,10 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status }: Pr
 					<div className="flex items-center gap-4">
 						<Button disabled={processing}>Save</Button>
 
-						<Transition show={recentlySuccessful} enterFrom="opacity-0" leaveTo="opacity-0" className="transition ease-in-out">
-							<p className="text-muted-foreground text-sm">Saved.</p>
+						<Transition show={recentlySuccessful} enterFrom="opacity-0" leaveTo="opacity-0">
+							<div className="transition ease-in-out">
+								<p className="text-muted-foreground text-sm">Saved.</p>
+							</div>
 						</Transition>
 					</div>
 				</form>

@@ -200,6 +200,8 @@ lint = [
 ]
 logfire = [
     { name = "logfire" },
+]
+otel = [
     { name = "opentelemetry-api" },
     { name = "opentelemetry-distro" },
     { name = "opentelemetry-instrumentation-sqlalchemy" },
@@ -287,8 +289,8 @@ lint = [
     { name = "types-redis" },
     { name = "types-requests" },
 ]
-logfire = [
-    { name = "logfire", specifier = ">=2.1.2" },
+logfire = [{ name = "logfire", specifier = ">=2.1.2" }]
+otel = [
     { name = "opentelemetry-api", specifier = ">=1.25.0" },
     { name = "opentelemetry-distro", specifier = ">=0.46b0" },
     { name = "opentelemetry-instrumentation-sqlalchemy", specifier = ">=0.46b0" },

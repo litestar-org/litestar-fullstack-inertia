@@ -1,7 +1,5 @@
 import { Container } from "@/components/container"
-import { Header } from "@/components/header"
 import { Icons } from "@/components/icons"
-import { AppLayout } from "@/layouts/app-layout"
 import { Head, Link } from "@inertiajs/react"
 
 import { Logo } from "@/components/logo"
@@ -102,4 +100,4 @@ export default function Home() {
 	)
 }
 
-Home.layout = (page: any) => <GuestLayout children={page} />
+Home.layout = (page: any) => <GuestLayout>{page}</GuestLayout>
