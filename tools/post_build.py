@@ -1,3 +1,4 @@
+# ruff: noqa: ERA001
 from __future__ import annotations
 
 import argparse
@@ -33,7 +34,7 @@ def package_standalone_app(options: argparse.Namespace) -> None:
         # "PYAPP_PROJECT_NAME": "app",
         # "PYAPP_PROJECT_VERSION": "0.2.0",
         # "PYAPP_EXEC_MODULE": "app",
-        "PYAPP_PYTHON_VERSION": "3.11",
+        "PYAPP_PYTHON_VERSION": "3.12",
         # "PYAPP_DISTRIBUTION_EMBED": "1",
         "PYAPP_FULL_ISOLATION": "1",
         "PYAPP_EXEC_SPEC": "app.__main__:run_cli",
