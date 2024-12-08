@@ -56,7 +56,6 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             app_config: The :class:`AppConfig <.config.app.AppConfig>` instance.
         """
 
-
         from app import config
         from app.__metadata__ import __version__ as current_version
         from app.db.models import User as UserModel
@@ -108,6 +107,8 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         # security
         app_config.cors_config = config.cors
         app_config.csrf_config = config.csrf
+        # templates
+        app_config.template_config = config.templates
         # plugins
         app_config.plugins.extend(
             [
@@ -137,7 +138,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             ],
         )
         # signatures
-        app_config.signature_namespace.update({"UserModel": UserModel, "UUID":UUID})
+        app_config.signature_namespace.update({"UserModel": UserModel, "UUID": UUID})
         # caching & redis
         app_config.response_cache_config = ResponseCacheConfig(
             default_expiration=120,

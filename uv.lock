@@ -1178,14 +1178,14 @@ dependencies = [
 
 [[package]]
 name = "litestar-vite"
-version = "0.9.0"
+version = "0.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "litestar", extra = ["jinja"] },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e8/e6/8c1db5ae9f13fb162313f6d92623bc04af8c0c64664d90a2bb7291678dea/litestar_vite-0.9.0.tar.gz", hash = "sha256:4f6584ce5868ba63767d9add3473b43660edf0a1d2e00413d71c08c3df3d33d6", size = 48691 }
+sdist = { url = "https://files.pythonhosted.org/packages/fe/87/ba41e7c94dfbf546ede2edb6085b2de7d10bc498ac6ef2299c42be055e68/litestar_vite-0.10.0.tar.gz", hash = "sha256:1c1e4cc7818aa772334aab9b6a834005fe4833619415c64851208d2fbc3f35fc", size = 48030 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/42/bc/836aa93ee3a3d54893d942f51feee4d1d15d7fda4af31cd45add83fbda33/litestar_vite-0.9.0-py3-none-any.whl", hash = "sha256:395c2941921aed24b1f457d00745e934438c4222bfac226a024b2ffab2b1bc81", size = 32391 },
+    { url = "https://files.pythonhosted.org/packages/38/bd/017ac419cd2a77e8a18867706ad17497492bfe84649d9f732b9d94bcb28a/litestar_vite-0.10.0-py3-none-any.whl", hash = "sha256:288baf009a47dc6aa9d3fa2e538b54265afc653827c7e79afcd74363cb747de5", size = 30736 },
 ]
 
 [[package]]
