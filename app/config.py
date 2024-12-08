@@ -5,12 +5,6 @@ from typing import cast
 
 import logfire
 import structlog
-from advanced_alchemy.extensions.litestar import (
-    AlembicAsyncConfig,
-    AsyncSessionConfig,
-    SQLAlchemyAsyncConfig,
-    async_autocommit_handler_maker,
-)
 from httpx_oauth.clients.github import GitHubOAuth2
 from httpx_oauth.clients.google import GoogleOAuth2
 from litestar.config.compression import CompressionConfig
@@ -25,7 +19,13 @@ from litestar.logging.config import (
 )
 from litestar.middleware.logging import LoggingMiddlewareConfig
 from litestar.middleware.session.server_side import ServerSideSessionConfig
+from litestar.plugins.sqlalchemy import (
+    AlembicAsyncConfig,
+    AsyncSessionConfig,
+    SQLAlchemyAsyncConfig,
+)
 from litestar.plugins.structlog import StructlogConfig
+from litestar.template import TemplateConfig
 from litestar_saq import SAQConfig
 from litestar_vite import ViteConfig
 from litestar_vite.inertia import InertiaConfig
@@ -47,9 +47,7 @@ cors = CORSConfig(allow_origins=cast("list[str]", settings.app.ALLOWED_CORS_ORIG
 
 alchemy = SQLAlchemyAsyncConfig(
     engine_instance=settings.db.get_engine(),
-    before_send_handler=async_autocommit_handler_maker(  # note: change the session scope key if using multiple engines
-        commit_on_redirect=True,
-    ),
+    before_send_handler="autocommit_include_redirects",
     session_config=AsyncSessionConfig(expire_on_commit=False),
     alembic_config=AlembicAsyncConfig(
         version_table_name=settings.db.MIGRATION_DDL_VERSION_TABLE,
@@ -57,10 +55,12 @@ alchemy = SQLAlchemyAsyncConfig(
         script_location=settings.db.MIGRATION_PATH,
     ),
 )
+templates = TemplateConfig(
+    directory=settings.vite.TEMPLATE_DIR,
+)
 vite = ViteConfig(
     bundle_dir=settings.vite.BUNDLE_DIR,
     resource_dir=settings.vite.RESOURCE_DIR,
-    template_dir=settings.vite.TEMPLATE_DIR,
     use_server_lifespan=settings.vite.USE_SERVER_LIFESPAN,
     dev_mode=settings.vite.DEV_MODE,
     hot_reload=settings.vite.HOT_RELOAD,
