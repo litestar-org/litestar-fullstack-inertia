@@ -10,9 +10,8 @@ from uuid_utils.compat import uuid4
 
 from app.db.models import Team, TeamInvitation, TeamMember, TeamRoles
 from app.db.models.tag import Tag
-from app.db.models.user import User  # noqa: TCH001
-
-from .repositories import TeamInvitationRepository, TeamMemberRepository, TeamRepository
+from app.db.models.user import User  # noqa: TC001
+from app.domain.teams.repositories import TeamInvitationRepository, TeamMemberRepository, TeamRepository
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

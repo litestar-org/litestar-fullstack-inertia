@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from uuid import UUID  # noqa: TCH003
+from uuid import UUID  # noqa: TC003
 
 from advanced_alchemy.base import UUIDAuditBase
 from sqlalchemy import ForeignKey, String
@@ -28,4 +28,4 @@ class TeamInvitation(UUIDAuditBase):
     # ORM Relationships
     # ------------
     team: Mapped[Team] = relationship(foreign_keys="TeamInvitation.team_id", lazy="noload")
-    invited_by: Mapped[User] = relationship(foreign_keys="TeamInvitation.invited_by_id", lazy="noload", uselist=False)
+    invited_by: Mapped[User] = relationship(foreign_keys="TeamInvitation.invited_by_id", uselist=False)

@@ -1,24 +1,30 @@
-from collections.abc import AsyncGenerator, AsyncIterator
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from advanced_alchemy.base import UUIDAuditBase
 from advanced_alchemy.utils.fixtures import open_fixture_async
 from httpx import AsyncClient
-from litestar import Litestar
 from litestar_saq.cli import get_saq_plugin
-from redis.asyncio import Redis
 from sqlalchemy.engine import URL
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.db.models import Team, User
 from app.domain.accounts.services import RoleService, UserService
 from app.domain.teams.services import TeamService
 from app.lib.settings import get_settings
 from app.server.core import ApplicationCore
 from app.server.plugins import alchemy
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator, AsyncIterator
+
+    from litestar import Litestar
+    from redis.asyncio import Redis
+
+    from app.db.models import Team, User
 
 here = Path(__file__).parent
 pytestmark = pytest.mark.anyio
@@ -148,5 +154,5 @@ async def fx_client(app: Litestar) -> AsyncIterator[AsyncClient]:
     ValueError: The future belongs to a different loop than the one specified as the loop argument
     ```
     """
-    async with AsyncClient(app=app, base_url="http://testserver", timeout=10) as client:
+    async with AsyncClient(app, base_url="http://testserver", timeout=10) as client:  # type: ignore[arg-type,misc]
         yield client

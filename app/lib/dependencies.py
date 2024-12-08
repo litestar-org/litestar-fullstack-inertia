@@ -17,22 +17,22 @@ from advanced_alchemy.filters import (
 from litestar.di import Provide
 from litestar.params import Dependency, Parameter
 
-__all__ = [
+__all__ = (
+    "BeforeAfter",
+    "CollectionFilter",
+    "FilterTypes",
+    "LimitOffset",
+    "OrderBy",
+    "SearchFilter",
     "create_collection_dependencies",
     "provide_created_filter",
     "provide_filter_dependencies",
     "provide_id_filter",
     "provide_limit_offset_pagination",
-    "provide_updated_filter",
-    "provide_search_filter",
     "provide_order_by",
-    "BeforeAfter",
-    "CollectionFilter",
-    "LimitOffset",
-    "OrderBy",
-    "SearchFilter",
-    "FilterTypes",
-]
+    "provide_search_filter",
+    "provide_updated_filter",
+)
 
 DTorNone = datetime | None
 StringOrNone = str | None
@@ -105,7 +105,7 @@ def provide_search_filter(
 
 
 def provide_order_by(
-    field_name: StringOrNone = Parameter(title="Order by field", query="orderBy", default=None, required=False),
+    field_name: StringOrNone = Parameter(title="Order by field", query="orderBy", default="updated_at", required=False),
     sort_order: SortOrderOrNone = Parameter(title="Field to search", query="sortOrder", default="desc", required=False),
 ) -> OrderBy:
     """Add offset/limit pagination.
@@ -196,7 +196,7 @@ def provide_filter_dependencies(
         list[FilterTypes]: List of filters parsed from connection.
     """
     filters: list[FilterTypes] = []
-    if id_filter.values:  # noqa: PD011
+    if id_filter.values:
         filters.append(id_filter)
     filters.extend([created_filter, limit_offset, updated_filter])
 

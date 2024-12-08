@@ -1,77 +1,51 @@
 {
-    "$schema": "https://biomejs.dev/schemas/1.9.3/schema.json",
-    "vcs": {
-        "enabled": true,
-        "clientKind": "git",
-        "useIgnoreFile": true,
-        "defaultBranch": "main"
-    },
-    "organizeImports": {
-        "enabled": true,
-        "ignore": [
-            "node_modules",
-            "dist",
-            "out",
-            ".venv",
-            "public"
-        ]
-    },
-    "formatter": {
-        "enabled": true,
-        "formatWithErrors": false,
-        "indentStyle": "tab",
-        "indentWidth": 2,
-        "lineWidth": 180,
-        "lineEnding": "lf",
-        "ignore": [
-            "node_modules",
-            "dist",
-            "out",
-            ".next",
-            "public"
-        ]
-    },
-    "linter": {
-        "enabled": true,
-        "rules": {
-            "recommended": true,
-            "suspicious": {
-                "noExplicitAny": "off"
-            },
-            "complexity": {
-                "noForEach": "off"
-            },
-            "a11y": {
-                "noSvgWithoutTitle": "off"
-            },
-            "nursery": {
-                "useSortedClasses": "warn"
-            }
-        },
-        "ignore": [
-            "node_modules",
-            "dist",
-            "out",
-            ".next",
-            "public"
-        ]
-    },
-    "javascript": {
-        "formatter": {
-            "quoteStyle": "double",
-            "jsxQuoteStyle": "double",
-            "semicolons": "asNeeded"
-        }
-    },
-    "files": {
-        "ignore": [
-            "**/node_modules",
-            "**/dist",
-            "CHANGELOG.md",
-            "package-lock.json",
-            "pnpm-lock.yaml",
-            ".venv",
-            "out"
-        ]
-    }
+	"$schema": "https://biomejs.dev/schemas/1.9.3/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true,
+		"defaultBranch": "main"
+	},
+	"organizeImports": {
+		"enabled": true,
+		"ignore": ["node_modules", "dist", "out", ".venv", "public"]
+	},
+	"formatter": {
+		"enabled": true,
+		"formatWithErrors": false,
+		"indentStyle": "tab",
+		"indentWidth": 2,
+		"lineWidth": 180,
+		"lineEnding": "lf",
+		"ignore": ["node_modules", "dist", "out", ".next", "public"]
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"suspicious": {
+				"noExplicitAny": "off"
+			},
+			"complexity": {
+				"noForEach": "off"
+			},
+			"a11y": {
+				"noSvgWithoutTitle": "off"
+			},
+			"nursery": {
+				"useSortedClasses": "warn"
+			}
+		},
+		"ignore": ["node_modules", "dist", "out", ".next", "public"]
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double",
+			"jsxQuoteStyle": "double",
+			"semicolons": "asNeeded"
+		}
+	},
+	"files": {
+		"ignore": ["**/node_modules", "**/dist", "CHANGELOG.md", "package-lock.json", "pnpm-lock.yaml", ".venv", "out"]
+	}
 }

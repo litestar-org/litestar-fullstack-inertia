@@ -8,6 +8,7 @@
 		".mypy_cache": true,
 		"**/__pycache__": true,
 		".venv": true,
+		".zed": true,
 		".direnv": true,
 		".idea": true,
 		".run": true,
@@ -17,11 +18,12 @@
 		"**/.pytest_cache": true,
 		"site": true,
 		".angular": true,
+		".dmypy.json": true,
 		".ruff_cache": true,
 		".astro": true,
 		".unasyncd_cache": true,
 		".coverage": true,
-		"node_modules": true,
+		"node_modules": false,
 		".terraform": true,
 		".logfire": true
 	},
@@ -37,9 +39,6 @@
 	"ruff.lint.run": "onType",
 	"ruff.lint.args": ["--config=${workspaceFolder}/pyproject.toml"],
 	"mypy-type-checker.importStrategy": "fromEnvironment",
-	"black-formatter.importStrategy": "fromEnvironment",
-	"pylint.importStrategy": "fromEnvironment",
-	"pylint.args": ["--rcfile=pylintrc"],
 	"python.autoComplete.extraPaths": ["${workspaceFolder}"],
 	"python.terminal.activateEnvInCurrentTerminal": true,
 	"python.terminal.executeInFileDir": true,
@@ -74,15 +73,14 @@
 		}
 	},
 	"python.analysis.fixAll": ["source.unusedImports", "source.convertImportFormat"],
-	"sqltools.disableReleaseNotifications": true,
-	"sqltools.disableNodeDetectNotifications": true,
 	"python.testing.unittestArgs": ["-v", "-s", "./tests", "-p", "test_*.py"],
 	"python.testing.pytestArgs": ["tests"],
 	"explorer.fileNesting.patterns": {
-		"pyproject.toml": "pyproject.toml,poetry.lock,poetry.toml,mkdocs.yaml,.gcloudignore,.gitignore,.editorconfig,.bumpversion.cfg,.pylintrc,.pre-commit-config.yaml,LICENSE,mkdocs.yml,service_account.json,.pdm-python,pdm.lock,uv.lock,requirements.txt,sonar-project.properties,railway.json",
+		"pyproject.toml": "pyproject.toml,poetry.lock,poetry.toml,mkdocs.yaml,.gcloudignore,.gitignore,.editorconfig,.bumpversion.cfg,.pylintrc,.pre-commit-config.yaml,LICENSE,mkdocs.yml,service_account.json,.pdm-python,pdm.lock,uv.lock,requirements.txt,sonar-project.properties,railway.json,.python-version,nixpacks.toml",
 		".env": ".env*,.*.env",
+		"README.md": "README.md, README.rst, CONTRIBUTING.rst, CONTRIBUTING.md",
 		"docker-compose.yml": "docker-compose.yml, .dockerignore, docker-compose.*.yml, docker-compose.*.yaml",
-		"package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, tsconfig.*.json, tsconfig.json, .stylelintrc.json,angular.json,proxy.conf.json,cypress.*.ts,extra-webpack*.cjs,.eslintrc.json, tailwind.config.*, vite.config.ts, postcss.config.*, components.json, .prettierignore, .prettierrc.json, .eslintrc.cjs"
+		"package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, tsconfig.*.json, tsconfig.json, .stylelintrc.json,angular.json,proxy.conf.json,cypress.*.ts,extra-webpack*.cjs,.eslintrc.json, tailwind.config.*, vite.config.ts, postcss.config.*, components.json, .prettierignore, .prettierrc.json, .eslintrc.cjs, biome.json"
 	},
 	"markdownlint.run": "onSave",
 	"markdownlint.config": {
@@ -95,28 +93,12 @@
 		},
 		"no-hard-tabs": false
 	},
-	"yaml.schemas": {
-		"https://squidfunk.github.io/mkdocs-material/schema.json": "mkdocs.yml"
-	},
-	"yaml.customTags": [
-		"!ENV scalar",
-		"!ENV sequence",
-		"!relative scalar",
-		"tag:yaml.org,2002:python/name:material.extensions.emoji.to_svg",
-		"tag:yaml.org,2002:python/name:material.extensions.emoji.twemoji",
-		"tag:yaml.org,2002:python/name:pymdownx.superfences.fence_code_format"
-	],
 	"mypy-type-checker.preferDaemon": true,
 	"mypy-type-checker.reportingScope": "file",
 	"editor.defaultFormatter": "charliermarsh.ruff",
 	"notebook.defaultFormatter": "charliermarsh.ruff",
 	"python.analysis.regenerateStdLibIndices": true,
-	"python.analysis.typeEvaluation.deprecateTypingAliases": true,
-	"python.analysis.typeEvaluation.enableExperimentalFeatures": true,
-	"python.analysis.typeEvaluation.enableReachabilityAnalysis": true,
-	"python.analysis.typeEvaluation.strictListInference": true,
-	"python.analysis.typeEvaluation.strictDictionaryInference": true,
-	"python.analysis.typeEvaluation.strictSetInference": false,
 	"editor.defaultFoldingRangeProvider": "charliermarsh.ruff",
-	"python.analysis.enableSyncServer": false
+	"python.analysis.enableSyncServer": false,
+	"python.analysis.extraPaths": ["${workspaceFolder}"]
 }

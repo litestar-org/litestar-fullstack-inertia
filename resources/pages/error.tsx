@@ -1,6 +1,6 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export default function Error({ status }: { status: number }) {
+export default function ErrorPage({ status }: { status: number }) {
 	const title = {
 		503: "503: Service Unavailable",
 		500: "500: Server Error",

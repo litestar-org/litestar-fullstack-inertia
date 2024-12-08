@@ -16,7 +16,7 @@ export default function ConfirmPassword() {
 		return () => {
 			reset("password")
 		}
-	}, [])
+	}, [reset])
 
 	const submit = (e: { preventDefault: () => void }) => {
 		e.preventDefault()
@@ -57,4 +57,4 @@ export default function ConfirmPassword() {
 	)
 }
 
-ConfirmPassword.layout = (page: any) => <GuestLayout children={page} />
+ConfirmPassword.layout = (page: any) => <GuestLayout>{page}</GuestLayout>

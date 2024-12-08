@@ -53,7 +53,7 @@ def create_user(
     import click
     from rich import get_console
 
-    from app.config.app import alchemy
+    from app.config import alchemy
     from app.domain.accounts.dependencies import provide_users_service
     from app.domain.accounts.schemas import UserCreate
 
@@ -102,7 +102,7 @@ def promote_to_superuser(email: str) -> None:
     import anyio
     from rich import get_console
 
-    from app.config.app import alchemy
+    from app.config import alchemy
     from app.domain.accounts.schemas import UserUpdate
     from app.domain.accounts.services import UserService
 
@@ -141,7 +141,7 @@ def create_default_roles() -> None:
     from advanced_alchemy.utils.text import slugify
     from rich import get_console
 
-    from app.config.app import alchemy
+    from app.config import alchemy
     from app.db.models import UserRole
     from app.db.utils import load_database_fixtures
     from app.domain.accounts.dependencies import provide_roles_service, provide_users_service

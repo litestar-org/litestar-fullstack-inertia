@@ -1,24 +1,26 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, overload
+from typing import TYPE_CHECKING, Any, Literal, overload
 
-from advanced_alchemy.extensions.litestar.dto import SQLAlchemyDTO, SQLAlchemyDTOConfig
 from litestar.dto import DataclassDTO, dto_field
 from litestar.dto.config import DTOConfig
+from litestar.plugins.sqlalchemy import SQLAlchemyDTO, SQLAlchemyDTOConfig
 
 if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
 
     from litestar.dto import RenameStrategy
+    from sqlalchemy.orm import InstrumentedAttribute
 
-__all__ = ("config", "dto_field", "DTOConfig", "SQLAlchemyDTO", "DataclassDTO")
+__all__ = ("DTOConfig", "DataclassDTO", "SQLAlchemyDTO", "config", "dto_field")
 
 
 @overload
 def config(
     backend: Literal["sqlalchemy"] = "sqlalchemy",
-    exclude: AbstractSet[str] | None = None,
-    rename_fields: dict[str, str] | None = None,
+    include: AbstractSet[str | InstrumentedAttribute[Any]] | None = None,
+    exclude: AbstractSet[str | InstrumentedAttribute[Any]] | None = None,
+    rename_fields: dict[str, str | InstrumentedAttribute[Any]] | None = None,
     rename_strategy: RenameStrategy | None = None,
     max_nested_depth: int | None = None,
     partial: bool | None = None,
@@ -28,8 +30,9 @@ def config(
 @overload
 def config(
     backend: Literal["dataclass"] = "dataclass",
-    exclude: AbstractSet[str] | None = None,
-    rename_fields: dict[str, str] | None = None,
+    include: AbstractSet[str | InstrumentedAttribute[Any]] | None = None,
+    exclude: AbstractSet[str | InstrumentedAttribute[Any]] | None = None,
+    rename_fields: dict[str, str | InstrumentedAttribute[Any]] | None = None,
     rename_strategy: RenameStrategy | None = None,
     max_nested_depth: int | None = None,
     partial: bool | None = None,
@@ -38,8 +41,9 @@ def config(
 
 def config(
     backend: Literal["dataclass", "sqlalchemy"] = "dataclass",
-    exclude: AbstractSet[str] | None = None,
-    rename_fields: dict[str, str] | None = None,
+    include: AbstractSet[str | InstrumentedAttribute[Any]] | None = None,
+    exclude: AbstractSet[str | InstrumentedAttribute[Any]] | None = None,
+    rename_fields: dict[str, str | InstrumentedAttribute[Any]] | None = None,
     rename_strategy: RenameStrategy | None = None,
     max_nested_depth: int | None = None,
     partial: bool | None = None,
@@ -50,6 +54,8 @@ def config(
         DTOConfig: Configured DTO class
     """
     default_kwargs = {"rename_strategy": "camel", "max_nested_depth": 2}
+    if include:
+        default_kwargs["include"] = include
     if exclude:
         default_kwargs["exclude"] = exclude
     if rename_fields:

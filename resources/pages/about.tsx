@@ -17,4 +17,4 @@ export default function About({ about }: { about: string }) {
 	)
 }
 
-About.layout = (page: React.ReactNode) => <AppLayout children={page} />
+About.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>

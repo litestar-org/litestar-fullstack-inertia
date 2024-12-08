@@ -16,11 +16,11 @@ export function getFirstWord(value: string) {
 }
 
 export const getInitials = (name: string) => {
-	name = name.trim()
+	const trimmedName = name.trim()
 
-	if (name.length <= 2) return name
+	if (trimmedName.length <= 2) return trimmedName
 
-	return name
+	return trimmedName
 		.split(/\s+/)
 		.map((w) => [...w][0])
 		.slice(0, 2)
@@ -28,23 +28,16 @@ export const getInitials = (name: string) => {
 }
 
 export const getGravatarUrl = (email: string, size?: number) => {
-	email = email.trim()
-	if (!email) return ""
-	if (!size) {
-		size = 50
-	}
-	const emailMd5 = md5(email)
-	return `https://www.gravatar.com/avatar/${emailMd5}?s=${String(Math.max(size, 250))}&d=identicon`
+	const trimmedEmail = email.trim()
+	if (!trimmedEmail) return ""
+	const avatarSize = size || 50
+	const emailMd5 = md5(trimmedEmail)
+	return `https://www.gravatar.com/avatar/${emailMd5}?s=${String(Math.max(avatarSize, 250))}&d=identicon`
 }
 
 export function getServerSideErrors(errors: Errors & ErrorBag = {}) {
-	const err = Object.entries(errors).reduce((acc, [key, value]) => {
-		return {
-			...acc,
-			[key]: {
-				message: value,
-			},
-		}
+	return Object.entries(errors).reduce((acc: Record<string, { message: string }>, [key, value]) => {
+		acc[key] = { message: value }
+		return acc
 	}, {})
-	return err
 }

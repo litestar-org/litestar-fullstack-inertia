@@ -2,12 +2,12 @@ x-development-volumes: &development-volumes
   volumes:
     - ./docs:/workspace/app/docs/
     - ./tests:/workspace/app/tests/
+    - ./tools:/workspace/app/tools/
     - ./app:/workspace/app/app/
     - ./Makefile:/workspace/app/Makefile
     - ./pyproject.toml:/workspace/app/pyproject.toml
-    - ./pdm.lock:/workspace/app/pdm.lock
+    - ./uv.lock:/workspace/app/uv.lock
     - ./tsconfig.json:/workspace/app/tsconfig.json
-    - ./tsconfig.node.json:/workspace/app/tsconfig.node.json
     - ./package.json:/workspace/app/package.json
     - ./package-lock.json:/workspace/app/package-lock.json
     - ./vite.config.ts:/workspace/app/vite.config.ts
@@ -19,15 +19,10 @@ x-development-volumes: &development-volumes
     - ./.env.docker.example:/workspace/app/.env
 
 services:
-  localmail:
-    image: mailhog/mailhog:v1.0.0
-    container_name: localmail
-    ports:
-      - "8025:8025"
   app:
     build:
       context: .
-      dockerfile: deploy/docker/dev/Dockerfile
+      dockerfile: deploy/docker/Dockerfile.dev
     ports:
       - "8000:8000"
       - "3006:3006"

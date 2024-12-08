@@ -50,5 +50,5 @@ export default function Login() {
 }
 
 Login.layout = (page: React.ReactNode) => {
-	return <GuestLayout children={page} />
+	return <GuestLayout>{page}</GuestLayout>
 }

@@ -4,6 +4,7 @@ import argparse
 import logging
 import os
 import platform
+import shutil
 import subprocess
 import sys
 from importlib.util import find_spec
@@ -19,7 +20,14 @@ NODEENV = "nodeenv"
 DEFAULT_VENV_PATH = Path(PROJECT_ROOT / ".venv")
 
 
-def manage_resources(setup_kwargs: Any) -> Any:
+def is_executable(cmd: str) -> bool:
+    """Check if a command exists and is executable."""
+    executable_path = shutil.which(cmd)
+    return bool(executable_path and os.access(executable_path, os.X_OK))
+
+
+def manage_assets(setup_kwargs: Any) -> Any:
+    """Manage Node environment and NPM packages."""
     # look for this in the environment and skip this function if it exists, sometimes building here is not needed, eg. when using nixpacks
     no_nodeenv = os.environ.get("LITESTAR_SKIP_NODEENV_INSTALL") is not None or NODEENV_INSTALLED is False
     build_assets = setup_kwargs.pop("build_assets", None)
@@ -27,7 +35,10 @@ def manage_resources(setup_kwargs: Any) -> Any:
     kwargs: dict[str, Any] = {}
     if no_nodeenv:
         logger.info("skipping nodeenv configuration")
+    elif is_executable("npm"):
+        logger.info("npm is installed, skipping nodeenv configuration")
     else:
+        logger.info("Installing Node environment to %s:", DEFAULT_VENV_PATH)
         found_in_local_venv = Path(DEFAULT_VENV_PATH / "bin" / NODEENV).exists()
         nodeenv_command = f"{DEFAULT_VENV_PATH}/bin/{NODEENV}" if found_in_local_venv else NODEENV
         install_dir = DEFAULT_VENV_PATH if found_in_local_venv else os.environ.get("VIRTUAL_ENV", sys.prefix)
@@ -51,4 +62,4 @@ if __name__ == "__main__":
     parser.add_argument("--install-packages", action="store_true", help="Install NPM packages.", default=None)
     args = parser.parse_args()
     setup_kwargs = {"build_assets": args.build_assets, "install_packages": args.install_packages}
-    manage_resources(setup_kwargs)
+    manage_assets(setup_kwargs)

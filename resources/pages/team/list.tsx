@@ -17,4 +17,4 @@ export default function TeamList({ about }: { about: string }) {
 	)
 }
 
-TeamList.layout = (page: React.ReactNode) => <AppLayout children={page} />
+TeamList.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>

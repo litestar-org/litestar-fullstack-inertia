@@ -1,0 +1,57 @@
+name: Test
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        required: true
+        type: string
+      coverage:
+        required: false
+        type: boolean
+        default: false
+      os:
+        required: false
+        type: string
+        default: "ubuntu-latest"
+      timeout:
+        required: false
+        type: number
+        default: 60
+
+jobs:
+  test:
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: ${{ inputs.timeout }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        run: uv python install ${{ inputs.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
+
+      - name: Test
+        if: ${{ !inputs.coverage }}
+        run: uv run pytest --dist "loadgroup" -m "" -n 2
+
+      - name: Test with coverage
+        if: ${{ inputs.coverage }}
+        run: uv run pytest --dist "loadgroup" -m "" --cov=app --cov-report=xml -n 2
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ inputs.coverage }}
+        with:
+          name: coverage-xml
+          path: coverage.xml

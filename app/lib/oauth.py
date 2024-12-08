@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, TypeAlias, Union  # noqa: UP0
 
 from httpx_oauth.oauth2 import BaseOAuth2, GetAccessTokenError, OAuth2Error, OAuth2Token
 from litestar import status_codes as status
-from litestar.exceptions import HTTPException
+from litestar.exceptions import HTTPException, ValidationException
 from litestar.params import Parameter
 from litestar.plugins import InitPluginProtocol
 
@@ -103,10 +103,13 @@ class OAuth2AuthorizeCallback:
                 detail=error if error is not None else None,
             )
 
+        redirect_url = self.redirect_url
         if self.route_name:
             redirect_url = str(request.url_for(self.route_name))
-        elif self.redirect_url:
-            redirect_url = self.redirect_url
+
+        if not redirect_url:
+            msg = "A redirect_url must be provided for the OAuth2 authorization callback."
+            raise ValidationException(msg)
 
         try:
             access_token = await self.client.get_access_token(

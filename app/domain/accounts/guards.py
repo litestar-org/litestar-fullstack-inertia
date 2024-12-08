@@ -20,10 +20,10 @@ if TYPE_CHECKING:
 
 
 __all__ = (
-    "requires_superuser",
-    "requires_active_user",
-    "requires_verified_user",
     "current_user_from_session",
+    "requires_active_user",
+    "requires_superuser",
+    "requires_verified_user",
     "session_auth",
 )
 

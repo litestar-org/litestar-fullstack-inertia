@@ -11,11 +11,11 @@ if TYPE_CHECKING:
 
 
 __all__ = (
-    "AuthorizationError",
-    "MissingDependencyError",
     "ApplicationClientError",
-    "HealthCheckConfigurationError",
     "ApplicationError",
+    "AuthorizationError",
+    "HealthCheckConfigurationError",
+    "MissingDependencyError",
 )
 
 
