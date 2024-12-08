@@ -10,6 +10,7 @@ from httpx_oauth.clients.google import GoogleOAuth2
 from litestar.config.compression import CompressionConfig
 from litestar.config.cors import CORSConfig
 from litestar.config.csrf import CSRFConfig
+from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.logging.config import (
     LoggingConfig,
     StructLoggingConfig,
@@ -55,9 +56,7 @@ alchemy = SQLAlchemyAsyncConfig(
         script_location=settings.db.MIGRATION_PATH,
     ),
 )
-templates = TemplateConfig(
-    directory=settings.vite.TEMPLATE_DIR,
-)
+templates = TemplateConfig(engine=JinjaTemplateEngine(directory=settings.vite.TEMPLATE_DIR))
 vite = ViteConfig(
     bundle_dir=settings.vite.BUNDLE_DIR,
     resource_dir=settings.vite.RESOURCE_DIR,

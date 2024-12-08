@@ -86,4 +86,3 @@ EXPOSE 8000
 ENTRYPOINT ["tini","--" ]
 CMD [ "litestar", "run", "--port", "8000", "--host", "0.0.0.0"]
 VOLUME /workspace/app
-
