@@ -1131,7 +1131,7 @@ structlog = [
 
 [[package]]
 name = "litestar-granian"
-version = "0.7.1"
+version = "0.8.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fast-query-parsers" },
@@ -1140,9 +1140,9 @@ dependencies = [
     { name = "litestar" },
     { name = "uvloop", marker = "sys_platform != 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/82/82/f29e36fe1f25e31c988851bc9cff6b94542f849d15737ade2ccf767a7e58/litestar_granian-0.7.1.tar.gz", hash = "sha256:9834513962fe345149026ef80b2b99dbe1c512369583ad0dd752bfc8fddb924b", size = 131375 }
+sdist = { url = "https://files.pythonhosted.org/packages/8f/1a/09d764c9a2b0d5a4263e318597d18304df03a0e7388997cc2d9d698fea3a/litestar_granian-0.8.0.tar.gz", hash = "sha256:9a6e4d361ca333cd7b2aa10fa34e92fa350e5f065abc6a8e4d152f094ad48ff5", size = 136435 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a0/0a/2ea8dbdac4e87ee5bb58303f744c70897a0c0c970f2ca94736f67c5545ae/litestar_granian-0.7.1-py3-none-any.whl", hash = "sha256:cc9d8c10c7585b2f364d697027ceedf96b618081a20d5d1019f7d960e8a6e2bb", size = 10392 },
+    { url = "https://files.pythonhosted.org/packages/4b/57/5f906c540e536dd5a58a6892cdac5745d4215d92fc6d80041c60c5ac05d4/litestar_granian-0.8.0-py3-none-any.whl", hash = "sha256:6724b301431e095e4878306b997beb88b95a58f79dc3e720336b6c258c12d328", size = 11497 },
 ]
 
 [[package]]
@@ -1156,15 +1156,15 @@ wheels = [
 
 [[package]]
 name = "litestar-saq"
-version = "0.2.0"
+version = "0.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "litestar" },
     { name = "saq" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d9/69/14d1dc2699bea08f94d767c57c571fb3e527c0efab89c71a670aae9d7a2c/litestar_saq-0.2.0.tar.gz", hash = "sha256:d2b2301198b4d36325e2a8f1e612e42485e4472e8f660562631ad2d65636de64", size = 85053 }
+sdist = { url = "https://files.pythonhosted.org/packages/42/f6/c8a5dd23b9f31952e691f5ffac15af5bd2722f8690a1664bce66b8f96b00/litestar_saq-0.3.0.tar.gz", hash = "sha256:4a885edc6fc90e2aaad239b566c7e0f09e13ebf42b7ac7fbc75a547e5b36745d", size = 86114 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/26/82/16186d660b71c9c49ac1408aca6e031ec3b82517a69c3fc3449ef7de3dd3/litestar_saq-0.2.0-py3-none-any.whl", hash = "sha256:eb92845e9ae66eb1b9a19a34df353acbf64b5de8ae192859d9f46a8f06a25cb4", size = 14432 },
+    { url = "https://files.pythonhosted.org/packages/84/5e/df4db72b9427a5e77c2bbbf4c0df204cfd58c795debf9b3d3acd3b443637/litestar_saq-0.3.0-py3-none-any.whl", hash = "sha256:7c58c60203b76b66b482bde98b5686f3541e3c36f1e5dbbc2d9d572b91011dcb", size = 15140 },
 ]
 
 [[package]]
@@ -1178,14 +1178,14 @@ dependencies = [
 
 [[package]]
 name = "litestar-vite"
-version = "0.10.0"
+version = "0.11.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "litestar", extra = ["jinja"] },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fe/87/ba41e7c94dfbf546ede2edb6085b2de7d10bc498ac6ef2299c42be055e68/litestar_vite-0.10.0.tar.gz", hash = "sha256:1c1e4cc7818aa772334aab9b6a834005fe4833619415c64851208d2fbc3f35fc", size = 48030 }
+sdist = { url = "https://files.pythonhosted.org/packages/c7/b5/b1225f53804a577507fedf05f79859ebf94edf07d3c32979e952bc26c228/litestar_vite-0.11.1.tar.gz", hash = "sha256:ffd5fb83d0e9c339b8fb42ad143ed862486045c38dd6a0e23fa3ec3a80dc34a7", size = 48378 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/38/bd/017ac419cd2a77e8a18867706ad17497492bfe84649d9f732b9d94bcb28a/litestar_vite-0.10.0-py3-none-any.whl", hash = "sha256:288baf009a47dc6aa9d3fa2e538b54265afc653827c7e79afcd74363cb747de5", size = 30736 },
+    { url = "https://files.pythonhosted.org/packages/d4/fb/a9f929aeacdd36fcea44fe5e2e42de7a9d2266c27f01bfe4dd28be5e63bf/litestar_vite-0.11.1-py3-none-any.whl", hash = "sha256:5f63f4f1fca54187f5c5c1c1144ef3b751eaee55c1408417aac8d2aa269026a1", size = 31138 },
 ]
 
 [[package]]
