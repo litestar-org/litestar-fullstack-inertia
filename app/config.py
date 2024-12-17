@@ -93,21 +93,25 @@ def _is_tty() -> bool:
 
 
 _render_as_json = not _is_tty()
-_structlog_processors = default_structlog_processors(as_json=_render_as_json)
+_structlog_default_processors = default_structlog_processors(as_json=_render_as_json)
+_structlog_default_processors.insert(1, structlog.processors.EventRenamer("message"))
+_structlog_standard_lib_processors = default_structlog_standard_lib_processors(as_json=_render_as_json)
+_structlog_standard_lib_processors.insert(1, structlog.processors.EventRenamer("message"))
+
 if settings.app.OPENTELEMETRY_ENABLED:
-    _structlog_processors.insert(-1, logfire.StructlogProcessor())
+    _structlog_default_processors.insert(-1, logfire.StructlogProcessor())
 log = StructlogConfig(
     enable_middleware_logging=False,
     structlog_logging_config=StructLoggingConfig(
         log_exceptions="always",
-        processors=_structlog_processors,
+        processors=_structlog_default_processors,
         logger_factory=default_logger_factory(as_json=_render_as_json),
         standard_lib_logging_config=LoggingConfig(
             root={"level": logging.getLevelName(settings.log.LEVEL), "handlers": ["queue_listener"]},
             formatters={
                 "standard": {
                     "()": structlog.stdlib.ProcessorFormatter,
-                    "processors": default_structlog_standard_lib_processors(as_json=_render_as_json),
+                    "processors": _structlog_standard_lib_processors,
                 },
             },
             loggers={
