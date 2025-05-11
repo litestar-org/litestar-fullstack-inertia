@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from advanced_alchemy.base import SlugKey, UUIDAuditBase
-from advanced_alchemy.mixins import UniqueMixin
+from advanced_alchemy.base import UUIDAuditBase
+from advanced_alchemy.mixins import SlugKey, UniqueMixin
 from advanced_alchemy.utils.text import slugify
 from sqlalchemy import (
     ColumnElement,
@@ -29,19 +29,19 @@ class Tag(UUIDAuditBase, SlugKey, UniqueMixin):
     # ORM Relationships
     # ------------
     teams: Mapped[list[Team]] = relationship(
-        secondary=lambda: _team_tag(),
+        secondary=lambda: _team_tag(),  # noqa: PLW0108
         back_populates="tags",
     )
 
     @classmethod
-    def unique_hash(cls, name: str, slug: str | None = None) -> Hashable:  # noqa: ARG003
+    def unique_hash(cls, name: str, slug: str | None = None) -> Hashable:
         return slugify(name)
 
     @classmethod
     def unique_filter(
         cls,
         name: str,
-        slug: str | None = None,  # noqa: ARG003
+        slug: str | None = None,
     ) -> ColumnElement[bool]:
         return cls.slug == slugify(name)
 

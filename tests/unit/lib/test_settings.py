@@ -1,6 +1,6 @@
 import pytest
 
-from app.lib.settings import get_settings
+from app.config._settings import get_settings
 
 pytestmark = pytest.mark.anyio
 

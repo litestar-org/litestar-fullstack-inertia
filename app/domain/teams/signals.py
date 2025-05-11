@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import structlog
+from advanced_alchemy.extensions.litestar.providers import create_service_provider
 from litestar.events import listener
 
 from app.config import alchemy
-from app.domain.teams.dependencies import provide_teams_service
+from app.domain.teams.services import TeamService
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -25,7 +26,7 @@ async def team_created_event_handler(
     """
     await logger.ainfo("Running post signup flow.")
     async with alchemy.get_session() as db_session:
-        service = await anext(provide_teams_service(db_session))
+        service = await anext(create_service_provider(TeamService)(db_session))
         obj = await service.get_one_or_none(id=team_id)
         if obj is None:
             await logger.aerror("Could not locate the specified team", id=team_id)

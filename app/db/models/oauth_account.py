@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from .user import User
 
 
-class UserOauthAccount(UUIDAuditBase):
+class UserOAuthAccount(UUIDAuditBase):
     """User Oauth Account"""
 
     __tablename__ = "user_account_oauth"

@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated
+from uuid import UUID
 
 from advanced_alchemy.exceptions import IntegrityError
+from advanced_alchemy.extensions.litestar.providers import create_service_dependencies, create_service_provider
 from litestar import Controller, Request, delete, get, patch, post
 from litestar.di import Provide
 from litestar.params import Parameter
@@ -16,32 +18,28 @@ from app.db.models import Team as TeamModel
 from app.db.models import TeamMember, TeamRoles
 from app.db.models import User as UserModel
 from app.db.models.team_member import TeamMember as TeamMemberModel
-from app.domain.accounts.dependencies import provide_users_service
 from app.domain.accounts.guards import requires_active_user
 from app.domain.accounts.services import UserService
-from app.domain.teams.dependencies import (
-    provide_team_invitations_service,
-    provide_team_members_service,
-    provide_teams_service,
-)
 from app.domain.teams.guards import requires_team_admin, requires_team_membership, requires_team_ownership
 from app.domain.teams.schemas import Team, TeamCreate, TeamMemberModify, TeamUpdate
-from app.domain.teams.services import TeamMemberService, TeamService
+from app.domain.teams.services import TeamInvitationService, TeamMemberService, TeamService
 
 if TYPE_CHECKING:
-    from uuid import UUID
-
-    from advanced_alchemy.service.pagination import OffsetPagination
+    from advanced_alchemy.filters import FilterTypes
+    from advanced_alchemy.service import OffsetPagination
     from litestar.params import Dependency
-
-    from app.lib.dependencies import FilterTypes
 
 
 class TeamController(Controller):
     """Teams."""
 
     tags = ["Teams"]
-    dependencies = {"teams_service": Provide(provide_teams_service)}
+    dependencies = create_service_dependencies(
+        TeamService,
+        key="teams_service",
+        load=[TeamModel.tags, TeamModel.members],
+        filters={"id_filter": UUID},
+    )
     guards = [requires_active_user]
     signature_namespace = {
         "TeamService": TeamService,
@@ -169,9 +167,9 @@ class TeamMemberController(Controller):
 
     tags = ["Team Members"]
     dependencies = {
-        "teams_service": Provide(provide_teams_service),
-        "team_members_service": Provide(provide_team_members_service),
-        "users_service": Provide(provide_users_service),
+        "teams_service": Provide(create_service_provider(TeamService)),
+        "team_members_service": Provide(create_service_provider(TeamMemberService)),
+        "users_service": Provide(create_service_provider(UserService)),
     }
     signature_namespace = {
         "TeamService": TeamService,
@@ -241,4 +239,4 @@ class TeamInvitationController(Controller):
     """Team Invitations."""
 
     tags = ["Teams"]
-    dependencies = {"team_invitations_service": Provide(provide_team_invitations_service)}
+    dependencies = {"team_invitations_service": Provide(create_service_provider(TeamInvitationService))}

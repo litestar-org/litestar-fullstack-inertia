@@ -31,7 +31,7 @@ from litestar_saq import SAQConfig
 from litestar_vite import ViteConfig
 from litestar_vite.inertia import InertiaConfig
 
-from app.lib.settings import get_settings
+from app.config._settings import get_settings
 
 settings = get_settings()
 

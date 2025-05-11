@@ -19,8 +19,8 @@ from litestar.utils.empty import value_or_default
 from litestar.utils.scope.state import ScopeState
 from structlog.contextvars import bind_contextvars
 
+from app.config._settings import get_settings
 from app.lib.exceptions import ApplicationError
-from app.lib.settings import get_settings
 
 if TYPE_CHECKING:
     from typing import Any, Literal

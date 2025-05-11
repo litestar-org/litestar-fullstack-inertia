@@ -9,7 +9,7 @@ from litestar.contrib.opentelemetry import (
 )
 from litestar.middleware import AbstractMiddleware
 
-from app.lib.settings import get_settings
+from app.config._settings import get_settings
 
 if TYPE_CHECKING:
     from litestar.types import ASGIApp

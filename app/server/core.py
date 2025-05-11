@@ -6,9 +6,11 @@ from uuid import UUID
 
 from litestar.config.response_cache import ResponseCacheConfig, default_cache_key_builder
 from litestar.di import Provide
+from litestar.enums import RequestEncodingType
 from litestar.openapi.config import OpenAPIConfig
-from litestar.openapi.plugins import ScalarRenderPlugin, SwaggerRenderPlugin
+from litestar.openapi.plugins import ScalarRenderPlugin
 from litestar.plugins import CLIPluginProtocol, InitPluginProtocol
+from litestar.security.jwt import OAuth2Login
 from litestar.stores.redis import RedisStore
 from litestar.stores.registry import StoreRegistry
 
@@ -42,7 +44,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
 
     def on_cli_init(self, cli: Group) -> None:
         from app.cli import user_management_app
-        from app.lib.settings import get_settings
+        from app.config._settings import get_settings
 
         settings = get_settings()
         self.redis = settings.redis.get_client()
@@ -54,11 +56,18 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
 
         Args:
             app_config: The :class:`AppConfig <.config.app.AppConfig>` instance.
+
+        Returns:
+            The :class:`AppConfig <.config.app.AppConfig>` instance.
         """
+
+        from litestar.params import Body
+        from litestar.security.jwt import Token
 
         from app import config
         from app.__metadata__ import __version__ as current_version
-        from app.db.models import User as UserModel
+        from app.config._settings import get_settings
+        from app.db import models as m
         from app.domain.accounts import signals as account_signals
         from app.domain.accounts.controllers import (
             AccessController,
@@ -67,15 +76,16 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             UserController,
             UserRoleController,
         )
-        from app.domain.accounts.dependencies import provide_user
+        from app.domain.accounts.deps import provide_user
         from app.domain.accounts.guards import session_auth
+        from app.domain.accounts.services import RoleService, UserOAuthAccountService, UserRoleService, UserService
         from app.domain.tags.controllers import TagController
+        from app.domain.tags.services import TagService
         from app.domain.teams import signals as team_signals
         from app.domain.teams.controllers import TeamController, TeamMemberController
+        from app.domain.teams.services import TeamInvitationService, TeamMemberService, TeamService
         from app.domain.web.controllers import WebController
         from app.lib import log
-        from app.lib.dependencies import create_collection_dependencies
-        from app.lib.settings import get_settings
         from app.server import plugins
 
         settings = get_settings()
@@ -96,7 +106,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             title=settings.app.NAME,
             version=current_version,
             use_handler_docstrings=True,
-            render_plugins=[ScalarRenderPlugin(version="latest"), SwaggerRenderPlugin()],
+            render_plugins=[ScalarRenderPlugin(version="latest")],
         )
         # session auth (updates openapi config)
         app_config = session_auth.on_app_init(app_config)
@@ -138,7 +148,22 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             ],
         )
         # signatures
-        app_config.signature_namespace.update({"UserModel": UserModel, "UUID": UUID})
+        app_config.signature_namespace.update({
+            "Token": Token,
+            "OAuth2Login": OAuth2Login,
+            "RequestEncodingType": RequestEncodingType,
+            "Body": Body,
+            "m": m,
+            "UUID": UUID,
+            "UserService": UserService,
+            "RoleService": RoleService,
+            "TeamService": TeamService,
+            "TeamInvitationService": TeamInvitationService,
+            "TeamMemberService": TeamMemberService,
+            "TagService": TagService,
+            "UserRoleService": UserRoleService,
+            "UserOAuthAccountService": UserOAuthAccountService,
+        })
         # caching & redis
         app_config.response_cache_config = ResponseCacheConfig(
             default_expiration=120,
@@ -147,9 +172,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         app_config.stores = StoreRegistry(default_factory=self.redis_store_factory)
         app_config.on_shutdown.append(self.redis.aclose)  # type: ignore[attr-defined]
         # dependencies
-        dependencies = {"current_user": Provide(provide_user)}
-        dependencies.update(create_collection_dependencies())
-        app_config.dependencies.update(dependencies)
+        app_config.dependencies.update({"current_user": Provide(provide_user, sync_to_thread=False)})
         # listeners
         app_config.listeners.extend(
             [account_signals.user_created_event_handler, team_signals.team_created_event_handler],

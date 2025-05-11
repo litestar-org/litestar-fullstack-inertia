@@ -6,7 +6,7 @@ import structlog
 from litestar.events import listener
 
 from app.config import alchemy
-from app.domain.accounts.dependencies import provide_users_service
+from app.domain.accounts.deps import provide_users_service
 
 if TYPE_CHECKING:
     from uuid import UUID

@@ -9,7 +9,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from .oauth_account import UserOauthAccount
+    from .oauth_account import UserOAuthAccount
     from .team_member import TeamMember
     from .user_role import UserRole
 
@@ -45,7 +45,7 @@ class User(UUIDAuditBase):
         cascade="all, delete",
         viewonly=True,
     )
-    oauth_accounts: Mapped[list[UserOauthAccount]] = relationship(
+    oauth_accounts: Mapped[list[UserOAuthAccount]] = relationship(
         back_populates="user",
         lazy="noload",
         cascade="all, delete",

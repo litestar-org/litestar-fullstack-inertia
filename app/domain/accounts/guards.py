@@ -10,7 +10,7 @@ from litestar_vite.inertia import share
 from app.config import alchemy, github_oauth2_client, google_oauth2_client
 from app.config import session as session_config
 from app.db.models import User as UserModel
-from app.domain.accounts.dependencies import provide_users_service
+from app.domain.accounts.deps import provide_users_service
 from app.domain.accounts.schemas import User as UserSchema
 from app.lib.oauth import OAuth2AuthorizeCallback
 
@@ -21,6 +21,8 @@ if TYPE_CHECKING:
 
 __all__ = (
     "current_user_from_session",
+    "github_oauth_callback",
+    "google_oauth_callback",
     "requires_active_user",
     "requires_superuser",
     "requires_verified_user",
@@ -56,8 +58,6 @@ def requires_superuser(connection: ASGIConnection, _: BaseRouteHandler) -> None:
     Raises:
         PermissionDeniedException: Permission denied exception
 
-    Returns:
-        None: Returns None when successful
     """
     if connection.user.is_superuser:
         return
@@ -75,8 +75,6 @@ def requires_verified_user(connection: ASGIConnection, _: BaseRouteHandler) -> N
     Raises:
         PermissionDeniedException: Not authorized
 
-    Returns:
-        None: Returns None when successful
     """
     if connection.user.is_verified:
         return

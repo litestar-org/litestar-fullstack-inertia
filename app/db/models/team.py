@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from advanced_alchemy.base import SlugKey, UUIDAuditBase
+from advanced_alchemy.base import UUIDAuditBase
+from advanced_alchemy.mixins import SlugKey
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .team_tag import team_tag
+from app.db.models.team_file import TeamFile
+from app.db.models.team_tag import team_tag
 
 if TYPE_CHECKING:
     from .tag import Tag
@@ -32,6 +34,11 @@ class Team(UUIDAuditBase, SlugKey):
         cascade="all, delete",
         passive_deletes=True,
         lazy="selectin",
+    )
+
+    files: Mapped[list[TeamFile]] = relationship(
+        back_populates="team",
+        cascade="all, delete",
     )
     invitations: Mapped[list[TeamInvitation]] = relationship(
         back_populates="team",

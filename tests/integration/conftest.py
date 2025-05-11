@@ -12,9 +12,9 @@ from sqlalchemy.engine import URL
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
+from app.config._settings import get_settings
 from app.domain.accounts.services import RoleService, UserService
 from app.domain.teams.services import TeamService
-from app.lib.settings import get_settings
 from app.server.core import ApplicationCore
 from app.server.plugins import alchemy
 

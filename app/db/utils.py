@@ -12,9 +12,9 @@ async def load_database_fixtures() -> None:
     from structlog import get_logger
 
     from app.config import alchemy
+    from app.config._settings import get_settings
     from app.db.models import Role
     from app.domain.accounts.services import RoleService
-    from app.lib.settings import get_settings
 
     settings = get_settings()
     logger = get_logger()
