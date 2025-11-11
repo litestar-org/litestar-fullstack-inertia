@@ -148,17 +148,11 @@ class RegistrationController(Controller):
         self,
         request: Request,
         access_token_state: AccessTokenState,
-        roles_service: RoleService,
-        oauth_account_service: UserOAuthAccountService,
         users_service: UserService,
     ) -> InertiaRedirect:
         """Redirect to the Github Login page."""
-        token, _state = access_token_state
-        account_id, email = await github_oauth2_client.get_id_email(token=token["access_token"])
-        data: dict[str, Any] = {"email": email, "account_id": account_id}
-        role_obj = await roles_service.get_one_or_none(slug=slugify(users_service.default_role))
-        if role_obj is not None:
-            data.update({"role_id": role_obj.id})
+        token, _ = access_token_state
+        _, email = await github_oauth2_client.get_id_email(token=token["access_token"])
         user, created = await users_service.get_or_upsert(
             match_fields=["email"],
             email=email,
