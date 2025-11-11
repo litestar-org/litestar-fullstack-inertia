@@ -35,6 +35,7 @@ if TYPE_CHECKING:
 
     from advanced_alchemy.filters import FilterTypes
     from advanced_alchemy.service import OffsetPagination
+    from httpx_oauth.oauth2 import BaseOAuth2
 
     from app.db.models import User as UserModel
 
@@ -150,25 +151,8 @@ class RegistrationController(Controller):
         access_token_state: AccessTokenState,
         users_service: UserService,
     ) -> InertiaRedirect:
-        """Redirect to the Github Login page."""
-        token, _ = access_token_state
-        _, email = await github_oauth2_client.get_id_email(token=token["access_token"])
-        user, created = await users_service.get_or_upsert(
-            match_fields=["email"],
-            email=email,
-            is_verified=True,
-            is_active=True,
-        )
-        request.set_session({"user_id": user.email})
-        if created:
-            request.logger.info("created a new user", id=user.id)
-            flash(request, "Welcome to fullstack.  Your account is ready", category="info")
-        share(
-            request,
-            "auth",
-            {"isAuthenticated": True, "user": users_service.to_schema(user, schema_type=schemas.User)},
-        )
-        return InertiaRedirect(request, redirect_to=request.url_for("dashboard"))
+        """Complete login with GitHub and redirect to the dashboard"""
+        return await RegistrationController._auth_complete(request, access_token_state, users_service, github_oauth2_client)
 
     @post(name="google.register", path="/register/google/")
     async def google_signup(
@@ -191,10 +175,19 @@ class RegistrationController(Controller):
         access_token_state: AccessTokenState,
         users_service: UserService,
     ) -> InertiaRedirect:
-        """Redirect to the Github Login page."""
-        token, _state = access_token_state
-        _id, email = await google_oauth2_client.get_id_email(token=token["access_token"])
+        """Complete login with Google and redirect to the dashboard"""
+        return await RegistrationController._auth_complete(request, access_token_state, users_service, google_oauth2_client)
 
+    @staticmethod
+    async def _auth_complete(
+        request: Request,
+        access_token_state: AccessTokenState,
+        users_service: UserService,
+        oauth_client: BaseOAuth2,
+    ) -> InertiaRedirect:
+        """Complete the OAuth2 flow and redirect to the dashboard"""
+        token, _ = access_token_state
+        id_, email = await oauth_client.get_id_email(token=token["access_token"])
         user, created = await users_service.get_or_upsert(
             match_fields=["email"],
             email=email,
@@ -202,7 +195,7 @@ class RegistrationController(Controller):
             is_active=True,
         )
         request.set_session({"user_id": user.email})
-        request.logger.info("google auth request", id=_id, email=email)
+        request.logger.info("auth request complete", id=id_, email=email, provider=oauth_client.name)
         if created:
             request.logger.info("created a new user", id=user.id)
             flash(request, "Welcome to fullstack.  Your account is ready", category="info")
