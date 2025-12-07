@@ -1,12 +1,10 @@
 # pylint: disable=[invalid-name,import-outside-toplevel]
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, TypeVar, cast
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from litestar.di import Provide
-from litestar.exceptions import HTTPException
-from litestar.exceptions.responses import create_debug_response, create_exception_response
 from litestar.openapi.config import OpenAPIConfig
 from litestar.openapi.plugins import ScalarRenderPlugin, SwaggerRenderPlugin
 from litestar.plugins import CLIPluginProtocol, InitPluginProtocol
@@ -14,36 +12,6 @@ from litestar.plugins import CLIPluginProtocol, InitPluginProtocol
 if TYPE_CHECKING:
     from click import Group
     from litestar.config.app import AppConfig
-    from litestar.connection import Request
-    from litestar.response import Response
-
-
-T = TypeVar("T")
-
-
-def _http_exception_handler(request: "Request[Any, Any, Any]", exc: HTTPException) -> "Response[Any]":
-    """Handle HTTPException properly.
-
-    Workaround for litestar-vite issue #122 where the Inertia exception handler
-    converts HTTPException to 500 for non-Inertia requests.
-
-    For API routes (/api/*), return proper HTTP status codes.
-    For Inertia page routes, delegate to Inertia exception handler for redirects.
-    """
-    # API routes should return proper HTTP status codes
-    is_api_route = request.url.path.startswith("/api/")
-
-    if is_api_route:
-        # Return proper HTTP response for API routes
-        if request.app.debug:
-            return cast("Response[Any]", create_debug_response(request, exc))
-        return cast("Response[Any]", create_exception_response(request, exc))
-
-    # For non-API routes (Inertia pages), use Inertia exception handling
-    # This handles redirects for 401/403 errors on page routes
-    from litestar_vite.inertia.exception_handler import create_inertia_exception_response
-
-    return create_inertia_exception_response(request, exc)
 
 
 class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
@@ -126,10 +94,6 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         app_config.csrf_config = config.csrf
         # templates
         app_config.template_config = config.templates
-        # exception handlers - workaround for litestar-vite #122
-        if app_config.exception_handlers is None:
-            app_config.exception_handlers = {}
-        app_config.exception_handlers[HTTPException] = _http_exception_handler
         # plugins
         app_config.plugins.extend(
             [

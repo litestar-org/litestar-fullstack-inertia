@@ -38,8 +38,6 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
-    environment:
-      VITE_USE_SERVER_LIFESPAN: "false"
     env_file:
       - .env.docker.example
 
@@ -50,6 +48,8 @@ services:
     env_file:
       - .env.docker.example
     depends_on:
+      app:
+        condition: service_started
       db:
         condition: service_healthy
 

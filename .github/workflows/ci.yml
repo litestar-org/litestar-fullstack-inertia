@@ -89,23 +89,29 @@ jobs:
       - name: Run slotscheck
         run: uv run slotscheck -m litestar_vite
 
-  test_js:
-    name: "test (js ${{ matrix.node-version }})"
+  build_assets:
+    name: "build assets"
     runs-on: ubuntu-latest
-    env:
-      LITESTAR_BYPASS_ENV_CHECK: 1
-    strategy:
-      matrix:
-        node-version: [18,20]
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm ci
-    - run: npm run build --if-present
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build assets
+        run: bun run build
+
+      - name: Upload built assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-assets
+          path: app/domain/web/public/
+          retention-days: 1
 
   test_python:
     name: "test (python ${{ matrix.python-version }})"

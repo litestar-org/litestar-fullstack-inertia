@@ -22,11 +22,8 @@ services:
       dockerfile: tools/deploy/docker/Dockerfile.dev
     ports:
       - "8000:8000"
-      - "3006:3006"
     image: litestar-fullstack-inertia:dev
     tty: true
-    environment:
-      VITE_USE_SERVER_LIFESPAN: "true"
     command: litestar run --reload --host 0.0.0.0 --port 8000
     restart: always
     <<: *development-volumes

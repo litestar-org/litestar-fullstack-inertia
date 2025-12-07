@@ -173,16 +173,15 @@ class DatabaseSettings:
 
 @dataclass
 class ViteSettings:
-    """Vite development server configuration."""
+    """Vite development server configuration.
+
+    Note: host/port are auto-managed by litestar-vite plugin.
+    """
 
     DEV_MODE: bool = field(
         default_factory=lambda: os.getenv("VITE_DEV_MODE", "False") in TRUE_VALUES,
     )
     """Start `vite` development server."""
-    HOST: str = field(default_factory=lambda: os.getenv("VITE_HOST", "0.0.0.0"))  # noqa: S104
-    """The host the `vite` process will listen on."""
-    PORT: int = field(default_factory=lambda: int(os.getenv("VITE_PORT", "5173")))
-    """The port to start vite on."""
     TEMPLATE_DIR: Path = field(default_factory=lambda: Path(f"{BASE_DIR.parent}/resources"))
     """Template directory."""
 

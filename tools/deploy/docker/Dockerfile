@@ -91,7 +91,7 @@ COPY resources ./resources/
 COPY app ./app/
 
 # Build frontend assets and create wheel
-RUN uv run tools/assets.py --build-assets \
+RUN uv run python tools/build.py --executor bun \
     && uv sync ${UV_INSTALL_ARGS} --frozen --no-editable \
     && uv build
 

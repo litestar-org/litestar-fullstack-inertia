@@ -17,7 +17,7 @@ dependencies = [
   "advanced-alchemy[uuid,passlib]",
   "asyncpg>=0.28.0",
   "python-dotenv>=1.0.0",
-  "litestar-vite @ file:///home/cody/code/litestar/litestar-vite",
+  "litestar-vite>=0.15.0a7",
   "litestar-granian[uvloop]",
   "aiosqlite>=0.19.0",
   "httptools",

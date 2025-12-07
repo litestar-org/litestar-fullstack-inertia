@@ -28,7 +28,7 @@ from litestar.plugins.sqlalchemy import (
 )
 from litestar.plugins.structlog import StructlogConfig
 from litestar.template import TemplateConfig
-from litestar_vite import InertiaConfig, PathConfig, RuntimeConfig, TypeGenConfig, ViteConfig
+from litestar_vite import InertiaConfig, PathConfig, TypeGenConfig, ViteConfig
 
 from app.lib.settings import BASE_DIR, get_settings
 
@@ -62,10 +62,6 @@ vite = ViteConfig(
         root=BASE_DIR.parent,
         bundle_dir=Path("app/domain/web/public"),
         resource_dir=Path("resources"),
-    ),
-    runtime=RuntimeConfig(
-        host=settings.vite.HOST,
-        port=settings.vite.PORT,
     ),
     inertia=InertiaConfig(
         root_template="index.html",
