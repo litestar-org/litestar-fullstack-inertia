@@ -4,7 +4,6 @@ from functools import lru_cache
 from pathlib import Path
 from typing import cast
 
-import logfire
 import structlog
 from httpx_oauth.clients.github import GitHubOAuth2
 from httpx_oauth.clients.google import GoogleOAuth2
@@ -64,7 +63,6 @@ vite = ViteConfig(
         resource_dir=Path("resources"),
     ),
     inertia=InertiaConfig(
-        root_template="index.html",
         redirect_unauthorized_to="/login",
         extra_static_page_props={
             "canResetPassword": True,
@@ -91,8 +89,6 @@ _structlog_default_processors.insert(1, structlog.processors.EventRenamer("messa
 _structlog_standard_lib_processors = default_structlog_standard_lib_processors(as_json=_render_as_json)
 _structlog_standard_lib_processors.insert(1, structlog.processors.EventRenamer("message"))
 
-if settings.app.OPENTELEMETRY_ENABLED:
-    _structlog_default_processors.insert(-1, logfire.StructlogProcessor())
 log = StructlogConfig(
     enable_middleware_logging=False,
     structlog_logging_config=StructLoggingConfig(
@@ -118,11 +114,6 @@ log = StructlogConfig(
                     "level": settings.log.SQLALCHEMY_LEVEL,
                     "handlers": ["queue_listener"],
                 },
-                "logfire": {
-                    "propagate": False,
-                    "level": settings.log.SQLALCHEMY_LEVEL,
-                    "handlers": ["queue_listener"],
-                },
                 "urllib3": {
                     "propagate": False,
                     "level": settings.log.SQLALCHEMY_LEVEL,
@@ -141,11 +132,6 @@ log = StructlogConfig(
                 "granian.access": {
                     "propagate": False,
                     "level": settings.log.GRANIAN_ACCESS_LEVEL,
-                    "handlers": ["queue_listener"],
-                },
-                "opentelemetry.sdk.metrics._internal": {
-                    "propagate": False,
-                    "level": 40,
                     "handlers": ["queue_listener"],
                 },
             },

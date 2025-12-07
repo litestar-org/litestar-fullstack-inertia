@@ -42,14 +42,15 @@ services:
       - .env.docker.example
 
   migrator:
+    build:
+      context: ../../..
+      dockerfile: tools/deploy/docker/Dockerfile
     image: litestar-fullstack-inertia:latest
     restart: "no"
     command: ["litestar", "database", "upgrade", "--no-prompt"]
     env_file:
       - .env.docker.example
     depends_on:
-      app:
-        condition: service_started
       db:
         condition: service_healthy
 

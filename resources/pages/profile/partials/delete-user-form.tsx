@@ -1,5 +1,4 @@
 import { useForm } from "@inertiajs/react"
-import { route } from "litestar-vite-plugin/inertia-helpers"
 import { useRef, useState } from "react"
 import { InputError } from "@/components/input-error"
 import {
@@ -16,6 +15,7 @@ import {
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { route } from "@/lib/generated/routes"
 
 export default function DeleteUserForm() {
 	const [_confirmingUserDeletion, setConfirmingUserDeletion] = useState(false)

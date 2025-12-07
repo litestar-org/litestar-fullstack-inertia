@@ -26,8 +26,8 @@ async def test_superuser_role_access(
     assert response.status_code == 200
     data = response.json()
     assert "props" in data
-    assert "content" in data["props"]
-    assert int(data["props"]["content"]["total"]) == 1
+    # Props contains 'items' from OffsetPagination - count the items
+    assert len(data["props"]["items"]) == 1
 
     # Assign the superuser role
     response = await client.post(
@@ -54,7 +54,8 @@ async def test_superuser_role_access(
     response = await client.get("/teams", headers=user_inertia_headers)
     assert response.status_code == 200
     data = response.json()
-    assert int(data["props"]["content"]["total"]) == 3
+    # OffsetPagination returns items list - count them
+    assert len(data["props"]["items"]) == 3
 
     # Superuser should see all teams
     superuser_response = await client.get("/teams", headers={
@@ -63,7 +64,7 @@ async def test_superuser_role_access(
     })
     assert superuser_response.status_code == 200
     superuser_data = superuser_response.json()
-    assert int(superuser_data["props"]["content"]["total"]) == 3
+    assert len(superuser_data["props"]["items"]) == 3
 
     # Revoke the superuser role
     response = await client.post(
@@ -78,4 +79,4 @@ async def test_superuser_role_access(
     response = await client.get("/teams", headers=user_inertia_headers)
     assert response.status_code == 200
     data = response.json()
-    assert int(data["props"]["content"]["total"]) == 1
+    assert len(data["props"]["items"]) == 1

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from advanced_alchemy.exceptions import RepositoryError
 from advanced_alchemy.service import (
@@ -35,10 +35,6 @@ class TeamService(SQLAlchemyAsyncRepositoryService[Team]):
 
     repository_type = TeamRepository
     match_fields = ["name"]
-
-    def __init__(self, **repo_kwargs: Any) -> None:
-        self.repository: TeamRepository = self.repository_type(**repo_kwargs)  # pyright: ignore[reportAttributeAccessIssue]
-        self.model_type = self.repository.model_type
 
     async def to_model_on_create(self, data: ModelDictT[Team]) -> ModelDictT[Team]:
         """Transform data before creating a team."""
@@ -76,8 +72,9 @@ class TeamService(SQLAlchemyAsyncRepositoryService[Team]):
         owner: User | None = data.pop("owner", None)
         input_tags: list[str] = data.pop("tags", [])
 
-        # Set ID if not provided
-        data["id"] = data.get("id", uuid4())
+        # Set ID if not provided (only on create)
+        if operation == "create" and "id" not in data:
+            data["id"] = uuid4()
 
         # Validate owner on create
         if operation == "create" and owner_id is None and owner is None:

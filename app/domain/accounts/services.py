@@ -30,10 +30,6 @@ class UserService(SQLAlchemyAsyncRepositoryService[User]):
     repository_type = UserRepository
     default_role = "Application Access"
 
-    def __init__(self, **repo_kwargs: Any) -> None:
-        self.repository: UserRepository = self.repository_type(**repo_kwargs)  # pyright: ignore[reportAttributeAccessIssue]
-        self.model_type = self.repository.model_type
-
     async def to_model_on_create(self, data: ModelDictT[User]) -> ModelDictT[User]:
         """Transform data before creating a user."""
         data = schema_dump(data)
@@ -134,10 +130,6 @@ class RoleService(SQLAlchemyAsyncRepositoryService[Role]):
 
     repository_type = RoleRepository
     match_fields = ["name"]
-
-    def __init__(self, **repo_kwargs: Any) -> None:
-        self.repository: RoleRepository = self.repository_type(**repo_kwargs)  # pyright: ignore[reportAttributeAccessIssue]
-        self.model_type = self.repository.model_type
 
     async def to_model_on_create(self, data: ModelDictT[Role]) -> ModelDictT[Role]:
         """Auto-generate slug on create if not provided."""

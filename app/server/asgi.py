@@ -7,8 +7,11 @@ if TYPE_CHECKING:
 
 
 def create_app() -> Litestar:
-    """Create ASGI application."""
+    """Create ASGI application.
 
+    Returns:
+        The ASGI application.
+    """
     from litestar import Litestar
 
     from app.server import plugins

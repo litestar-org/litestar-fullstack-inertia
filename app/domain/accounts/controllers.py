@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated, Any
+from uuid import UUID
 
+from advanced_alchemy.extensions.litestar.providers import create_filter_dependencies
 from advanced_alchemy.utils.text import slugify
 from litestar import Controller, Request, Response, delete, get, patch, post
 from litestar.di import Provide
@@ -31,10 +33,8 @@ from app.lib.oauth import AccessTokenState
 from app.lib.schema import Message
 
 if TYPE_CHECKING:
-    from uuid import UUID
-
     from advanced_alchemy.filters import FilterTypes
-    from advanced_alchemy.service import OffsetPagination
+    from advanced_alchemy.service.pagination import OffsetPagination
 
     from app.db.models import User as UserModel
 
@@ -364,7 +364,20 @@ class UserController(Controller):
 
     tags = ["User Accounts"]
     guards = [requires_superuser]
-    dependencies = {"users_service": Provide(provide_users_service)}
+    dependencies = {
+        "users_service": Provide(provide_users_service),
+    } | create_filter_dependencies(
+        {
+            "id_filter": UUID,
+            "search": "name,email",
+            "pagination_type": "limit_offset",
+            "pagination_size": 20,
+            "created_at": True,
+            "updated_at": True,
+            "sort_field": "name",
+            "sort_order": "asc",
+        },
+    )
     signature_namespace = {
         "UserService": UserService,
         "User": schemas.User,

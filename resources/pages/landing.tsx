@@ -5,6 +5,7 @@ import { Icons } from "@/components/icons"
 import { Logo } from "@/components/logo"
 import { buttonVariants } from "@/components/ui/button"
 import { GuestLayout } from "@/layouts/guest-layout"
+import { route } from "@/lib/generated/routes"
 import { cn } from "@/lib/utils"
 export default function Home() {
 	return (

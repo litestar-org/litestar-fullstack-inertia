@@ -11,16 +11,17 @@ from sqlalchemy.engine import URL
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
+from app import config
 from app.domain.accounts.services import RoleService, UserService
 from app.domain.teams.services import TeamService
 from app.lib.settings import get_settings
-from app.server.plugins import alchemy
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, AsyncIterator, Awaitable, Callable
 
     from litestar import Litestar
     from litestar.types import Receive, Scope, Send
+    from pytest_databases.docker.postgres import PostgresService
 
     from app.db.models import Team, User
 
@@ -28,14 +29,9 @@ here = Path(__file__).parent
 pytestmark = pytest.mark.anyio
 
 
-@pytest.fixture(name="engine", autouse=True)
+@pytest.fixture(name="engine")
 async def fx_engine(
-    postgres_docker_ip: str,
-    postgres_service: None,
-    postgres_port: int,
-    postgres_user: str,
-    postgres_password: str,
-    postgres_database: str,
+    postgres_service: "PostgresService",
 ) -> AsyncEngine:
     """Postgresql instance for end-to-end testing.
 
@@ -45,11 +41,11 @@ async def fx_engine(
     return create_async_engine(
         URL(
             drivername="postgresql+asyncpg",
-            username=postgres_user,
-            password=postgres_password,
-            host=postgres_docker_ip,
-            port=postgres_port,
-            database=postgres_database,
+            username=postgres_service.user,
+            password=postgres_service.password,
+            host=postgres_service.host,
+            port=postgres_service.port,
+            database=postgres_service.database,
             query={},  # type:ignore[arg-type]
         ),
         echo=False,
@@ -107,27 +103,17 @@ async def _seed_db(
 
 
 @pytest.fixture(autouse=True)
-def _patch_db(
+async def _patch_db(
     app: "Litestar",
     engine: AsyncEngine,
     sessionmaker: async_sessionmaker[AsyncSession],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(alchemy._config, "session_maker", sessionmaker)
-    if isinstance(alchemy._config, list):
-        monkeypatch.setitem(app.state, alchemy._config[0].engine_app_state_key, engine)
-        monkeypatch.setitem(
-            app.state,
-            alchemy._config[0].session_maker_app_state_key,
-            async_sessionmaker(bind=engine, expire_on_commit=False),
-        )
-    else:
-        monkeypatch.setitem(app.state, alchemy._config.engine_app_state_key, engine)
-        monkeypatch.setitem(
-            app.state,
-            alchemy._config.session_maker_app_state_key,
-            async_sessionmaker(bind=engine, expire_on_commit=False),
-        )
+    monkeypatch.setattr(config.alchemy, "session_maker", sessionmaker)
+    monkeypatch.setattr(config.alchemy, "engine_instance", engine)
+    # Also patch app state for tests that check app.state directly
+    app.state[config.alchemy.engine_app_state_key] = engine
+    app.state[config.alchemy.session_maker_app_state_key] = sessionmaker
 
 
 def _fresh_state_lifespan_middleware(

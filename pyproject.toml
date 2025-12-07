@@ -13,16 +13,17 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "litestar[jinja,structlog,pydantic,opentelemetry]>=2.8.3",
+  "litestar[jinja,structlog,pydantic]>=2.8.3",
   "advanced-alchemy[uuid,passlib]",
   "asyncpg>=0.28.0",
   "python-dotenv>=1.0.0",
-  "litestar-vite>=0.15.0a7",
+  "litestar-vite @ file:///home/cody/code/litestar/litestar-vite",
   "litestar-granian[uvloop]",
   "aiosqlite>=0.19.0",
   "httptools",
   "pwdlib[argon2]>=0.2.0",
   "httpx-oauth>=0.15.0",
+  "sniffio",
 ]
 description = "Opinionated template for a Litestar application."
 keywords = ["litestar", "sqlalchemy", "alembic", "fullstack", "api", "asgi", "vite", "inertia"]
@@ -52,8 +53,6 @@ dev = [
   { include-group = "lint" },
   { include-group = "test" },
   { include-group = "docs" },
-  { include-group = "otel" },
-  { include-group = "logfire" },
 ]
 docs = [
   "sphinx>=7.2.6",
@@ -76,13 +75,6 @@ lint = [
   "types-pyyaml",
   "types-requests",
   "types-docutils",
-]
-logfire = ["logfire>=2.1.2"]
-otel = [
-  "opentelemetry-api>=1.25.0",
-  "opentelemetry-sdk>=1.25.0",
-  "opentelemetry-instrumentation-sqlalchemy>=0.46b0",
-  "opentelemetry-distro>=0.46b0",
 ]
 test = [
   "pytest",
@@ -261,6 +253,8 @@ lint.ignore = [
   "PT",
   "TD",
   "PERF203", # ignore for now; investigate
+  "RUF029",  # function declared async but could be sync
+  "CPY001",  # add copywrite to top of file
 ]
 lint.select = ["ALL"]
 # Allow unused variables when underscore-prefixed.
@@ -286,14 +280,14 @@ classmethod-decorators = [
 known-first-party = ['tests', 'app', 'config']
 
 [tool.ruff.lint.per-file-ignores]
-"**/*/migrations/*.py" = ['D104', 'D103', 'D205', 'D212']
 "__init__.py" = ['F401', 'D104']
+"app/db/migrations/*.py" = ['D104', 'D103', 'D205', 'D212']
 "app/db/migrations/versions/*.py" = ["ANN201", "INP001"]
+"app/db/models/*.py" = ["PLW0108"]
 "docs/**/*.*" = ["S", "B", "DTZ", "A", "TC", "ERA", "D", "RET", "E731", "RUF012", "FA100", "ARG001"]
-"docs/conf.py" = ["FIX002", "ARG001", "INP001"]
-"tests/*.py" = ['D103', 'S101', 'D104']
-"tools/*.py" = ["INP001", "ERA001"]
-"tools/**/*.*" = ["D", "ARG", "EM", "TRY", "G", "FBT", "INP001"]
+"tests/*.py" = ['D103', 'S101', 'D104', "PLR2004", "RUF029", "ARG001", "SLF001", "DOC", "ANN", "S"]
+"tools/*.py" = ["INP001", "ERA001", "N999"]
+"tools/**/*.*" = ["D", "ARG", "EM", "TRY", "G", "FBT", "INP001", "S603", "S404", "PLR0915"]
 
 [tool.slotscheck]
 strict-imports = false

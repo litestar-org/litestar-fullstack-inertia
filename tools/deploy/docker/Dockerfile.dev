@@ -24,7 +24,7 @@ ARG BUILDER_IMAGE=python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION}
 # =============================================================================
 FROM ${BUILDER_IMAGE} AS python-base
 
-ARG LITESTAR_APP="app.asgi:create_app"
+ARG LITESTAR_APP="app.server.asgi:create_app"
 ARG UV_INSTALL_ARGS="--all-extras --dev"
 
 ENV UV_LINK_MODE=copy \
@@ -81,7 +81,7 @@ ENV GRPC_PYTHON_BUILD_WITH_CYTHON=1 \
 WORKDIR /workspace/app
 
 # Copy dependency files first (better layer caching)
-COPY pyproject.toml uv.lock package.json bun.lock ./
+COPY pyproject.toml uv.lock package.json bun.lock README.md ./
 COPY components.json biome.json vite.config.ts tsconfig.json ./
 
 # Install JavaScript dependencies

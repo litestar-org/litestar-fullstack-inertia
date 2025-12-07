@@ -12,8 +12,10 @@ def run_cli() -> None:
 
     current_path = Path(__file__).parent.parent.resolve()
     sys.path.append(str(current_path))
-    os.environ.setdefault("LITESTAR_APP", "app.asgi:create_app")
-    os.environ.setdefault("LITESTAR_APP_NAME", "Litestar Fullstack Inertia")
+    os.environ.setdefault("LITESTAR_APP", "app.server.asgi:create_app")
+    os.environ.setdefault("LITESTAR_APP_NAME", "Litestar Inertia Reference App")
+    os.environ.setdefault("LITESTAR_GRANIAN_IN_SUBPROCESS", "false")
+    os.environ.setdefault("LITESTAR_GRANIAN_USE_LITESTAR_LOGGER", "true")
     try:
         from litestar.__main__ import run_cli as run_litestar_cli
 

@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 pytestmark = pytest.mark.anyio
 
 
-def test_engine_on_app(app: "Litestar", engine: "AsyncEngine") -> None:
+async def test_engine_on_app(app: "Litestar", engine: "AsyncEngine") -> None:
     """Test that the app's engine is patched.
 
     Args:

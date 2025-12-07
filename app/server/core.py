@@ -60,21 +60,11 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         from app.domain.teams.controllers import TeamController, TeamMemberController
         from app.domain.web.controllers import WebController
         from app.lib import log
-        from app.lib.dependencies import create_collection_dependencies
         from app.lib.settings import get_settings
         from app.server import plugins
 
         settings = get_settings()
         self.app_slug = settings.app.slug
-        # monitoring
-        if settings.app.OPENTELEMETRY_ENABLED:
-            import logfire
-
-            from app.lib.otel import configure_instrumentation
-
-            logfire.configure()
-            otel_config = configure_instrumentation()
-            app_config.middleware.insert(0, otel_config.middleware)
         app_config.debug = settings.app.DEBUG
         # openapi
         app_config.openapi_config = OpenAPIConfig(
@@ -121,11 +111,12 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             ],
         )
         # signatures
-        app_config.signature_namespace.update({"UserModel": UserModel, "UUID": UUID})
+        app_config.signature_namespace.update({
+            "UserModel": UserModel,
+            "UUID": UUID,
+        })
         # dependencies
-        dependencies = {"current_user": Provide(provide_user)}
-        dependencies.update(create_collection_dependencies())
-        app_config.dependencies.update(dependencies)
+        app_config.dependencies.update({"current_user": Provide(provide_user)})
         # listeners
         app_config.listeners.extend(
             [account_signals.user_created_event_handler, team_signals.team_created_event_handler],

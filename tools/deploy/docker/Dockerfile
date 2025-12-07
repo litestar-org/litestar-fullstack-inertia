@@ -74,7 +74,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 WORKDIR /workspace/app
 
 # Copy dependency files first (better layer caching)
-COPY pyproject.toml uv.lock package.json bun.lock ./
+COPY pyproject.toml uv.lock package.json bun.lock README.md ./
 COPY components.json biome.json vite.config.ts tsconfig.json ./
 
 # Install JavaScript dependencies
@@ -83,7 +83,7 @@ RUN bun install --frozen-lockfile
 # Create virtual environment and install Python dependencies
 RUN uv venv \
     && uv sync ${UV_INSTALL_ARGS} --frozen --no-install-project --no-editable \
-    && uv export ${UV_INSTALL_ARGS} --frozen --no-hashes --output-file=requirements.txt
+    && uv export ${UV_INSTALL_ARGS} --frozen --no-hashes --no-emit-project --output-file=requirements.txt
 
 # Copy application source
 COPY tools ./tools/
@@ -100,7 +100,7 @@ RUN uv run python tools/build.py --executor bun \
 # =============================================================================
 FROM python-base AS runtime
 
-ARG LITESTAR_APP="app.asgi:create_app"
+ARG LITESTAR_APP="app.server.asgi:create_app"
 
 ENV PATH="/workspace/app/.venv/bin:/usr/local/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
