@@ -206,6 +206,9 @@ class BeforeSendHandler:
         Args:
             request: A [Request][litestar.connection.request.Request] instance.
 
+        Raises:
+            RuntimeError: If an error occurs while reading non-body request fields.
+
         Returns:
             An OrderedDict.
         """

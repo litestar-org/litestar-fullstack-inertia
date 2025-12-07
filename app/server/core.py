@@ -1,25 +1,49 @@
 # pylint: disable=[invalid-name,import-outside-toplevel]
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 from uuid import UUID
 
-from litestar.config.response_cache import ResponseCacheConfig, default_cache_key_builder
 from litestar.di import Provide
+from litestar.exceptions import HTTPException
+from litestar.exceptions.responses import create_debug_response, create_exception_response
 from litestar.openapi.config import OpenAPIConfig
 from litestar.openapi.plugins import ScalarRenderPlugin, SwaggerRenderPlugin
 from litestar.plugins import CLIPluginProtocol, InitPluginProtocol
-from litestar.stores.redis import RedisStore
-from litestar.stores.registry import StoreRegistry
 
 if TYPE_CHECKING:
     from click import Group
-    from litestar import Request
     from litestar.config.app import AppConfig
-    from redis.asyncio import Redis
+    from litestar.connection import Request
+    from litestar.response import Response
 
 
 T = TypeVar("T")
+
+
+def _http_exception_handler(request: "Request[Any, Any, Any]", exc: HTTPException) -> "Response[Any]":
+    """Handle HTTPException properly.
+
+    Workaround for litestar-vite issue #122 where the Inertia exception handler
+    converts HTTPException to 500 for non-Inertia requests.
+
+    For API routes (/api/*), return proper HTTP status codes.
+    For Inertia page routes, delegate to Inertia exception handler for redirects.
+    """
+    # API routes should return proper HTTP status codes
+    is_api_route = request.url.path.startswith("/api/")
+
+    if is_api_route:
+        # Return proper HTTP response for API routes
+        if request.app.debug:
+            return cast("Response[Any]", create_debug_response(request, exc))
+        return cast("Response[Any]", create_exception_response(request, exc))
+
+    # For non-API routes (Inertia pages), use Inertia exception handling
+    # This handles redirects for 401/403 errors on page routes
+    from litestar_vite.inertia.exception_handler import create_inertia_exception_response
+
+    return create_inertia_exception_response(request, exc)
 
 
 class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
@@ -29,23 +53,17 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
 
     """
 
-    __slots__ = ("app_slug", "redis")
-    redis: Redis
+    __slots__ = ("app_slug",)
     app_slug: str
 
     def __init__(self) -> None:
-        """Initialize ``ApplicationConfigurator``.
-
-        Args:
-            config: configure and start SAQ.
-        """
+        """Initialize ``ApplicationConfigurator``."""
 
     def on_cli_init(self, cli: Group) -> None:
         from app.cli import user_management_app
         from app.lib.settings import get_settings
 
         settings = get_settings()
-        self.redis = settings.redis.get_client()
         self.app_slug = settings.app.slug
         cli.add_command(user_management_app)
 
@@ -79,7 +97,6 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         from app.server import plugins
 
         settings = get_settings()
-        self.redis = settings.redis.get_client()
         self.app_slug = settings.app.slug
         # monitoring
         if settings.app.OPENTELEMETRY_ENABLED:
@@ -109,6 +126,10 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         app_config.csrf_config = config.csrf
         # templates
         app_config.template_config = config.templates
+        # exception handlers - workaround for litestar-vite #122
+        if app_config.exception_handlers is None:
+            app_config.exception_handlers = {}
+        app_config.exception_handlers[HTTPException] = _http_exception_handler
         # plugins
         app_config.plugins.extend(
             [
@@ -117,8 +138,6 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
                 plugins.granian,
                 plugins.alchemy,
                 plugins.vite,
-                plugins.saq,
-                plugins.inertia,
             ],
         )
 
@@ -139,13 +158,6 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         )
         # signatures
         app_config.signature_namespace.update({"UserModel": UserModel, "UUID": UUID})
-        # caching & redis
-        app_config.response_cache_config = ResponseCacheConfig(
-            default_expiration=120,
-            key_builder=self._cache_key_builder,
-        )
-        app_config.stores = StoreRegistry(default_factory=self.redis_store_factory)
-        app_config.on_shutdown.append(self.redis.aclose)  # type: ignore[attr-defined]
         # dependencies
         dependencies = {"current_user": Provide(provide_user)}
         dependencies.update(create_collection_dependencies())
@@ -155,18 +167,3 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             [account_signals.user_created_event_handler, team_signals.team_created_event_handler],
         )
         return app_config
-
-    def redis_store_factory(self, name: str) -> RedisStore:
-        return RedisStore(self.redis, namespace=f"{self.app_slug}:{name}")
-
-    def _cache_key_builder(self, request: Request) -> str:
-        """App name prefixed cache key builder.
-
-        Args:
-            request (Request): Current request instance.
-
-        Returns:
-            str: App slug prefixed cache key.
-        """
-
-        return f"{self.app_slug}:{default_cache_key_builder(request)}"

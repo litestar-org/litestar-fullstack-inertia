@@ -2,7 +2,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function Footer() {
 	return (
-		<footer aria-labelledby="footer-heading" className="sticky top-full">
+		<footer className="sticky top-full">
 			<h2 id="footer-heading" className="sr-only">
 				Footer
 			</h2>

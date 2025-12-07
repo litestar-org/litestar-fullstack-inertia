@@ -1,8 +1,8 @@
-import { ThemeProvider } from "@/components/theme-provider"
 import { createInertiaApp } from "@inertiajs/react"
 import axios from "axios"
 import { resolvePageComponent } from "litestar-vite-plugin/inertia-helpers"
 import { createRoot, hydrateRoot } from "react-dom/client"
+import { ThemeProvider } from "@/components/theme-provider"
 import "./main.css"
 const appName = import.meta.env.VITE_APP_NAME || "Fullstack"
 axios.defaults.withCredentials = true

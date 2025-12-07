@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from litestar.connection import ASGIConnection
 from litestar.exceptions import PermissionDeniedException
 from litestar.handlers.base import BaseRouteHandler
@@ -61,7 +59,7 @@ def requires_team_ownership(connection: ASGIConnection, _: BaseRouteHandler) -> 
     Raises:
         PermissionDeniedException: _description_
     """
-    team_id = UUID(connection.path_params["team_id"])
+    team_id = connection.path_params["team_id"]
     has_system_role = any(
         assigned_role.role.name for assigned_role in connection.user.roles if assigned_role.role.name in {"Superuser"}
     )

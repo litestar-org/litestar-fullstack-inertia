@@ -1,11 +1,10 @@
+import { Link, router, usePage } from "@inertiajs/react"
+import { route } from "litestar-vite-plugin/inertia-helpers"
+import { ChevronDownIcon, CircleUserIcon, LogOutIcon, UserRoundCogIcon } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { getFirstWord, getGravatarUrl, strLimit } from "@/lib/utils"
-import { Link, router, usePage } from "@inertiajs/react"
-import { route } from "litestar-vite-plugin/inertia-helpers"
-
-import { ChevronDownIcon, CircleUserIcon, LogOutIcon, UserRoundCogIcon } from "lucide-react"
 
 const ResponsiveNavbar = () => {
 	const { auth } = usePage<InertiaProps>().props

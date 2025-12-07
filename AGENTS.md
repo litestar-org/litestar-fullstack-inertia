@@ -17,7 +17,7 @@ make start-infra       # Start local Docker containers (PostgreSQL, Redis)
 make stop-infra        # Stop local Docker containers
 ```
 
-### Frontend Development  
+### Frontend Development
 ```bash
 npm run dev           # Start Vite development server for React frontend
 npm run build         # Build frontend assets for production
@@ -104,7 +104,7 @@ This is a modern Litestar fullstack application built with **Inertia.js**, **Rea
 
 1. **Environment Setup**: `make install` followed by `. .venv/bin/activate`
 2. **Infrastructure**: `make start-infra` to start databases
-3. **Database**: `uv run app database upgrade` to apply migrations  
+3. **Database**: `uv run app database upgrade` to apply migrations
 4. **Development**: `uv run app run` starts Litestar+Granian server with integrated Vite dev server
 5. **Testing**: `make test` and `make lint` before committing changes
 

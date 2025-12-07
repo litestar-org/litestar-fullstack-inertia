@@ -1,0 +1,43 @@
+x-development-volumes: &development-volumes
+  volumes:
+    - ../../../docs:/workspace/app/docs/
+    - ../../../tests:/workspace/app/tests/
+    - ../../../tools:/workspace/app/tools/
+    - ../../../app:/workspace/app/app/
+    - ../../../Makefile:/workspace/app/Makefile
+    - ../../../pyproject.toml:/workspace/app/pyproject.toml
+    - ../../../uv.lock:/workspace/app/uv.lock
+    - ../../../tsconfig.json:/workspace/app/tsconfig.json
+    - ../../../package.json:/workspace/app/package.json
+    - ../../../bun.lock:/workspace/app/bun.lock
+    - ../../../vite.config.ts:/workspace/app/vite.config.ts
+    - ../../../resources:/workspace/app/resources
+    - ../../../components.json:/workspace/app/components.json
+    - ./.env.docker.example:/workspace/app/.env
+
+services:
+  app:
+    build:
+      context: ../../..
+      dockerfile: tools/deploy/docker/Dockerfile.dev
+    ports:
+      - "8000:8000"
+      - "3006:3006"
+    image: litestar-fullstack-inertia:dev
+    tty: true
+    environment:
+      VITE_USE_SERVER_LIFESPAN: "true"
+    command: litestar run --reload --host 0.0.0.0 --port 8000
+    restart: always
+    <<: *development-volumes
+
+  migrator:
+    image: litestar-fullstack-inertia:dev
+    command: litestar database upgrade --no-prompt
+    restart: "no"
+    <<: *development-volumes
+    env_file:
+      - .env.docker.example
+    depends_on:
+      db:
+        condition: service_healthy

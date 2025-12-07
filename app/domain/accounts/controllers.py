@@ -342,7 +342,11 @@ class UserRoleController(Controller):
             description="The role to revoke.",
         ),
     ) -> Message:
-        """Delete a role from the system."""
+        """Delete a role from the system.
+
+        Raises:
+            ConflictError: If the user did not have the role assigned.
+        """
         user_obj = await users_service.get_one(email=data.user_name)
         removed_role: bool = False
         for user_role in user_obj.roles:

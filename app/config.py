@@ -1,6 +1,7 @@
 import logging
 import sys
 from functools import lru_cache
+from pathlib import Path
 from typing import cast
 
 import logfire
@@ -27,11 +28,9 @@ from litestar.plugins.sqlalchemy import (
 )
 from litestar.plugins.structlog import StructlogConfig
 from litestar.template import TemplateConfig
-from litestar_saq import SAQConfig
-from litestar_vite import ViteConfig
-from litestar_vite.inertia import InertiaConfig
+from litestar_vite import InertiaConfig, PathConfig, RuntimeConfig, TypeGenConfig, ViteConfig
 
-from app.lib.settings import get_settings
+from app.lib.settings import BASE_DIR, get_settings
 
 settings = get_settings()
 
@@ -58,33 +57,31 @@ alchemy = SQLAlchemyAsyncConfig(
 )
 templates = TemplateConfig(engine=JinjaTemplateEngine(directory=settings.vite.TEMPLATE_DIR))
 vite = ViteConfig(
-    bundle_dir=settings.vite.BUNDLE_DIR,
-    resource_dir=settings.vite.RESOURCE_DIR,
-    use_server_lifespan=settings.vite.USE_SERVER_LIFESPAN,
     dev_mode=settings.vite.DEV_MODE,
-    hot_reload=settings.vite.HOT_RELOAD,
-    is_react=settings.vite.ENABLE_REACT_HELPERS,
-    port=settings.vite.PORT,
-    host=settings.vite.HOST,
-)
-inertia = InertiaConfig(
-    root_template="site/index.html.j2",
-    redirect_unauthorized_to="/login",
-    extra_static_page_props={
-        "canResetPassword": True,
-        "hasTermsAndPrivacyPolicyFeature": True,
-        "mustVerifyEmail": True,
-    },
-    extra_session_page_props={"currentTeam"},
+    paths=PathConfig(
+        root=BASE_DIR.parent,
+        bundle_dir=Path("app/domain/web/public"),
+        resource_dir=Path("resources"),
+    ),
+    runtime=RuntimeConfig(
+        host=settings.vite.HOST,
+        port=settings.vite.PORT,
+    ),
+    inertia=InertiaConfig(
+        root_template="index.html",
+        redirect_unauthorized_to="/login",
+        extra_static_page_props={
+            "canResetPassword": True,
+            "hasTermsAndPrivacyPolicyFeature": True,
+            "mustVerifyEmail": True,
+        },
+        extra_session_page_props={"currentTeam"},
+    ),
+    types=TypeGenConfig(
+        output=BASE_DIR.parent / "resources" / "lib" / "generated",
+    ),
 )
 session = ServerSideSessionConfig(max_age=3600)
-saq = SAQConfig(
-    redis=settings.redis.client,
-    web_enabled=settings.saq.WEB_ENABLED,
-    worker_processes=settings.saq.PROCESSES,
-    use_server_lifespan=settings.saq.USE_SERVER_LIFESPAN,
-    queue_configs=[],
-)
 
 
 @lru_cache
@@ -115,11 +112,6 @@ log = StructlogConfig(
                 },
             },
             loggers={
-                "saq": {
-                    "propagate": False,
-                    "level": settings.log.SAQ_LEVEL,
-                    "handlers": ["queue_listener"],
-                },
                 "sqlalchemy.engine": {
                     "propagate": False,
                     "level": settings.log.SQLALCHEMY_LEVEL,

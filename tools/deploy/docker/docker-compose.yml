@@ -1,0 +1,57 @@
+name: litestar-fullstack-inertia
+
+services:
+  db:
+    image: postgres:17
+    ports:
+      - "15432:5432"
+    hostname: db
+    environment:
+      POSTGRES_PASSWORD: "app"
+      POSTGRES_USER: "app"
+      POSTGRES_DB: "app"
+    volumes:
+      - db-data:/var/lib/postgresql
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    healthcheck:
+      test:
+        - CMD
+        - pg_isready
+        - -U
+        - app
+      interval: 2s
+      timeout: 3s
+      retries: 40
+
+  app:
+    build:
+      context: ../../..
+      dockerfile: tools/deploy/docker/Dockerfile.distroless
+    image: litestar-fullstack-inertia:distroless
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      VITE_USE_SERVER_LIFESPAN: "false"
+    env_file:
+      - .env.docker.example
+
+  migrator:
+    image: litestar-fullstack-inertia:distroless
+    restart: "no"
+    command: ["litestar", "database", "upgrade", "--no-prompt"]
+    env_file:
+      - .env.docker.example
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data: {}

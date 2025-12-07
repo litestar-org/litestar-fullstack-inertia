@@ -1,0 +1,31 @@
+name: litestar-fullstack-inertia
+
+services:
+  db:
+    image: postgres:17
+    ports:
+      - "15432:5432"
+    hostname: db
+    environment:
+      POSTGRES_PASSWORD: "app"
+      POSTGRES_USER: "app"
+      POSTGRES_DB: "app"
+    volumes:
+      - db-data:/var/lib/postgresql
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    healthcheck:
+      test:
+        - CMD
+        - pg_isready
+        - -U
+        - app
+      interval: 2s
+      timeout: 3s
+      retries: 40
+
+volumes:
+  db-data: {}

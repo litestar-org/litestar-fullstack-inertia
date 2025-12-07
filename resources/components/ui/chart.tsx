@@ -1,8 +1,7 @@
 import * as React from "react"
-import * as RechartsPrimitive from "recharts"
-
-import { cn } from "@/lib/utils"
 import { useEffect } from "react"
+import * as RechartsPrimitive from "recharts"
+import { cn } from "@/lib/utils"
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
@@ -62,32 +61,32 @@ ChartContainer.displayName = "Chart"
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 	const colorConfig = Object.entries(config).filter(([_, config]) => config.theme || config.color)
 
-	if (!colorConfig.length) {
-		return null
-	}
-
-	const styleElement = document.createElement("style")
-	Object.entries(THEMES).forEach(([theme, prefix]) => {
-		const styles = `
-			${prefix} [data-chart=${id}] {
-				${colorConfig
-					.map(([key, itemConfig]) => {
-						const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color
-						return color ? `--color-${key}: ${color};` : null
-					})
-					.filter(Boolean)
-					.join("\n")}
-			}
-		`
-		styleElement.appendChild(document.createTextNode(styles))
-	})
-
 	useEffect(() => {
+		if (!colorConfig.length) {
+			return
+		}
+
+		const styleElement = document.createElement("style")
+		Object.entries(THEMES).forEach(([theme, prefix]) => {
+			const styles = `
+				${prefix} [data-chart=${id}] {
+					${colorConfig
+						.map(([key, itemConfig]) => {
+							const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color
+							return color ? `--color-${key}: ${color};` : null
+						})
+						.filter(Boolean)
+						.join("\n")}
+				}
+			`
+			styleElement.appendChild(document.createTextNode(styles))
+		})
+
 		document.head.appendChild(styleElement)
 		return () => {
 			document.head.removeChild(styleElement)
 		}
-	}, [styleElement])
+	}, [id, colorConfig])
 
 	return null
 }

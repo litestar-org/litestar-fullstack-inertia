@@ -158,7 +158,7 @@ class TeamController(Controller):
         ],
     ) -> InertiaRedirect:
         """Delete a team."""
-        request.session.pop("currentTeam")
+        request.session.pop("currentTeam", None)
         db_obj = await teams_service.delete(team_id)
         flash(request, f'Removed team "{db_obj.name}".', category="info")
         return InertiaRedirect(request, request.url_for("teams.list"))
@@ -194,7 +194,11 @@ class TeamMemberController(Controller):
             description="The team to update.",
         ),
     ) -> Team:
-        """Add a member to a team."""
+        """Add a member to a team.
+
+        Raises:
+            IntegrityError: If the user is already a member of the team.
+        """
         team_obj = await teams_service.get(team_id)
         user_obj = await users_service.get_one(email=data.user_name)
         is_member = any(membership.team.id == team_id for membership in user_obj.teams)
@@ -223,7 +227,11 @@ class TeamMemberController(Controller):
             description="The team to delete.",
         ),
     ) -> Team:
-        """Delete a new migration team."""
+        """Remove a member from a team.
+
+        Raises:
+            IntegrityError: If the user is not a member of this team.
+        """
         user_obj = await users_service.get_one(email=data.user_name)
         removed_member = False
         for membership in user_obj.teams:

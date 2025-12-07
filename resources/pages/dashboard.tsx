@@ -1,8 +1,8 @@
+import { Head, usePage } from "@inertiajs/react"
 import { Container } from "@/components/container"
 import { Header } from "@/components/header"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AppLayout } from "@/layouts/app-layout"
-import { Head, usePage } from "@inertiajs/react"
 
 export default function Dashboard() {
 	const { auth } = usePage<InertiaProps>().props

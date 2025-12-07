@@ -1,11 +1,11 @@
+import { Head, useForm } from "@inertiajs/react"
+import { route } from "litestar-vite-plugin/inertia-helpers"
+import { useEffect } from "react"
 import { InputError } from "@/components/input-error"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { GuestLayout } from "@/layouts/guest-layout"
-import { Head, useForm } from "@inertiajs/react"
-import { route } from "litestar-vite-plugin/inertia-helpers"
-import { useEffect } from "react"
 
 export default function ConfirmPassword() {
 	const { data, setData, post, processing, errors, reset } = useForm({

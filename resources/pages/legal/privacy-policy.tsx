@@ -1,6 +1,6 @@
-import { Logo } from "@/components/logo"
 import { Head, Link } from "@inertiajs/react"
 import { route } from "litestar-vite-plugin/inertia-helpers"
+import { Logo } from "@/components/logo"
 
 export default function PrivacyPolicy({ policy }: { policy: string }) {
 	return (

@@ -8,6 +8,12 @@ SHELL := /bin/bash
 .EXPORT_ALL_VARIABLES:
 MAKEFLAGS += --no-print-directory
 
+# Docker compose configuration
+COMPOSE_DIR := tools/deploy/docker
+COMPOSE_INFRA := $(COMPOSE_DIR)/docker-compose.infra.yml
+COMPOSE_APP := $(COMPOSE_DIR)/docker-compose.yml
+COMPOSE_DEV := $(COMPOSE_DIR)/docker-compose.dev.yml
+
 # Define colors and formatting
 BLUE := $(shell printf "\033[1;34m")
 GREEN := $(shell printf "\033[1;32m")
@@ -31,8 +37,13 @@ help:                                               ## Display this help text fo
 install-uv:                                         ## Install latest version of uv
 	@echo "${INFO} Installing uv..."
 	@curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1
-	@uv tool install nodeenv >/dev/null 2>&1
 	@echo "${OK} UV installed successfully"
+
+.PHONY: install-bun
+install-bun:                                        ## Install latest version of bun
+	@echo "${INFO} Installing bun..."
+	@curl -fsSL https://bun.sh/install | bash >/dev/null 2>&1
+	@echo "${OK} Bun installed successfully"
 
 .PHONY: install
 install: destroy clean                              ## Install the project, dependencies, and pre-commit for local development
@@ -40,26 +51,25 @@ install: destroy clean                              ## Install the project, depe
 	@uv python pin 3.12 >/dev/null 2>&1
 	@uv venv >/dev/null 2>&1
 	@uv sync --all-extras --dev
-	@if ! command -v npm >/dev/null 2>&1; then \
-		echo "${INFO} Installing Node environment... 📦"; \
-		uvx nodeenv .venv --force --quiet >/dev/null 2>&1; \
+	@if ! command -v bun >/dev/null 2>&1; then \
+		$(MAKE) install-bun; \
 	fi
-	@NODE_OPTIONS="--no-deprecation --disable-warning=ExperimentalWarning" npm install --no-fund >/dev/null 2>&1
+	@bun install --frozen-lockfile >/dev/null 2>&1
 	@echo "${OK} Installation complete! 🎉"
 
 .PHONY: upgrade
 upgrade:                                            ## Upgrade all dependencies to the latest stable versions
 	@echo "${INFO} Updating all dependencies... 🔄"
 	@uv lock --upgrade
-	@NODE_OPTIONS="--no-deprecation --disable-warning=ExperimentalWarning" uv run npm upgrade --latest
+	@bun update
 	@echo "${OK} Dependencies updated 🔄"
-	@NODE_OPTIONS="--no-deprecation --disable-warning=ExperimentalWarning" uv run pre-commit autoupdate
+	@uv run pre-commit autoupdate
 	@echo "${OK} Updated Pre-commit hooks 🔄"
 
 .PHONY: clean
 clean:                                              ## Cleanup temporary build artifacts
 	@echo "${INFO} Cleaning working directory..."
-	@rm -rf pytest_cache .ruff_cache .hypothesis build/ -rf dist/ .eggs/ .coverage coverage.xml coverage.json htmlcov/ .pytest_cache tests/.pytest_cache tests/**/.pytest_cache .mypy_cache .unasyncd_cache/ .auto_pytabs_cache node_modules >/dev/null 2>&1
+	@rm -rf pytest_cache .ruff_cache .hypothesis build/ -rf dist/ .eggs/ .coverage coverage.xml coverage.json htmlcov/ .pytest_cache tests/.pytest_cache tests/**/.pytest_cache .mypy_cache .unasyncd_cache/ .auto_pytabs_cache node_modules .bun >/dev/null 2>&1
 	@find . -name '*.egg-info' -exec rm -rf {} + >/dev/null 2>&1
 	@find . -type f -name '*.egg' -exec rm -f {} + >/dev/null 2>&1
 	@find . -name '*.pyc' -exec rm -f {} + >/dev/null 2>&1
@@ -200,29 +210,83 @@ docs-linkcheck-full:                               ## Run the full link check on
 	@echo "${OK} Full link check complete"
 
 
-# -----------------------------------------------------------------------------
-# Local Infrastructure
-# -----------------------------------------------------------------------------
-
+# =============================================================================
+# Local Infrastructure (Database only - for normal development)
+# =============================================================================
 .PHONY: start-infra
-start-infra:                                        ## Start local containers
+start-infra:                                       ## Start local infrastructure (PostgreSQL)
 	@echo "${INFO} Starting local infrastructure... 🚀"
-	@docker compose -f docker-compose.infra.yml up -d --force-recreate >/dev/null 2>&1
+	@docker compose -f $(COMPOSE_INFRA) up -d --force-recreate
 	@echo "${OK} Infrastructure is ready"
 
 .PHONY: stop-infra
-stop-infra:                                         ## Stop local containers
+stop-infra:                                        ## Stop local infrastructure
 	@echo "${INFO} Stopping infrastructure... 🛑"
-	@docker compose -f docker-compose.infra.yml down >/dev/null 2>&1
+	@docker compose -f $(COMPOSE_INFRA) down
 	@echo "${OK} Infrastructure stopped"
 
 .PHONY: wipe-infra
-wipe-infra:                                           ## Remove local container info
+wipe-infra:                                        ## Remove local infrastructure and volumes
 	@echo "${INFO} Wiping infrastructure... 🧹"
-	@docker compose -f docker-compose.infra.yml down -v --remove-orphans >/dev/null 2>&1
+	@docker compose -f $(COMPOSE_INFRA) down -v --remove-orphans
 	@echo "${OK} Infrastructure wiped clean"
 
 .PHONY: infra-logs
-infra-logs:                                           ## Tail development infrastructure logs
-	@echo "${INFO} Tailing infrastructure logs... 📋"
-	@docker compose -f docker-compose.infra.yml logs -f
+infra-logs:                                        ## Tail infrastructure logs
+	@docker compose -f $(COMPOSE_INFRA) logs -f
+
+
+# =============================================================================
+# Full Docker Stack - Production (Distroless)
+# =============================================================================
+.PHONY: start-all-docker
+start-all-docker:                                  ## Start production Docker stack (distroless + database)
+	@echo "${INFO} Building and starting production Docker stack... 🐳"
+	@docker compose -f $(COMPOSE_APP) up -d --build --force-recreate
+	@echo "${OK} Production Docker stack is running"
+
+.PHONY: stop-all-docker
+stop-all-docker:                                   ## Stop production Docker stack
+	@echo "${INFO} Stopping production Docker stack... 🛑"
+	@docker compose -f $(COMPOSE_APP) down
+	@echo "${OK} Production Docker stack stopped"
+
+.PHONY: wipe-all-docker
+wipe-all-docker:                                   ## Remove production Docker stack, images, and volumes
+	@echo "${INFO} Wiping production Docker stack... 🧹"
+	@docker compose -f $(COMPOSE_APP) down -v --remove-orphans --rmi local
+	@echo "${OK} Production Docker stack wiped clean"
+
+.PHONY: docker-logs
+docker-logs:                                       ## Tail production Docker stack logs
+	@docker compose -f $(COMPOSE_APP) logs -f
+
+
+# =============================================================================
+# Full Docker Stack - Development
+# =============================================================================
+.PHONY: start-all-docker-dev
+start-all-docker-dev:                              ## Start development Docker stack (with hot-reload)
+	@echo "${INFO} Building and starting development Docker stack... 🐳"
+	@docker compose -f $(COMPOSE_DEV) up -d --build --force-recreate
+	@echo "${OK} Development Docker stack is running"
+
+.PHONY: stop-all-docker-dev
+stop-all-docker-dev:                               ## Stop development Docker stack
+	@echo "${INFO} Stopping development Docker stack... 🛑"
+	@docker compose -f $(COMPOSE_DEV) down
+	@echo "${OK} Development Docker stack stopped"
+
+.PHONY: wipe-all-docker-dev
+wipe-all-docker-dev:                               ## Remove development Docker stack, images, and volumes
+	@echo "${INFO} Wiping development Docker stack... 🧹"
+	@docker compose -f $(COMPOSE_DEV) down -v --remove-orphans --rmi local
+	@echo "${OK} Development Docker stack wiped clean"
+
+.PHONY: docker-dev-logs
+docker-dev-logs:                                   ## Tail development Docker stack logs
+	@docker compose -f $(COMPOSE_DEV) logs -f
+
+.PHONY: docker-shell
+docker-shell:                                      ## Open a shell in the app container
+	@docker compose -f $(COMPOSE_DEV) exec app /bin/bash || docker compose -f $(COMPOSE_DEV) exec app /bin/sh

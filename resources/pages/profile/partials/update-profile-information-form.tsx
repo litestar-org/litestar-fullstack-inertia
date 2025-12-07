@@ -1,12 +1,12 @@
+import { Transition } from "@headlessui/react"
+import { Link, useForm, usePage } from "@inertiajs/react"
+import { route } from "litestar-vite-plugin/inertia-helpers"
 import { InputError } from "@/components/input-error"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
-import { Transition } from "@headlessui/react"
-import { Link, useForm, usePage } from "@inertiajs/react"
-import { route } from "litestar-vite-plugin/inertia-helpers"
 
 interface Props {
 	mustVerifyEmail: boolean

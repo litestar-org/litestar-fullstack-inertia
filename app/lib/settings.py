@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, Final
 from advanced_alchemy.utils.text import slugify
 from litestar.serialization import decode_json, encode_json
 from litestar.utils.module_loader import module_to_os_path
-from redis.asyncio import Redis
 from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlalchemy.pool import NullPool
@@ -174,41 +173,18 @@ class DatabaseSettings:
 
 @dataclass
 class ViteSettings:
-    """Server configurations."""
+    """Vite development server configuration."""
 
     DEV_MODE: bool = field(
         default_factory=lambda: os.getenv("VITE_DEV_MODE", "False") in TRUE_VALUES,
     )
     """Start `vite` development server."""
-    USE_SERVER_LIFESPAN: bool = field(
-        default_factory=lambda: os.getenv("VITE_USE_SERVER_LIFESPAN", "True") in TRUE_VALUES,
-    )
-    """Auto start and stop `vite` processes when running in development mode.."""
     HOST: str = field(default_factory=lambda: os.getenv("VITE_HOST", "0.0.0.0"))  # noqa: S104
-    """The host the `vite` process will listen on.  Defaults to `0.0.0.0`"""
+    """The host the `vite` process will listen on."""
     PORT: int = field(default_factory=lambda: int(os.getenv("VITE_PORT", "5173")))
-    """The port to start vite on.  Default to `5173`"""
-    HOT_RELOAD: bool = field(
-        default_factory=lambda: os.getenv("VITE_HOT_RELOAD", "True") in TRUE_VALUES,
-    )
-    """Start `vite` with HMR enabled."""
-    ENABLE_REACT_HELPERS: bool = field(
-        default_factory=lambda: os.getenv("VITE_ENABLE_REACT_HELPERS", "True") in TRUE_VALUES,
-    )
-    """Enable React support in HMR."""
-    BUNDLE_DIR: Path = field(default_factory=lambda: Path(f"{BASE_DIR}/domain/web/public"))
-    """Bundle directory"""
-    RESOURCE_DIR: Path = field(default_factory=lambda: Path("resources"))
-    """Resource directory"""
-    TEMPLATE_DIR: Path = field(default_factory=lambda: Path(f"{BASE_DIR}/domain/web/templates"))
+    """The port to start vite on."""
+    TEMPLATE_DIR: Path = field(default_factory=lambda: Path(f"{BASE_DIR.parent}/resources"))
     """Template directory."""
-    ASSET_URL: str = field(default_factory=lambda: os.getenv("ASSET_URL", "/static/"))
-    """Base URL for assets"""
-
-    @property
-    def set_static_files(self) -> bool:
-        """Serve static assets."""
-        return self.ASSET_URL.startswith("/")
 
 
 @dataclass
@@ -236,30 +212,6 @@ class ServerSettings:
 
 
 @dataclass
-class SaqSettings:
-    """Server configurations."""
-
-    PROCESSES: int = field(default_factory=lambda: int(os.getenv("SAQ_PROCESSES", "1")))
-    """The number of worker processes to start.
-
-    Default is set to 1.
-    """
-    CONCURRENCY: int = field(default_factory=lambda: int(os.getenv("SAQ_CONCURRENCY", "10")))
-    """The number of concurrent jobs allowed to execute per worker process.
-
-    Default is set to 10.
-    """
-    WEB_ENABLED: bool = field(
-        default_factory=lambda: os.getenv("SAQ_WEB_ENABLED", "True") in TRUE_VALUES,
-    )
-    """If true, the worker admin UI is hosted on worker startup."""
-    USE_SERVER_LIFESPAN: bool = field(
-        default_factory=lambda: os.getenv("SAQ_USE_SERVER_LIFESPAN", "True") in TRUE_VALUES,
-    )
-    """Auto start and stop `saq` processes when starting the Litestar application."""
-
-
-@dataclass
 class LogSettings:
     """Logger configuration"""
 
@@ -279,25 +231,6 @@ class LogSettings:
     """Request cookie keys to obfuscate."""
     OBFUSCATE_HEADERS: set[str] = field(default_factory=lambda: {"Authorization", "X-API-KEY", "X-XSRF-TOKEN"})
     """Request header keys to obfuscate."""
-    JOB_FIELDS: list[str] = field(
-        default_factory=lambda: [
-            "function",
-            "kwargs",
-            "key",
-            "scheduled",
-            "attempts",
-            "completed",
-            "queued",
-            "started",
-            "result",
-            "error",
-        ],
-    )
-    """Attributes of the SAQ.
-
-    [`Job`](https://github.com/tobymao/saq/blob/master/saq/job.py) to be
-    logged.
-    """
     REQUEST_FIELDS: list[RequestExtractorField] = field(
         default_factory=lambda: [
             "path",
@@ -315,10 +248,6 @@ class LogSettings:
     )
     """Attributes of the [Response][litestar.response.Response] to be
     logged."""
-    WORKER_EVENT: str = "Worker"
-    """Log event name for logs from SAQ worker."""
-    SAQ_LEVEL: int = 20
-    """Level to log SAQ logs."""
     SQLALCHEMY_LEVEL: int = 20
     """Level to log SQLAlchemy logs."""
     UVICORN_ACCESS_LEVEL: int = 20
@@ -329,40 +258,6 @@ class LogSettings:
     """Level to log uvicorn access logs."""
     GRANIAN_ERROR_LEVEL: int = 20
     """Level to log uvicorn error logs."""
-
-
-@dataclass
-class RedisSettings:
-    URL: str = field(default_factory=lambda: os.getenv("REDIS_URL", "redis://localhost:6379/0"))
-    """A Redis connection URL."""
-    SOCKET_CONNECT_TIMEOUT: int = field(default_factory=lambda: int(os.getenv("REDIS_CONNECT_TIMEOUT", "5")))
-    """Length of time to wait (in seconds) for a connection to become
-    active."""
-    HEALTH_CHECK_INTERVAL: int = field(default_factory=lambda: int(os.getenv("REDIS_HEALTH_CHECK_INTERVAL", "5")))
-    """Length of time to wait (in seconds) before testing connection health."""
-    SOCKET_KEEPALIVE: bool = field(
-        default_factory=lambda: os.getenv("REDIS_SOCKET_KEEPALIVE", "True") in TRUE_VALUES,
-    )
-    """Length of time to wait (in seconds) between keepalive commands."""
-    _redis_instance: Redis | None = None
-    """Redis instance generated from settings."""
-
-    @property
-    def client(self) -> Redis:
-        return self.get_client()
-
-    def get_client(self) -> Redis:
-        if self._redis_instance is not None:
-            return self._redis_instance
-        self._redis_instance = Redis.from_url(
-            url=self.URL,
-            encoding="utf-8",
-            decode_responses=False,
-            socket_connect_timeout=self.SOCKET_CONNECT_TIMEOUT,
-            socket_keepalive=self.SOCKET_KEEPALIVE,
-            health_check_interval=self.HEALTH_CHECK_INTERVAL,
-        )
-        return self._redis_instance
 
 
 @dataclass
@@ -437,8 +332,6 @@ class Settings:
     vite: ViteSettings = field(default_factory=ViteSettings)
     server: ServerSettings = field(default_factory=ServerSettings)
     log: LogSettings = field(default_factory=LogSettings)
-    redis: RedisSettings = field(default_factory=RedisSettings)
-    saq: SaqSettings = field(default_factory=SaqSettings)
 
     @classmethod
     @lru_cache(maxsize=1, typed=True)

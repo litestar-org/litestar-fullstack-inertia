@@ -1,7 +1,7 @@
+import type { PropsWithChildren } from "react"
 import { Toaster } from "@/components/ui/toaster"
 import Footer from "@/layouts/partials/footer"
 import Navbar from "@/layouts/partials/navbar"
-import type { PropsWithChildren } from "react"
 
 export function AppLayout({ children }: PropsWithChildren) {
 	return (

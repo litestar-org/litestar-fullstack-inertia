@@ -1,8 +1,8 @@
+import { Head, Link } from "@inertiajs/react"
 import { Icons } from "@/components/icons"
 import { buttonVariants } from "@/components/ui/button"
 import { GuestLayout } from "@/layouts/guest-layout"
 import { cn } from "@/lib/utils"
-import { Head, Link } from "@inertiajs/react"
 import UserRegistrationForm from "./partials/user-registration-form"
 
 export default function Login() {

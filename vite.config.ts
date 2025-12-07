@@ -1,4 +1,5 @@
 import path from "node:path"
+import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import litestar from "litestar-vite-plugin"
 import { defineConfig } from "vite"
@@ -6,10 +7,11 @@ import { defineConfig } from "vite"
 const ASSET_URL = process.env.ASSET_URL || "/static/"
 const VITE_PORT = process.env.VITE_PORT || "5173"
 const VITE_HOST = process.env.VITE_HOST || "localhost"
+
 export default defineConfig({
 	base: `${ASSET_URL}`,
 	clearScreen: false,
-	publicDir: "public/",
+	publicDir: "resources/public",
 	server: {
 		host: "0.0.0.0",
 		port: +`${VITE_PORT}`,
@@ -19,6 +21,7 @@ export default defineConfig({
 		},
 	},
 	plugins: [
+		tailwindcss(),
 		react(),
 		litestar({
 			input: ["resources/main.tsx", "resources/main.css"],
