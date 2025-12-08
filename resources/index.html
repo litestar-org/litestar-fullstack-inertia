@@ -8,7 +8,7 @@
   <title inertia>Litestar Fullstack</title>
 </head>
 <body class="font-sans antialiased h-full">
-  <div id="app" class="h-full" data-page="{{ inertia | e }}"></div>
+  <div id="app" class="h-full" data-page="{{ inertia | safe }}"></div>
   <script type="module" src="/resources/main.tsx"></script>
 </body>
 </html>

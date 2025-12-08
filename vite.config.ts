@@ -13,9 +13,7 @@ export default defineConfig({
 		tailwindcss(),
 		react(),
 		litestar({
-			input: ["resources/main.tsx", "resources/main.css"],
-			assetUrl: "/static/",
-			bundleDirectory: "app/domain/web/public",
+			input: ["resources/main.tsx", "resources/main.css"]
 		}),
 	],
 	resolve: {

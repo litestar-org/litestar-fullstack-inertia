@@ -10,8 +10,7 @@ from advanced_alchemy.extensions.litestar.providers import create_service_depend
 from litestar import Controller, Request, delete, get, patch, post
 from litestar.di import Provide
 from litestar.params import Dependency, Parameter
-from litestar.plugins.flash import flash
-from litestar_vite.inertia import InertiaRedirect
+from litestar_vite.inertia import InertiaRedirect, flash
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload, noload, selectinload
 

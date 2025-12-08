@@ -11,6 +11,7 @@ from advanced_alchemy.utils.text import slugify
 from litestar.utils.module_loader import module_to_os_path
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from app.utils.engine_factory import create_sqlalchemy_engine
 from app.utils.env import get_env
 
 if TYPE_CHECKING:
@@ -60,7 +61,6 @@ class DatabaseSettings:
     def get_engine(self) -> AsyncEngine:
         if self._engine_instance is not None:
             return self._engine_instance
-        from app.utils.engine_factory import create_sqlalchemy_engine
 
         self._engine_instance = create_sqlalchemy_engine(self)
         return self._engine_instance

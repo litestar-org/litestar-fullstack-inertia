@@ -2,7 +2,6 @@ import logging
 import sys
 from functools import lru_cache
 from pathlib import Path
-from typing import cast
 
 import structlog
 from httpx_oauth.clients.github import GitHubOAuth2
@@ -41,7 +40,7 @@ csrf = CSRFConfig(
     cookie_name=settings.app.CSRF_COOKIE_NAME,
     header_name=settings.app.CSRF_HEADER_NAME,
 )
-cors = CORSConfig(allow_origins=cast("list[str]", settings.app.ALLOWED_CORS_ORIGINS))
+cors = CORSConfig(allow_origins=settings.app.ALLOWED_CORS_ORIGINS)
 
 
 alchemy = SQLAlchemyAsyncConfig(
@@ -132,6 +131,16 @@ log = StructlogConfig(
                 "granian.access": {
                     "propagate": False,
                     "level": settings.log.GRANIAN_ACCESS_LEVEL,
+                    "handlers": ["queue_listener"],
+                },
+                "httpx": {
+                    "propagate": False,
+                    "level": logging.WARNING,
+                    "handlers": ["queue_listener"],
+                },
+                "httpcore": {
+                    "propagate": False,
+                    "level": logging.WARNING,
                     "handlers": ["queue_listener"],
                 },
             },

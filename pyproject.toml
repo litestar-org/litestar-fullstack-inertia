@@ -17,7 +17,7 @@ dependencies = [
   "advanced-alchemy[uuid,passlib]",
   "asyncpg>=0.28.0",
   "python-dotenv>=1.0.0",
-  "litestar-vite @ file:///home/cody/code/litestar/litestar-vite",
+  "litestar-vite @ git+https://github.com/litestar-org/litestar-vite.git@fix/vite-proxy",
   "litestar-granian[uvloop]",
   "aiosqlite>=0.19.0",
   "httptools",
@@ -255,6 +255,7 @@ lint.ignore = [
   "PERF203", # ignore for now; investigate
   "RUF029",  # function declared async but could be sync
   "CPY001",  # add copywrite to top of file
+  "PLR6301",
 ]
 lint.select = ["ALL"]
 # Allow unused variables when underscore-prefixed.

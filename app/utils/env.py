@@ -62,7 +62,7 @@ def get_env(key: str, default: dict[str, Any], type_hint: UnsetType = _UNSET) ->
 
 
 def get_env(
-    key: str, default: ParseTypes | None, type_hint: type[T] | UnsetType = _UNSET
+    key: str, default: ParseTypes | None, type_hint: type[T] | UnsetType = _UNSET,
 ) -> Callable[[], ParseTypes | T | None]:
     return lambda: get_config_val(key=key, default=default, type_hint=type_hint)
 
@@ -104,7 +104,7 @@ def get_config_val(key: str, default: dict[str, Any], type_hint: UnsetType = _UN
 
 
 def get_config_val(  # noqa: C901, PLR0911, PLR0915
-    key: str, default: ParseTypes | None, type_hint: type[T] | UnsetType = _UNSET
+    key: str, default: ParseTypes | None, type_hint: type[T] | UnsetType = _UNSET,
 ) -> ParseTypes | T | None:
     """Parse environment variables, prioritizing explicit type hint over default's type.
 
@@ -265,7 +265,7 @@ def _parse_dict_json(key: str, value: str, key_type: type = str) -> dict[str, An
 
 
 def _parse_dict_comma(
-    key: str, value: str, key_type: type = str
+    key: str, value: str, key_type: type = str,
 ) -> dict[str, Any]:  # Fallback: comma-separated key=val pairs
     result: dict[str, Any] = {}
 

@@ -88,7 +88,6 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         app_config.plugins.extend(
             [
                 plugins.structlog,
-                plugins.flasher,
                 plugins.granian,
                 plugins.alchemy,
                 plugins.vite,

@@ -10,9 +10,8 @@ from advanced_alchemy.utils.text import slugify
 from litestar import Controller, Request, Response, delete, get, patch, post
 from litestar.di import Provide
 from litestar.params import Dependency, Parameter
-from litestar.plugins.flash import flash
 from litestar.repository.exceptions import ConflictError
-from litestar_vite.inertia import InertiaExternalRedirect, InertiaRedirect, share
+from litestar_vite.inertia import InertiaExternalRedirect, InertiaRedirect, flash, share
 
 from app.config import github_oauth2_client, google_oauth2_client
 from app.domain.accounts import schemas
