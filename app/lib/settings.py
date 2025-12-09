@@ -105,8 +105,7 @@ class ServerSettings:
 class LogSettings:
     """Logger configuration"""
 
-    # https://stackoverflow.com/a/1845097/6560549
-    EXCLUDE_PATHS: str = r"\A(?!x)x"
+    EXCLUDE_PATHS: str = r"^/static/"
     """Regex to exclude paths from logging."""
     HTTP_EVENT: str = "HTTP"
     """Log event name for logs from Litestar handlers."""

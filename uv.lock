@@ -1197,7 +1197,7 @@ dependencies = [
 
 [[package]]
 name = "litestar-vite"
-version = "0.15.0b1"
+version = "0.15.0b2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -1205,9 +1205,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c1/83/e748d35c7c5e3d26878259b5f340c351154892e4d53bbd63edf8466aa726/litestar_vite-0.15.0b1.tar.gz", hash = "sha256:771b486765a148fe1bef8076fd8204fd511eb4731349b25e538111dc294616d6", size = 273963, upload-time = "2025-12-08T16:52:51.057Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8c/4b/6616655da65734710af2c71a5554d72d8a64d8b9d50e352876c7c5b11864/litestar_vite-0.15.0b2.tar.gz", hash = "sha256:87a69a390cb14b6e4b47a6f53e48311690b1214e2a8ef4d88c85dda9e478c515", size = 281675, upload-time = "2025-12-09T18:08:12.011Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fd/6b/7d2db1dfc78606de24575cecc5080236d437daf685dd69babad4966cc273/litestar_vite-0.15.0b1-py3-none-any.whl", hash = "sha256:86bc402ff47ac3bee82fcf77d84b295ce7fa57191b901199e60b42a243100970", size = 183388, upload-time = "2025-12-08T16:52:49.482Z" },
+    { url = "https://files.pythonhosted.org/packages/d9/f0/7d789161e9d4d9117c56083e586c82b1b390286330ea4c4dcb752ade6789/litestar_vite-0.15.0b2-py3-none-any.whl", hash = "sha256:6184432dab217ef4baa71db8bba722a2011e117ab6181e60e19051a5238191d5", size = 187165, upload-time = "2025-12-09T18:08:10.437Z" },
 ]
 
 [[package]]

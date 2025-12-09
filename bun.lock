@@ -33,13 +33,13 @@
         "@biomejs/biome": "^2.3.8",
         "@headlessui/react": "^2.2.9",
         "@hey-api/openapi-ts": "^0.88.1",
-        "@inertiajs/react": "^2.2.19",
+        "@inertiajs/react": "^2.2.20",
         "@tailwindcss/vite": "^4.1.17",
         "@types/md5": "^2.3.6",
-        "@types/node": "^24.10.1",
+        "@types/node": "^24.10.2",
         "@types/react": "^19.2.7",
         "@types/react-dom": "^19.2.3",
-        "@vitejs/plugin-react": "^5.1.1",
+        "@vitejs/plugin-react": "^5.1.2",
         "axios": "^1.13.2",
         "litestar-vite-plugin": "next",
         "react": "^19.2.1",
@@ -623,7 +623,7 @@
 
     "lightningcss-win32-x64-msvc": ["lightningcss-win32-x64-msvc@1.30.2", "", { "os": "win32", "cpu": "x64" }, "sha512-5g1yc73p+iAkid5phb4oVFMB45417DkRevRbt/El/gKXJk4jid+vPFF/AXbxn05Aky8PapwzZrdJShv5C0avjw=="],
 
-    "litestar-vite-plugin": ["litestar-vite-plugin@0.15.0-beta.1", "", { "dependencies": { "picocolors": "^1.1.1", "vite-plugin-full-reload": "^1.2.0" }, "peerDependencies": { "vite": "^6.0.0 || ^7.0.0" }, "bin": { "clean-orphaned-assets": "tools/clean.js" } }, "sha512-hd04tlxRdY+jf+tk2M0DvHaFaUj4exleqiSTqCVWfDZB+cMoSsdvahs9w7dNhQn9JhmWqHW+MWRQXJ9iCle3FA=="],
+    "litestar-vite-plugin": ["litestar-vite-plugin@0.15.0-beta.2", "", { "dependencies": { "picocolors": "^1.1.1", "vite-plugin-full-reload": "^1.2.0" }, "peerDependencies": { "vite": "^6.0.0 || ^7.0.0" }, "bin": { "clean-orphaned-assets": "tools/clean.js" } }, "sha512-kABDsl4zi8Z2OlVnwNvTb7XXsFq5tLCC9YBsjoRSTdoXYfdOS+LQtqjVnIM1zfDtEIzsOfZrl+3FIrhJLgjHzw=="],
 
     "lodash": ["lodash@4.17.21", "", {}, "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg=="],
 
