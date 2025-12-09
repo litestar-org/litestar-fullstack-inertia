@@ -4,6 +4,11 @@ from functools import lru_cache
 from pathlib import Path
 
 import structlog
+from advanced_alchemy.extensions.litestar import (
+    AlembicAsyncConfig,
+    AsyncSessionConfig,
+    SQLAlchemyAsyncConfig,
+)
 from httpx_oauth.clients.github import GitHubOAuth2
 from httpx_oauth.clients.google import GoogleOAuth2
 from litestar.config.compression import CompressionConfig
@@ -19,11 +24,6 @@ from litestar.logging.config import (
 )
 from litestar.middleware.logging import LoggingMiddlewareConfig
 from litestar.middleware.session.server_side import ServerSideSessionConfig
-from litestar.plugins.sqlalchemy import (
-    AlembicAsyncConfig,
-    AsyncSessionConfig,
-    SQLAlchemyAsyncConfig,
-)
 from litestar.plugins.structlog import StructlogConfig
 from litestar.template import TemplateConfig
 from litestar_vite import InertiaConfig, PathConfig, TypeGenConfig, ViteConfig
