@@ -17,7 +17,7 @@ dependencies = [
   "advanced-alchemy[uuid,passlib]",
   "asyncpg>=0.28.0",
   "python-dotenv>=1.0.0",
-  "litestar-vite @ git+https://github.com/litestar-org/litestar-vite.git@feat/path-types",
+  "litestar-vite>=0.15.0-rc.1",
   "litestar-granian[uvloop]",
   "aiosqlite>=0.19.0",
   "httptools",
@@ -256,6 +256,8 @@ lint.ignore = [
   "RUF029",  # function declared async but could be sync
   "CPY001",  # add copywrite to top of file
   "PLR6301",
+  "PLC0415", # import should be at top-level - intentional lazy imports for performance
+  "TC002",   # move import into type-checking block - conflicts with runtime needs
 ]
 lint.select = ["ALL"]
 # Allow unused variables when underscore-prefixed.
@@ -287,7 +289,7 @@ known-first-party = ['tests', 'app', 'config']
 "app/db/models/*.py" = ["PLW0108"]
 "docs/**/*.*" = ["S", "B", "DTZ", "A", "TC", "ERA", "D", "RET", "E731", "RUF012", "FA100", "ARG001"]
 "tests/*.py" = ['D103', 'S101', 'D104', "PLR2004", "RUF029", "ARG001", "SLF001", "DOC", "ANN", "S"]
-"tools/*.py" = ["INP001", "ERA001", "N999"]
+"tools/*.py" = ["INP001", "ERA001", "N999", "EXE001", "PLW1510"]
 "tools/**/*.*" = ["D", "ARG", "EM", "TRY", "G", "FBT", "INP001", "S603", "S404", "PLR0915"]
 
 [tool.slotscheck]
