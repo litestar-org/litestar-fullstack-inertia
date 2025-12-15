@@ -1,21 +1,28 @@
 # https://nixpacks.com/docs/configuration/file
 
-providers = ['python', 'node'] # force python as the only provider, otherwise railway may think this is a node project
+providers = ['python', 'node']
 
-# set up some variables to minimize annoyance
 [variables]
-NIXPACKS_PYTHON_VERSION = '3.12'       # set python version to install
-PIP_DISABLE_PIP_VERSION_CHECK = '1'    # the pip update notification is relatively useless in a production environment
+NIXPACKS_PYTHON_VERSION = '3.12'
+PIP_DISABLE_PIP_VERSION_CHECK = '1'
 
 [phases.setup]
-nixPkgs = ['...', 'bun'] # add bun since it is needed to build the frontend
+nixPkgs = ['...', 'bun']
 
 [phases.install]
 cmds = [
   'curl -LsSf https://astral.sh/uv/install.sh | sh',
+  'export PATH="$HOME/.local/bin:$PATH"',
   'bun install --frozen-lockfile',
-  'uv venv /opt/venv && . /opt/venv/bin/activate && uv sync --no-dev --frozen',
-] # install uv, bun dependencies, and python packages
+  'uv venv /opt/venv',
+  '. /opt/venv/bin/activate && uv sync --no-dev --frozen',
+]
+
+[phases.build]
+cmds = [
+  'export PATH="$HOME/.local/bin:$PATH"',
+  '. /opt/venv/bin/activate && uv run python tools/build.py --executor bun',
+]
 
 [start]
 cmd = '/opt/venv/bin/app database upgrade --no-prompt && /opt/venv/bin/app run --wc 2 --host 0.0.0.0 --port $PORT'

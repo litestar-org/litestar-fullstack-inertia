@@ -11,8 +11,10 @@
 # - No shell or package manager in runtime image
 # - Minimal runtime dependencies
 # - Distroless base image (no unnecessary OS components)
+# - Multi-architecture support (amd64/arm64)
 #
 # Build: docker build -f Dockerfile.distroless -t app:distroless .
+# Multi-arch: docker buildx build --platform linux/amd64,linux/arm64 -f Dockerfile.distroless -t app:distroless .
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -22,7 +24,6 @@ ARG PYTHON_VERSION=3.12
 ARG DEBIAN_VERSION=bookworm
 ARG BUILDER_IMAGE=python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION}
 ARG RUN_IMAGE=gcr.io/distroless/cc-debian12:nonroot
-ARG CHIPSET_ARCH=x86_64-linux-gnu
 
 # =============================================================================
 # Stage 1: Python Base
@@ -103,7 +104,8 @@ RUN uv run python tools/build.py --executor bun \
 # =============================================================================
 FROM python-base AS runtime-prep
 
-ARG CHIPSET_ARCH
+# Use TARGETARCH provided by Docker buildx for multi-arch support
+ARG TARGETARCH
 
 # Create non-root user matching distroless nonroot user
 RUN groupadd --system --gid 65532 nonroot \
@@ -135,12 +137,19 @@ RUN /workspace/app/.venv/bin/pip install \
         /tmp/*.whl \
     && rm -rf /tmp/*
 
+# Detect architecture and create symlinks for library paths
+# This enables the same Dockerfile to work on both amd64 and arm64
+RUN ARCH_DIR=$([ "$TARGETARCH" = "arm64" ] && echo "aarch64-linux-gnu" || echo "x86_64-linux-gnu") \
+    && mkdir -p /runtime-libs/lib /runtime-libs/usr/lib \
+    && cp -a /lib/${ARCH_DIR} /runtime-libs/lib/ \
+    && cp -a /usr/lib/${ARCH_DIR} /runtime-libs/usr/lib/ \
+    && echo "${ARCH_DIR}" > /runtime-libs/arch
+
 # =============================================================================
 # Stage 4: Distroless Runtime
 # =============================================================================
 FROM ${RUN_IMAGE} AS runtime
 
-ARG CHIPSET_ARCH
 ARG LITESTAR_APP="app.server.asgi:create_app"
 
 ENV PATH="/workspace/app/.venv/bin:/usr/local/bin:$PATH" \
@@ -160,14 +169,9 @@ COPY --from=runtime-prep /etc/ld.so.cache /etc/ld.so.cache
 # Copy tini for proper signal handling
 COPY --from=runtime-prep /usr/bin/tini /usr/local/bin/tini
 
-# Copy required shared libraries
-COPY --from=runtime-prep /lib/${CHIPSET_ARCH}/libz.so.1 /lib/${CHIPSET_ARCH}/
-COPY --from=runtime-prep /lib/${CHIPSET_ARCH}/libbz2.so.1.0 /lib/${CHIPSET_ARCH}/
-COPY --from=runtime-prep /usr/lib/${CHIPSET_ARCH}/libffi* /usr/lib/${CHIPSET_ARCH}/
-COPY --from=runtime-prep /lib/${CHIPSET_ARCH}/libexpat* /lib/${CHIPSET_ARCH}/
-COPY --from=runtime-prep /lib/${CHIPSET_ARCH}/liblzma* /lib/${CHIPSET_ARCH}/
-COPY --from=runtime-prep /usr/lib/${CHIPSET_ARCH}/libssl* /usr/lib/${CHIPSET_ARCH}/
-COPY --from=runtime-prep /usr/lib/${CHIPSET_ARCH}/libcrypto* /usr/lib/${CHIPSET_ARCH}/
+# Copy required shared libraries (architecture-aware)
+COPY --from=runtime-prep /runtime-libs/lib/ /lib/
+COPY --from=runtime-prep /runtime-libs/usr/lib/ /usr/lib/
 COPY --from=runtime-prep /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 # Copy the application virtual environment
