@@ -13,7 +13,6 @@ nixPkgs = ['...', 'bun']
 cmds = [
   'curl -LsSf https://astral.sh/uv/install.sh | sh',
   'export PATH="$HOME/.local/bin:$PATH"',
-  'bun install --frozen-lockfile',
   'uv venv /opt/venv',
   '. /opt/venv/bin/activate && uv sync --no-dev --frozen',
 ]
@@ -21,7 +20,8 @@ cmds = [
 [phases.build]
 cmds = [
   'export PATH="$HOME/.local/bin:$PATH"',
-  '. /opt/venv/bin/activate && uv run python tools/build.py --executor bun',
+  '. /opt/venv/bin/activate && uv run app assets install',
+  '. /opt/venv/bin/activate && uv run app assets build',
 ]
 
 [start]

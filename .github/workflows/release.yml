@@ -97,7 +97,7 @@ jobs:
           bun-version: latest
 
       - name: Install frontend dependencies
-        run: bun install --frozen-lockfile
+        run: uv run app assets install
 
       - name: Build frontend assets
         run: uv run app assets build

@@ -109,14 +109,11 @@ jobs:
       - name: Install Python dependencies
         run: uv sync --all-extras --dev
 
-      - name: Generate TypeScript types
-        run: uv run app assets generate-types
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+      - name: Install frontend dependencies
+        run: uv run app assets install
 
       - name: Build assets
-        run: bun run build
+        run: uv run app assets build
 
       - name: Upload built assets
         uses: actions/upload-artifact@v4
