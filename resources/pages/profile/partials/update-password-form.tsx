@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
 import { route } from "@/lib/generated/routes"
 
-export default function UpdatePasswordForm({ className }: { className?: string }) {
+export default function UpdatePasswordForm({ className: _className }: { className?: string }) {
 	const passwordInput = useRef<HTMLInputElement>(null)
 	const currentPasswordInput = useRef<HTMLInputElement>(null)
 	const { data, setData, patch, errors, reset, processing, recentlySuccessful } = useForm({

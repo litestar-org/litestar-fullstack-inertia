@@ -2,7 +2,7 @@ import { Head, Link } from "@inertiajs/react"
 import { Logo } from "@/components/logo"
 import { route } from "@/lib/generated/routes"
 
-export default function PrivacyPolicy({ policy }: { policy: string }) {
+export default function PrivacyPolicy({ policy: _policy }: { policy: string }) {
 	return (
 		<>
 			<Head title="Privacy Policy" />

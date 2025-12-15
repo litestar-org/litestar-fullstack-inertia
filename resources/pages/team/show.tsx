@@ -4,7 +4,7 @@ import { Container } from "@/components/container"
 import { Header } from "@/components/header"
 import { AppLayout } from "@/layouts/app-layout"
 
-export default function TeamShow({ about }: { about: string }) {
+export default function TeamShow({ about: _about }: { about: string }) {
 	return (
 		<>
 			<Head title="Teams" />

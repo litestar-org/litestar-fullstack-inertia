@@ -26,7 +26,7 @@ const formSchema = z.object({
 type FormProps = z.infer<typeof formSchema>
 
 export default function UserLoginForm({ className, ...props }: UserLoginFormProps) {
-	const { content, canResetPassword, errors, flash } = usePage<{
+	const { content, flash } = usePage<{
 		content: {
 			status_code: number
 			message: string

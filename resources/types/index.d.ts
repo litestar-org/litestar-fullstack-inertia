@@ -1,4 +1,4 @@
-interface FlashMessages {
+export interface FlashMessages {
 	[category: string]: string[]
 }
 export type CurrentTeam = { teamId: string; teamName: string }

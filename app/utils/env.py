@@ -103,7 +103,7 @@ def get_config_val(key: str, default: ParseTypes | None, type_hint: type[T]) -> 
 def get_config_val(key: str, default: dict[str, Any], type_hint: UnsetType = _UNSET) -> dict[str, Any]: ...
 
 
-def get_config_val(  # noqa: C901, PLR0911, PLR0915
+def get_config_val(  # noqa: C901, PLR0911, PLR0912, PLR0915
     key: str, default: ParseTypes | None, type_hint: type[T] | UnsetType = _UNSET,
 ) -> ParseTypes | T | None:
     """Parse environment variables, prioritizing explicit type hint over default's type.

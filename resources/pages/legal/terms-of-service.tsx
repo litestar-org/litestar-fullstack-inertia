@@ -2,7 +2,7 @@ import { Head, Link } from "@inertiajs/react"
 import { Logo } from "@/components/logo"
 import { route } from "@/lib/generated/routes"
 
-export default function PrivacyPolicy({ terms }: { terms: string }) {
+export default function TermsOfService({ terms: _terms }: { terms: string }) {
 	return (
 		<>
 			<Head title="Terms of Service" />
