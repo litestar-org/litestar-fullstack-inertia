@@ -7,7 +7,7 @@ pytestmark = pytest.mark.anyio
 async def get_csrf_token(client: AsyncClient, path: str = "/login/") -> str:
     """Get CSRF token by visiting a page first."""
     response = await client.get(path, follow_redirects=True)
-    return response.cookies.get("XSRF-TOKEN", "") or client.cookies.get("XSRF-TOKEN", "")
+    return response.cookies.get("XSRF-TOKEN") or client.cookies.get("XSRF-TOKEN") or ""
 
 
 @pytest.mark.parametrize(
@@ -80,7 +80,7 @@ async def test_user_logout(client: AsyncClient, username: str, password: str) ->
     assert response.status_code == 303
 
     # Logout - use CSRF token from client cookies (already set during login flow)
-    csrf_token = client.cookies.get("XSRF-TOKEN", "")
+    csrf_token = client.cookies.get("XSRF-TOKEN") or ""
     headers = {"X-XSRF-TOKEN": csrf_token} if csrf_token else {}
 
     response = await client.post("/logout/", headers=headers, follow_redirects=False)

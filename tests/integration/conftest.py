@@ -126,10 +126,10 @@ def _fresh_state_lifespan_middleware(
     """
 
     async def app_with_state(scope: "Scope", receive: "Receive", send: "Send") -> None:
-        if scope["type"] == "http":
+        if scope["type"] == "http":  # type: ignore[comparison-overlap]
             # Create a copy of initial_state for each HTTP request
             # This prevents _ls_connection_state from being reused
-            scope["state"] = dict(initial_state)
+            scope["state"] = dict(initial_state)  # type: ignore[unreachable]
         else:
             # Lifespan events can share state
             scope["state"] = initial_state
@@ -148,15 +148,15 @@ async def fx_client(app: Litestar) -> AsyncIterator[AsyncClient]:
     """
     from asgi_lifespan import LifespanManager
 
-    manager = LifespanManager(app)
+    manager = LifespanManager(app)  # type: ignore[arg-type]
     # Replace the wrapped app with one that creates fresh state per request
-    manager.app = _fresh_state_lifespan_middleware(app, manager._state)
+    manager.app = _fresh_state_lifespan_middleware(app, manager._state)  # type: ignore[assignment]
 
     async with manager, AsyncClient(
         transport=ASGITransport(app=manager.app),
         base_url="http://testserver",
         timeout=10,
-    ) as client:  # type: ignore[arg-type]
+    ) as client:
         yield client
 
 
@@ -174,9 +174,9 @@ async def _get_auth_headers(client: AsyncClient, username: str, password: str, *
 
     # First get CSRF token
     response = await client.get("/login")
-    csrf_token = response.cookies.get("XSRF-TOKEN", "")
+    csrf_token: str = response.cookies.get("XSRF-TOKEN") or ""
 
-    headers = {
+    headers: dict[str, str] = {
         "X-XSRF-TOKEN": csrf_token,
         "Content-Type": "application/json",
     }
@@ -190,7 +190,7 @@ async def _get_auth_headers(client: AsyncClient, username: str, password: str, *
     )
 
     # Get updated CSRF token after login
-    csrf_token = response.cookies.get("XSRF-TOKEN", csrf_token)
+    csrf_token = response.cookies.get("XSRF-TOKEN") or csrf_token
 
     # Capture cookies at this moment - create a copy to avoid mutation issues
     cookies_snapshot = dict(client.cookies.items())

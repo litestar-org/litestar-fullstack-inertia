@@ -58,11 +58,8 @@ def is_executable(cmd: str) -> bool:
 def run_command(cmd: list[str], description: str) -> None:
     """Run a command and handle errors."""
     logger.info("%s: %s", description, " ".join(cmd))
-    kwargs: dict[str, bool] = {}
-    if platform.system() == "Windows":
-        kwargs["shell"] = True
-
-    result = subprocess.run(cmd, **kwargs)
+    shell = platform.system() == "Windows"
+    result = subprocess.run(cmd, shell=shell, check=False)
     if result.returncode != 0:
         logger.error("%s failed with exit code %d", description, result.returncode)
         sys.exit(result.returncode)

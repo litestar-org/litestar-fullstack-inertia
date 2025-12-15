@@ -332,11 +332,11 @@ module = ["aisoql.*"]
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
-module = ["sqlalchemy.*", "uvicorn.*", "aiohttp.*", "jsbeautifier", "jsbeautifier.*", "uvloop", "uvloop.*", "nodeenv"]
+module = ["sqlalchemy.*", "uvicorn.*", "aiohttp.*", "jsbeautifier", "jsbeautifier.*", "uvloop", "uvloop.*", "nodeenv", "docutils.*"]
 
 [[tool.mypy.overrides]]
 ignore_errors = true
-module = ["app.db.migrations.*", "app.lib.dto.*"]
+module = ["app.db.migrations.*", "app.lib.dto.*", "tools.*"]
 
 
 [tool.pyright]
