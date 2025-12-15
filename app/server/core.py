@@ -1,25 +1,17 @@
 # pylint: disable=[invalid-name,import-outside-toplevel]
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING
 from uuid import UUID
 
-from litestar.config.response_cache import ResponseCacheConfig, default_cache_key_builder
 from litestar.di import Provide
 from litestar.openapi.config import OpenAPIConfig
 from litestar.openapi.plugins import ScalarRenderPlugin, SwaggerRenderPlugin
 from litestar.plugins import CLIPluginProtocol, InitPluginProtocol
-from litestar.stores.redis import RedisStore
-from litestar.stores.registry import StoreRegistry
 
 if TYPE_CHECKING:
     from click import Group
-    from litestar import Request
     from litestar.config.app import AppConfig
-    from redis.asyncio import Redis
-
-
-T = TypeVar("T")
 
 
 class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
@@ -29,23 +21,17 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
 
     """
 
-    __slots__ = ("app_slug", "redis")
-    redis: Redis
+    __slots__ = ("app_slug",)
     app_slug: str
 
     def __init__(self) -> None:
-        """Initialize ``ApplicationConfigurator``.
-
-        Args:
-            config: configure and start SAQ.
-        """
+        """Initialize ``ApplicationConfigurator``."""
 
     def on_cli_init(self, cli: Group) -> None:
         from app.cli import user_management_app
         from app.lib.settings import get_settings
 
         settings = get_settings()
-        self.redis = settings.redis.get_client()
         self.app_slug = settings.app.slug
         cli.add_command(user_management_app)
 
@@ -74,22 +60,11 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         from app.domain.teams.controllers import TeamController, TeamMemberController
         from app.domain.web.controllers import WebController
         from app.lib import log
-        from app.lib.dependencies import create_collection_dependencies
         from app.lib.settings import get_settings
         from app.server import plugins
 
         settings = get_settings()
-        self.redis = settings.redis.get_client()
         self.app_slug = settings.app.slug
-        # monitoring
-        if settings.app.OPENTELEMETRY_ENABLED:
-            import logfire
-
-            from app.lib.otel import configure_instrumentation
-
-            logfire.configure()
-            otel_config = configure_instrumentation()
-            app_config.middleware.insert(0, otel_config.middleware)
         app_config.debug = settings.app.DEBUG
         # openapi
         app_config.openapi_config = OpenAPIConfig(
@@ -113,12 +88,9 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         app_config.plugins.extend(
             [
                 plugins.structlog,
-                plugins.flasher,
                 plugins.granian,
                 plugins.alchemy,
                 plugins.vite,
-                plugins.saq,
-                plugins.inertia,
             ],
         )
 
@@ -138,35 +110,14 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             ],
         )
         # signatures
-        app_config.signature_namespace.update({"UserModel": UserModel, "UUID": UUID})
-        # caching & redis
-        app_config.response_cache_config = ResponseCacheConfig(
-            default_expiration=120,
-            key_builder=self._cache_key_builder,
-        )
-        app_config.stores = StoreRegistry(default_factory=self.redis_store_factory)
-        app_config.on_shutdown.append(self.redis.aclose)  # type: ignore[attr-defined]
+        app_config.signature_namespace.update({
+            "UserModel": UserModel,
+            "UUID": UUID,
+        })
         # dependencies
-        dependencies = {"current_user": Provide(provide_user)}
-        dependencies.update(create_collection_dependencies())
-        app_config.dependencies.update(dependencies)
+        app_config.dependencies.update({"current_user": Provide(provide_user)})
         # listeners
         app_config.listeners.extend(
             [account_signals.user_created_event_handler, team_signals.team_created_event_handler],
         )
         return app_config
-
-    def redis_store_factory(self, name: str) -> RedisStore:
-        return RedisStore(self.redis, namespace=f"{self.app_slug}:{name}")
-
-    def _cache_key_builder(self, request: Request) -> str:
-        """App name prefixed cache key builder.
-
-        Args:
-            request (Request): Current request instance.
-
-        Returns:
-            str: App slug prefixed cache key.
-        """
-
-        return f"{self.app_slug}:{default_cache_key_builder(request)}"

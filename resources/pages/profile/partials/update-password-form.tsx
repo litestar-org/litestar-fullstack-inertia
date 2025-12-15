@@ -1,19 +1,15 @@
+import { Transition } from "@headlessui/react"
+import { useForm } from "@inertiajs/react"
+import { useRef } from "react"
 import { InputError } from "@/components/input-error"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
-import { Transition } from "@headlessui/react"
-import { useForm } from "@inertiajs/react"
-import { route } from "litestar-vite-plugin/inertia-helpers"
-import { useRef } from "react"
+import { route } from "@/lib/generated/routes"
 
-export default function UpdatePasswordForm({
-	className,
-}: {
-	className?: string
-}) {
+export default function UpdatePasswordForm({ className: _className }: { className?: string }) {
 	const passwordInput = useRef<HTMLInputElement>(null)
 	const currentPasswordInput = useRef<HTMLInputElement>(null)
 	const { data, setData, patch, errors, reset, processing, recentlySuccessful } = useForm({

@@ -1,10 +1,10 @@
+import { Head } from "@inertiajs/react"
+import type React from "react"
 import { Container } from "@/components/container"
 import { Header } from "@/components/header"
 import { AppLayout } from "@/layouts/app-layout"
-import { Head } from "@inertiajs/react"
-import type React from "react"
 
-export default function TeamList({ about }: { about: string }) {
+export default function TeamList({ about: _about }: { about: string }) {
 	return (
 		<>
 			<Head title="Teams" />

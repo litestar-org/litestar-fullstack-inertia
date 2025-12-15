@@ -1,14 +1,10 @@
 {
-	"$schema": "https://biomejs.dev/schemas/1.9.3/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
 	"vcs": {
 		"enabled": true,
 		"clientKind": "git",
 		"useIgnoreFile": true,
 		"defaultBranch": "main"
-	},
-	"organizeImports": {
-		"enabled": true,
-		"ignore": ["node_modules", "dist", "out", ".venv", "public"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -16,8 +12,7 @@
 		"indentStyle": "tab",
 		"indentWidth": 2,
 		"lineWidth": 180,
-		"lineEnding": "lf",
-		"ignore": ["node_modules", "dist", "out", ".next", "public"]
+		"lineEnding": "lf"
 	},
 	"linter": {
 		"enabled": true,
@@ -31,12 +26,17 @@
 			},
 			"a11y": {
 				"noSvgWithoutTitle": "off"
-			},
-			"nursery": {
-				"useSortedClasses": "warn"
 			}
-		},
-		"ignore": ["node_modules", "dist", "out", ".next", "public"]
+		}
+	},
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": {
+					"level": "on"
+				}
+			}
+		}
 	},
 	"javascript": {
 		"formatter": {
@@ -46,6 +46,6 @@
 		}
 	},
 	"files": {
-		"ignore": ["**/node_modules", "**/dist", "CHANGELOG.md", "package-lock.json", "pnpm-lock.yaml", ".venv", "out"]
+		"includes": ["resources/**/*.ts", "resources/**/*.tsx", "resources/**/*.js", "resources/**/*.jsx", "*.ts", "*.js", "*.json"]
 	}
 }

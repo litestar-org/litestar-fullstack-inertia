@@ -1,0 +1,89 @@
+metadata:
+  version: "2.0"
+  adaptive: true
+  description: "Quality gates adapted for Litestar fullstack project"
+
+implementation_gates:
+  - name: local_tests_pass
+    command: "make test"
+    fallback: "uv run pytest tests/ -n 2 --quiet"
+    required: true
+    adaptive: true
+    description: "All tests must pass before proceeding"
+
+  - name: linting_clean
+    command: "make pre-commit"
+    fallback: "uv run ruff check ."
+    required: true
+    description: "Zero linting errors allowed"
+
+  - name: type_checking_pass
+    command: "make type-check"
+    fallback: "uv run mypy app/"
+    required: true
+    adaptive: true
+    description: "Type checking (mypy + pyright) must pass"
+
+  - name: slots_check
+    command: "make slotscheck"
+    required: true
+    description: "Slots check for performance"
+
+  - name: frontend_lint
+    command: "npx biome check resources/"
+    required: true
+    description: "Biome linting for frontend code"
+
+testing_gates:
+  - name: coverage_threshold
+    threshold: 90
+    scope: "modified_modules"
+    adaptive: true
+    description: "Modified modules must achieve configured coverage"
+
+  - name: test_isolation
+    required: true
+    description: "Tests must work in parallel execution (-n 2)"
+
+  - name: n_plus_one_detection
+    type: "custom"
+    applicable_when: "database_operations"
+    description: "Database operations must include N+1 query detection tests"
+
+  - name: async_test_patterns
+    required: true
+    description: "Use pytest-asyncio for async operations"
+
+documentation_gates:
+  - name: anti_pattern_scan
+    adaptive: true
+    rules:
+      - pattern: "Optional\\["
+        severity: "warning"
+        message: "Prefer T | None (PEP 604) for modern Python"
+        context: "Project uses from __future__ import annotations"
+
+      - pattern: "class Test"
+        severity: "info"
+        message: "Project prefers function-based tests"
+
+      - pattern: "datetime\\.now\\(\\)"
+        severity: "error"
+        message: "Use datetime.now(timezone.utc) for timezone-aware datetimes"
+
+  - name: pattern_documentation
+    description: "New patterns must be captured in specs/guides/patterns/"
+    required: true
+
+litestar_specific_gates:
+  - name: controller_structure
+    description: "Controllers should follow domain structure pattern"
+    pattern: "app/domain/{feature}/controllers.py"
+
+  - name: service_pattern
+    description: "Services should extend SQLAlchemyAsyncRepositoryService"
+    required: true
+
+  - name: inertia_page_props
+    description: "Inertia pages must receive typed props from controllers"
+    required: true

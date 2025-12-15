@@ -1,8 +1,8 @@
-import { Logo } from "@/components/logo"
 import { Head, Link } from "@inertiajs/react"
-import { route } from "litestar-vite-plugin/inertia-helpers"
+import { Logo } from "@/components/logo"
+import { route } from "@/lib/generated/routes"
 
-export default function PrivacyPolicy({ terms }: { terms: string }) {
+export default function TermsOfService({ terms: _terms }: { terms: string }) {
 	return (
 		<>
 			<Head title="Terms of Service" />

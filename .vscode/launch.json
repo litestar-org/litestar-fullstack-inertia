@@ -11,7 +11,7 @@
 			"request": "launch",
 			"module": "litestar",
 			"envFile": "${workspaceFolder}/.env",
-			"args": ["--app-dir", "${workspaceFolder}/", "--app", "app.asgi:create_app", "run", "--port", "8088", "--web-concurrency", "1"],
+			"args": ["--app-dir", "${workspaceFolder}/", "--app", "app.server.asgi:create_app", "run", "--port", "8088", "--web-concurrency", "1"],
 			"justMyCode": false,
 			"console": "integratedTerminal"
 		}

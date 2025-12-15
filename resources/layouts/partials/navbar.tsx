@@ -1,13 +1,13 @@
+import { type InertiaLinkProps, Link, router, usePage } from "@inertiajs/react"
+import { LogInIcon, UserRoundCogIcon } from "lucide-react"
 import { Icons } from "@/components/icons"
 import { TeamSwitcher } from "@/components/team-switcher"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import ResponsiveNavbar from "@/layouts/partials/responsive-navbar"
+import { route } from "@/lib/generated/routes"
 import { cn, getGravatarUrl, getInitials } from "@/lib/utils"
-import { type InertiaLinkProps, Link, router, usePage } from "@inertiajs/react"
-import { route } from "litestar-vite-plugin/inertia-helpers"
-import { LogInIcon, UserRoundCogIcon } from "lucide-react"
 
 export default function Navbar() {
 	const { auth } = usePage<InertiaProps>().props
@@ -34,54 +34,50 @@ export default function Navbar() {
 							</NavLink>
 						</div>
 						{auth?.user ? (
-							<>
-								<div className="flex items-center gap-x-1">
-									<TeamSwitcher className="mr-5" />
-									<div className="mr-3 min-h-[1em] w-px self-stretch bg-gradient-to-tr from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-400" />
-									<DropdownMenu modal={false}>
-										<DropdownMenuTrigger asChild>
-											<Avatar className="size-8">
-												<AvatarImage src={auth.user.avatarUrl ?? getGravatarUrl(auth.user.email)} />
-												<AvatarFallback>{getInitials(auth.user.email)}</AvatarFallback>
-											</Avatar>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent className="mr-8 w-60">
-											<DropdownMenuLabel>
-												<div>{auth.user.name}</div>
-												<div className="font-normal text-muted-foreground text-sm">{auth.user.email}</div>
-											</DropdownMenuLabel>
-											<DropdownMenuSeparator />
-											<DropdownMenuItem>
-												<Link className="flex w-full items-center" href={route("profile.show")}>
-													<UserRoundCogIcon className="mr-2 size-4" />
-													Profile
-												</Link>
-											</DropdownMenuItem>
-											<DropdownMenuSeparator />
-											<DropdownMenuItem onClick={() => router.post(route("logout"))}>Logout</DropdownMenuItem>
-										</DropdownMenuContent>
-									</DropdownMenu>
-								</div>
-							</>
-						) : (
-							<>
+							<div className="flex items-center gap-x-1">
+								<TeamSwitcher className="mr-5" />
+								<div className="mr-3 min-h-[1em] w-px self-stretch bg-gradient-to-tr from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-400" />
 								<DropdownMenu modal={false}>
 									<DropdownMenuTrigger asChild>
-										<Button variant="secondary" className="border bg-secondary/50 hover:bg-secondary/60">
-											Login
-											<LogInIcon className="ml-2 size-4" />
-										</Button>
+										<Avatar className="size-8">
+											<AvatarImage src={auth.user.avatarUrl ?? getGravatarUrl(auth.user.email)} />
+											<AvatarFallback>{getInitials(auth.user.email)}</AvatarFallback>
+										</Avatar>
 									</DropdownMenuTrigger>
-									<DropdownMenuContent className="mr-8 w-40">
+									<DropdownMenuContent className="mr-8 w-60">
+										<DropdownMenuLabel>
+											<div>{auth.user.name}</div>
+											<div className="font-normal text-muted-foreground text-sm">{auth.user.email}</div>
+										</DropdownMenuLabel>
+										<DropdownMenuSeparator />
 										<DropdownMenuItem>
-											<Link href={route("login")}>Login</Link>
+											<Link className="flex w-full items-center" href={route("profile.show")}>
+												<UserRoundCogIcon className="mr-2 size-4" />
+												Profile
+											</Link>
 										</DropdownMenuItem>
-										<DropdownMenuItem>
-											<Link href={route("register")}>Register</Link>
-										</DropdownMenuItem>
+										<DropdownMenuSeparator />
+										<DropdownMenuItem onClick={() => router.post(route("logout"))}>Logout</DropdownMenuItem>
 									</DropdownMenuContent>
 								</DropdownMenu>
-							</>
+							</div>
+						) : (
+							<DropdownMenu modal={false}>
+								<DropdownMenuTrigger asChild>
+									<Button variant="secondary" className="border bg-secondary/50 hover:bg-secondary/60">
+										Login
+										<LogInIcon className="ml-2 size-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent className="mr-8 w-40">
+									<DropdownMenuItem>
+										<Link href={route("login")}>Login</Link>
+									</DropdownMenuItem>
+									<DropdownMenuItem>
+										<Link href={route("register")}>Register</Link>
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
 						)}
 					</div>
 				</div>

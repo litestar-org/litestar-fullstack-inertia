@@ -17,7 +17,7 @@ Additionally, when you start the application with ``VITE_HOT_RELOAD`` set to tru
   .. code-block:: bash
 
       (.venv) cody@localtop:~/Code/Litestar/litestar-fullstack-inertia$ pdm run app run -p 8089
-      Using Litestar app from env: 'app.asgi:app'
+      Using Litestar app from env: 'app.server.asgi:create_app'
       Loading environment configuration from .env
       Starting Granian server process ───────────────────────────────────────────────────────
       ┌──────────────────────────────┬──────────────────────────────────────────────────────┐
@@ -67,7 +67,7 @@ To manually rebuild assets, use the following:
   :caption: Generates static assets from Vite and runs the application.
 
     (.venv) cody@localtop:~/Code/Litestar/litestar-fullstack-inertia$ app assets build
-    Using Litestar app from env: 'app.asgi:app'
+    Using Litestar app from env: 'app.server.asgi:create_app'
     Loading environment configuration from .env
     Starting Vite build process ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -89,7 +89,7 @@ To manually rebuild assets, use the following:
   .. code-block:: bash
 
       (.venv) cody@localtop:~/Code/Litestar/litestar-fullstack-inertia$ app run -p 8089
-      Using Litestar app from env: 'app.asgi:app'
+      Using Litestar app from env: 'app.server.asgi:create_app'
       Loading environment configuration from .env
       Starting Granian server process ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
       ┌──────────────────────────────┬──────────────────────────────────────────────────────┐

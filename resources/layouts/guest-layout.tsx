@@ -5,6 +5,6 @@ interface GuestLayoutProps {
 	description?: string | ReactNode | null
 }
 
-export function GuestLayout({ description = null, header = null, children }: PropsWithChildren<GuestLayoutProps>) {
+export function GuestLayout({ description: _description = null, header: _header = null, children }: PropsWithChildren<GuestLayoutProps>) {
 	return <div className="container relative h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">{children}</div>
 }

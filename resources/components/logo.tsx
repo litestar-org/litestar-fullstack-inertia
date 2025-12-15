@@ -1,6 +1,6 @@
 export function Logo({ className }: { className: string }) {
 	return (
-		<svg zoomAndPan="magnify" viewBox="0 0 1200 290.999983" preserveAspectRatio="xMidYMid meet" version="1.0">
+		<svg className={className} zoomAndPan="magnify" viewBox="0 0 1200 290.999983" preserveAspectRatio="xMidYMid meet" version="1.0">
 			<defs>
 				<g />
 				<clipPath id="eafa7eff7d">

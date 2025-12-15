@@ -1,30 +1,43 @@
+"""Tag Controllers."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated
+from uuid import UUID
 
+from advanced_alchemy.extensions.litestar.providers import create_service_dependencies
 from litestar import Controller, delete, get, patch, post
-from litestar.di import Provide
+from litestar.params import Dependency, Parameter
 
 from app.db.models import Tag
 from app.domain.accounts.guards import requires_active_user, requires_superuser
-from app.domain.tags.dependencies import provide_tags_service
 from app.domain.tags.dtos import TagCreateDTO, TagDTO, TagUpdateDTO
 from app.domain.tags.services import TagService
 
 if TYPE_CHECKING:
-    from uuid import UUID
-
     from advanced_alchemy.filters import FilterTypes
     from advanced_alchemy.service import OffsetPagination
     from litestar.dto import DTOData
-    from litestar.params import Dependency, Parameter
 
 
 class TagController(Controller):
     """Handles the interactions within the Tag objects."""
 
     guards = [requires_active_user]
-    dependencies = {"tags_service": Provide(provide_tags_service)}
+    dependencies = create_service_dependencies(
+        TagService,
+        key="tags_service",
+        load=[Tag.teams],
+        filters={
+            "id_filter": UUID,
+            "created_at": True,
+            "updated_at": True,
+            "sort_field": "name",
+            "search": "name,slug",
+            "pagination_type": "limit_offset",
+            "pagination_size": 20,
+        },
+    )
     signature_namespace = {"TagService": TagService, "Tag": Tag}
     tags = ["Tags"]
     return_dto = TagDTO
@@ -54,13 +67,7 @@ class TagController(Controller):
     async def get_tag(
         self,
         tags_service: TagService,
-        tag_id: Annotated[
-            UUID,
-            Parameter(
-                title="Tag ID",
-                description="The tag to retrieve.",
-            ),
-        ],
+        tag_id: Annotated[UUID, Parameter(title="Tag ID", description="The tag to retrieve.")],
     ) -> Tag:
         """Get a tag."""
         db_obj = await tags_service.get(tag_id)
@@ -96,13 +103,7 @@ class TagController(Controller):
         self,
         tags_service: TagService,
         data: DTOData[Tag],
-        tag_id: Annotated[
-            UUID,
-            Parameter(
-                title="Tag ID",
-                description="The tag to update.",
-            ),
-        ],
+        tag_id: Annotated[UUID, Parameter(title="Tag ID", description="The tag to update.")],
     ) -> Tag:
         """Update a tag."""
         db_obj = await tags_service.update(item_id=tag_id, data=data)
@@ -120,13 +121,7 @@ class TagController(Controller):
     async def delete_tag(
         self,
         tags_service: TagService,
-        tag_id: Annotated[
-            UUID,
-            Parameter(
-                title="Tag ID",
-                description="The tag to delete.",
-            ),
-        ],
+        tag_id: Annotated[UUID, Parameter(title="Tag ID", description="The tag to delete.")],
     ) -> None:
         """Delete a tag."""
         _ = await tags_service.delete(tag_id)

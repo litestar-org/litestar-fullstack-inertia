@@ -5,14 +5,12 @@ from typing import TYPE_CHECKING
 from tools.sphinx_ext import changelog, missing_references
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-
     from sphinx.application import Sphinx
 
 
-def setup(app: Sphinx) -> Mapping[str, bool]:
-    ext_config: Mapping[str, bool] = {}
+def setup(app: Sphinx) -> dict[str, bool]:
+    ext_config: dict[str, bool] = {}
     ext_config.update(missing_references.setup(app))
-    ext_config.update(*changelog.setup(app))
+    ext_config.update(changelog.setup(app))
 
     return ext_config

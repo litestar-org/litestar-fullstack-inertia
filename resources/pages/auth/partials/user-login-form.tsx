@@ -1,10 +1,3 @@
-import { Icons } from "@/components/icons"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
-import type { FlashMessages } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { router, usePage } from "@inertiajs/react"
 import { AlertCircle } from "lucide-react"
@@ -12,6 +5,14 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
+import { Icons } from "@/components/icons"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { route } from "@/lib/generated/routes"
+import { cn } from "@/lib/utils"
+import type { FlashMessages } from "@/types"
 
 interface UserLoginFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 const formSchema = z.object({
@@ -25,7 +26,7 @@ const formSchema = z.object({
 type FormProps = z.infer<typeof formSchema>
 
 export default function UserLoginForm({ className, ...props }: UserLoginFormProps) {
-	const { content, canResetPassword, errors, flash } = usePage<{
+	const { content, flash } = usePage<{
 		content: {
 			status_code: number
 			message: string

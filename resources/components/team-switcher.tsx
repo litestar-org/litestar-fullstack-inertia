@@ -1,3 +1,6 @@
+import { router, useForm, usePage } from "@inertiajs/react"
+import { Check, ChevronsUpDown, PlusCircleIcon, PlusIcon } from "lucide-react"
+import { type ComponentPropsWithoutRef, useState } from "react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command"
@@ -5,15 +8,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { route } from "@/lib/generated/routes"
 import { cn, getInitials } from "@/lib/utils"
-import { CurrentTeam } from "@/types"
-import { router, usePage } from "@inertiajs/react"
-import { Head, Link, useForm } from "@inertiajs/react"
-import { Check, ChevronsUpDown, PlusCircleIcon, PlusIcon } from "lucide-react"
-import * as React from "react"
-import { type ComponentPropsWithoutRef, useState } from "react"
 import { InputError } from "./input-error"
 import { toast } from "./ui/use-toast"
+
 type PopoverTriggerProps = ComponentPropsWithoutRef<typeof PopoverTrigger>
 
 interface TeamSwitcherProps extends PopoverTriggerProps {}

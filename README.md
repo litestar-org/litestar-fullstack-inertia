@@ -99,7 +99,7 @@ Check out the [documentation][docs] for more information.
 │                           (DIRECTORY)                                        │
 │ --help     -h             Show this message and exit.                        │
 ╰──────────────────────────────────────────────────────────────────────────────╯
-Using Litestar app from env: 'app.asgi:app'
+Using Litestar app from env: 'app.server.asgi:create_app'
 Loading environment configuration from .env
 ╭─ Commands ───────────────────────────────────────────────────────────────────╮
 │ assets       Manage Vite Tasks.                                              │
@@ -122,7 +122,7 @@ Alembic integration is built directly into the CLI under the `database` command.
 
 ```bash
 ❯ app database
-Using Litestar app from env: 'app.asgi:create_app'
+Using Litestar app from env: 'app.server.asgi:create_app'
 
  Usage: app database [OPTIONS] COMMAND [ARGS]...
 
@@ -148,7 +148,7 @@ Using Litestar app from env: 'app.asgi:create_app'
 
 ```bash
 ❯ app database upgrade
-Using Litestar app from env: 'app.asgi:create_app'
+Using Litestar app from env: 'app.server.asgi:create_app'
 Starting database upgrade process ───────────────────────────────────────────────
 Are you sure you you want migrate the database to the "head" revision? [y/n]: y
 2023-10-01T19:44:13.536101Z [debug    ] Using selector: EpollSelector
@@ -165,7 +165,7 @@ Are you sure you you want migrate the database to the "head" revision? [y/n]: y
 
 ```bash
 ❯ app worker
-Using Litestar app from env: 'app.asgi:create_app'
+Using Litestar app from env: 'app.server.asgi:create_app'
 
  Usage: app worker [OPTIONS] COMMAND [ARGS]...
 
@@ -186,7 +186,7 @@ To run the application through Granian (HTTP1 or HTTP2) using the standard Lites
 
 ```bash
 ❯ app run --help
-Using Litestar app from env: 'app.asgi:app'
+Using Litestar app from env: 'app.server.asgi:create_app'
 Loading environment configuration from .env
 
  Usage: app run [OPTIONS]

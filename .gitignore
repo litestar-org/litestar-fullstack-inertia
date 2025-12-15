@@ -178,3 +178,5 @@ local.duckdb
 
 requirements.txt
 .logfire
+.litestar.json
+resources/lib/generated/

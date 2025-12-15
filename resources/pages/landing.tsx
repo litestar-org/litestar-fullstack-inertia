@@ -1,12 +1,12 @@
+import { Head, Link } from "@inertiajs/react"
+import { BeakerIcon } from "lucide-react"
 import { Container } from "@/components/container"
 import { Icons } from "@/components/icons"
-import { Head, Link } from "@inertiajs/react"
-
 import { Logo } from "@/components/logo"
 import { buttonVariants } from "@/components/ui/button"
 import { GuestLayout } from "@/layouts/guest-layout"
+import { route } from "@/lib/generated/routes"
 import { cn } from "@/lib/utils"
-import { BeakerIcon } from "lucide-react"
 export default function Home() {
 	return (
 		<>

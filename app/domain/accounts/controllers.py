@@ -3,14 +3,15 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated, Any
+from uuid import UUID
 
+from advanced_alchemy.extensions.litestar.providers import create_filter_dependencies
 from advanced_alchemy.utils.text import slugify
 from litestar import Controller, Request, Response, delete, get, patch, post
 from litestar.di import Provide
 from litestar.params import Dependency, Parameter
-from litestar.plugins.flash import flash
 from litestar.repository.exceptions import ConflictError
-from litestar_vite.inertia import InertiaExternalRedirect, InertiaRedirect, share
+from litestar_vite.inertia import InertiaExternalRedirect, InertiaRedirect, flash, share
 
 from app.config import github_oauth2_client, google_oauth2_client
 from app.domain.accounts import schemas
@@ -31,10 +32,9 @@ from app.lib.oauth import AccessTokenState
 from app.lib.schema import Message
 
 if TYPE_CHECKING:
-    from uuid import UUID
-
     from advanced_alchemy.filters import FilterTypes
-    from advanced_alchemy.service import OffsetPagination
+    from advanced_alchemy.service.pagination import OffsetPagination
+    from httpx_oauth.oauth2 import BaseOAuth2
 
     from app.db.models import User as UserModel
 
@@ -148,33 +148,10 @@ class RegistrationController(Controller):
         self,
         request: Request,
         access_token_state: AccessTokenState,
-        roles_service: RoleService,
-        oauth_account_service: UserOAuthAccountService,
         users_service: UserService,
     ) -> InertiaRedirect:
-        """Redirect to the Github Login page."""
-        token, _state = access_token_state
-        account_id, email = await github_oauth2_client.get_id_email(token=token["access_token"])
-        data: dict[str, Any] = {"email": email, "account_id": account_id}
-        role_obj = await roles_service.get_one_or_none(slug=slugify(users_service.default_role))
-        if role_obj is not None:
-            data.update({"role_id": role_obj.id})
-        user, created = await users_service.get_or_upsert(
-            match_fields=["email"],
-            email=email,
-            is_verified=True,
-            is_active=True,
-        )
-        request.set_session({"user_id": user.email})
-        if created:
-            request.logger.info("created a new user", id=user.id)
-            flash(request, "Welcome to fullstack.  Your account is ready", category="info")
-        share(
-            request,
-            "auth",
-            {"isAuthenticated": True, "user": users_service.to_schema(user, schema_type=schemas.User)},
-        )
-        return InertiaRedirect(request, redirect_to=request.url_for("dashboard"))
+        """Complete login with GitHub and redirect to the dashboard."""
+        return await RegistrationController._auth_complete(request, access_token_state, users_service, github_oauth2_client)
 
     @post(name="google.register", path="/register/google/")
     async def google_signup(
@@ -197,10 +174,19 @@ class RegistrationController(Controller):
         access_token_state: AccessTokenState,
         users_service: UserService,
     ) -> InertiaRedirect:
-        """Redirect to the Github Login page."""
-        token, _state = access_token_state
-        _id, email = await google_oauth2_client.get_id_email(token=token["access_token"])
+        """Complete login with Google and redirect to the dashboard."""
+        return await RegistrationController._auth_complete(request, access_token_state, users_service, google_oauth2_client)
 
+    @staticmethod
+    async def _auth_complete(
+        request: Request,
+        access_token_state: AccessTokenState,
+        users_service: UserService,
+        oauth_client: BaseOAuth2,
+    ) -> InertiaRedirect:
+        """Complete the OAuth2 flow and redirect to the dashboard."""
+        token, _ = access_token_state
+        id_, email = await oauth_client.get_id_email(token=token["access_token"])
         user, created = await users_service.get_or_upsert(
             match_fields=["email"],
             email=email,
@@ -208,7 +194,7 @@ class RegistrationController(Controller):
             is_active=True,
         )
         request.set_session({"user_id": user.email})
-        request.logger.info("google auth request", id=_id, email=email)
+        request.logger.info("auth request complete", id=id_, email=email, provider=oauth_client.name)
         if created:
             request.logger.info("created a new user", id=user.id)
             flash(request, "Welcome to fullstack.  Your account is ready", category="info")
@@ -342,7 +328,11 @@ class UserRoleController(Controller):
             description="The role to revoke.",
         ),
     ) -> Message:
-        """Delete a role from the system."""
+        """Delete a role from the system.
+
+        Raises:
+            ConflictError: If the user did not have the role assigned.
+        """
         user_obj = await users_service.get_one(email=data.user_name)
         removed_role: bool = False
         for user_role in user_obj.roles:
@@ -360,7 +350,20 @@ class UserController(Controller):
 
     tags = ["User Accounts"]
     guards = [requires_superuser]
-    dependencies = {"users_service": Provide(provide_users_service)}
+    dependencies = {
+        "users_service": Provide(provide_users_service),
+    } | create_filter_dependencies(
+        {
+            "id_filter": UUID,
+            "search": "name,email",
+            "pagination_type": "limit_offset",
+            "pagination_size": 20,
+            "created_at": True,
+            "updated_at": True,
+            "sort_field": "name",
+            "sort_order": "asc",
+        },
+    )
     signature_namespace = {
         "UserService": UserService,
         "User": schemas.User,

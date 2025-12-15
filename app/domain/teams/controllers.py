@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated
+from uuid import UUID
 
 from advanced_alchemy.exceptions import IntegrityError
+from advanced_alchemy.extensions.litestar.providers import create_service_dependencies, create_service_provider
 from litestar import Controller, Request, delete, get, patch, post
 from litestar.di import Provide
-from litestar.params import Parameter
-from litestar.plugins.flash import flash
-from litestar_vite.inertia import InertiaRedirect
+from litestar.params import Dependency, Parameter
+from litestar_vite.inertia import InertiaRedirect, flash
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload, noload, selectinload
 
 from app.db.models import Team as TeamModel
 from app.db.models import TeamMember, TeamRoles
@@ -19,29 +21,39 @@ from app.db.models.team_member import TeamMember as TeamMemberModel
 from app.domain.accounts.dependencies import provide_users_service
 from app.domain.accounts.guards import requires_active_user
 from app.domain.accounts.services import UserService
-from app.domain.teams.dependencies import (
-    provide_team_invitations_service,
-    provide_team_members_service,
-    provide_teams_service,
-)
 from app.domain.teams.guards import requires_team_admin, requires_team_membership, requires_team_ownership
 from app.domain.teams.schemas import Team, TeamCreate, TeamMemberModify, TeamUpdate
-from app.domain.teams.services import TeamMemberService, TeamService
+from app.domain.teams.services import TeamInvitationService, TeamMemberService, TeamService
 
 if TYPE_CHECKING:
-    from uuid import UUID
-
+    from advanced_alchemy.filters import FilterTypes
     from advanced_alchemy.service.pagination import OffsetPagination
-    from litestar.params import Dependency
-
-    from app.lib.dependencies import FilterTypes
 
 
 class TeamController(Controller):
     """Teams."""
 
     tags = ["Teams"]
-    dependencies = {"teams_service": Provide(provide_teams_service)}
+    dependencies = create_service_dependencies(
+        TeamService,
+        key="teams_service",
+        load=[
+            selectinload(TeamModel.tags),
+            selectinload(TeamModel.members).options(
+                joinedload(TeamMember.user, innerjoin=True),
+            ),
+        ],
+        filters={
+            "id_filter": UUID,
+            "search": "name",
+            "pagination_type": "limit_offset",
+            "pagination_size": 20,
+            "created_at": True,
+            "updated_at": True,
+            "sort_field": "name",
+            "sort_order": "asc",
+        },
+    )
     guards = [requires_active_user]
     signature_namespace = {
         "TeamService": TeamService,
@@ -100,13 +112,7 @@ class TeamController(Controller):
         self,
         request: Request,
         teams_service: TeamService,
-        team_id: Annotated[
-            UUID,
-            Parameter(
-                title="Team ID",
-                description="The team to retrieve.",
-            ),
-        ],
+        team_id: Annotated[UUID, Parameter(title="Team ID", description="The team to retrieve.")],
     ) -> Team:
         """Get details about a team."""
         db_obj = await teams_service.get(team_id)
@@ -125,13 +131,7 @@ class TeamController(Controller):
         request: Request,
         data: TeamUpdate,
         teams_service: TeamService,
-        team_id: Annotated[
-            UUID,
-            Parameter(
-                title="Team ID",
-                description="The team to update.",
-            ),
-        ],
+        team_id: Annotated[UUID, Parameter(title="Team ID", description="The team to update.")],
     ) -> Team:
         """Update a migration team."""
         db_obj = await teams_service.update(
@@ -152,13 +152,10 @@ class TeamController(Controller):
         self,
         request: Request,
         teams_service: TeamService,
-        team_id: Annotated[
-            UUID,
-            Parameter(title="Team ID", description="The team to delete."),
-        ],
+        team_id: Annotated[UUID, Parameter(title="Team ID", description="The team to delete.")],
     ) -> InertiaRedirect:
         """Delete a team."""
-        request.session.pop("currentTeam")
+        request.session.pop("currentTeam", None)
         db_obj = await teams_service.delete(team_id)
         flash(request, f'Removed team "{db_obj.name}".', category="info")
         return InertiaRedirect(request, request.url_for("teams.list"))
@@ -169,8 +166,23 @@ class TeamMemberController(Controller):
 
     tags = ["Team Members"]
     dependencies = {
-        "teams_service": Provide(provide_teams_service),
-        "team_members_service": Provide(provide_team_members_service),
+        "teams_service": create_service_provider(
+            TeamService,
+            load=[
+                selectinload(TeamModel.tags),
+                selectinload(TeamModel.members).options(
+                    joinedload(TeamMember.user, innerjoin=True),
+                ),
+            ],
+        ),
+        "team_members_service": create_service_provider(
+            TeamMemberService,
+            load=[
+                noload("*"),
+                joinedload(TeamMember.team, innerjoin=True).options(noload("*")),
+                joinedload(TeamMember.user, innerjoin=True).options(noload("*")),
+            ],
+        ),
         "users_service": Provide(provide_users_service),
     }
     signature_namespace = {
@@ -189,12 +201,13 @@ class TeamMemberController(Controller):
         teams_service: TeamService,
         users_service: UserService,
         data: TeamMemberModify,
-        team_id: UUID = Parameter(
-            title="Team ID",
-            description="The team to update.",
-        ),
+        team_id: Annotated[UUID, Parameter(title="Team ID", description="The team to update.")],
     ) -> Team:
-        """Add a member to a team."""
+        """Add a member to a team.
+
+        Raises:
+            IntegrityError: If the user is already a member of the team.
+        """
         team_obj = await teams_service.get(team_id)
         user_obj = await users_service.get_one(email=data.user_name)
         is_member = any(membership.team.id == team_id for membership in user_obj.teams)
@@ -218,12 +231,13 @@ class TeamMemberController(Controller):
         team_members_service: TeamMemberService,
         users_service: UserService,
         data: TeamMemberModify,
-        team_id: UUID = Parameter(
-            title="Team ID",
-            description="The team to delete.",
-        ),
+        team_id: Annotated[UUID, Parameter(title="Team ID", description="The team to delete.")],
     ) -> Team:
-        """Delete a new migration team."""
+        """Remove a member from a team.
+
+        Raises:
+            IntegrityError: If the user is not a member of this team.
+        """
         user_obj = await users_service.get_one(email=data.user_name)
         removed_member = False
         for membership in user_obj.teams:
@@ -241,4 +255,7 @@ class TeamInvitationController(Controller):
     """Team Invitations."""
 
     tags = ["Teams"]
-    dependencies = {"team_invitations_service": Provide(provide_team_invitations_service)}
+    dependencies = create_service_dependencies(
+        TeamInvitationService,
+        key="team_invitations_service",
+    )

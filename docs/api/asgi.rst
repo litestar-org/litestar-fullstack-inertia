@@ -4,5 +4,5 @@ app
 
 Entry point for ASGI-compatible application.
 
-.. automodule:: app.asgi
+.. automodule:: app.server.asgi
      :members:

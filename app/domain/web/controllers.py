@@ -2,7 +2,7 @@ from litestar import Controller, Request, get
 from litestar.response import File
 from litestar_vite.inertia import InertiaRedirect
 
-from app import config
+from app.lib.settings import BASE_DIR
 
 
 class WebController(Controller):
@@ -19,30 +19,30 @@ class WebController(Controller):
 
     @get(component="landing", path="/landing/", name="landing", exclude_from_auth=True)
     async def landing(self) -> dict:
-        """Serve site root."""
+        """Serve landing page."""
         return {}
 
     @get(component="dashboard", path="/dashboard/", name="dashboard")
     async def dashboard(self) -> dict:
-        """Serve Dashboard Page."""
+        """Serve dashboard page."""
         return {}
 
     @get(component="about", path="/about/", name="about")
     async def about(self) -> dict:
-        """Serve About Page."""
+        """Serve about page."""
         return {}
 
     @get(component="legal/privacy-policy", path="/privacy-policy/", name="privacy-policy", exclude_from_auth=True)
     async def privacy_policy(self) -> dict:
-        """Serve site root."""
+        """Serve privacy policy page."""
         return {}
 
     @get(component="legal/terms-of-service", path="/terms-of-service/", name="terms-of-service", exclude_from_auth=True)
-    async def legal(self) -> dict:
-        """Serve site root."""
+    async def terms_of_service(self) -> dict:
+        """Serve terms of service page."""
         return {}
 
     @get(path="/favicon.ico", name="favicon", exclude_from_auth=True, include_in_schema=False, sync_to_thread=False)
     def favicon(self) -> File:
-        """Serve site root."""
-        return File(path=f"{config.vite.public_dir}/favicon.ico")
+        """Serve favicon."""
+        return File(path=BASE_DIR / "domain" / "web" / "public" / "favicon.ico")

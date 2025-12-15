@@ -49,13 +49,13 @@ def get_module_global_imports(module_import_path: str, reference_target_source_o
 
 def on_warn_missing_reference(app: Sphinx, domain: str, node: Node) -> bool | None:  # noqa: PLR0911
     ignore_refs: dict[str | re.Pattern, set[str] | re.Pattern] = app.config["ignore_missing_refs"]
-    if node.tagname != "pending_xref":  # type: ignore[attr-defined]
+    if node.tagname != "pending_xref":
         return None
 
     if not hasattr(node, "attributes"):
         return None
 
-    attributes = node.attributes  # type: ignore[attr-defined]
+    attributes = node.attributes
     target = attributes["reftarget"]
 
     # Add common built-in types and classes that Sphinx sometimes fails to resolve
@@ -106,7 +106,7 @@ def on_missing_reference(app: Sphinx, env: BuildEnvironment, node: pending_xref,
     if not hasattr(node, "attributes"):
         return None
 
-    attributes = node.attributes  # type: ignore[attr-defined]
+    attributes = node.attributes
     target = attributes["reftarget"]
     py_domain = env.domains["py"]
 

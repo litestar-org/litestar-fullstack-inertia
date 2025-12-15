@@ -6,23 +6,22 @@ from typing import TYPE_CHECKING, Any
 import pytest
 from advanced_alchemy.base import UUIDAuditBase
 from advanced_alchemy.utils.fixtures import open_fixture_async
-from httpx import AsyncClient
-from litestar_saq.cli import get_saq_plugin
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.engine import URL
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
+from app import config
 from app.domain.accounts.services import RoleService, UserService
 from app.domain.teams.services import TeamService
 from app.lib.settings import get_settings
-from app.server.core import ApplicationCore
-from app.server.plugins import alchemy
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, AsyncIterator
+    from collections.abc import AsyncGenerator, AsyncIterator, Awaitable, Callable
 
     from litestar import Litestar
-    from redis.asyncio import Redis
+    from litestar.types import Receive, Scope, Send
+    from pytest_databases.docker.postgres import PostgresService
 
     from app.db.models import Team, User
 
@@ -30,15 +29,9 @@ here = Path(__file__).parent
 pytestmark = pytest.mark.anyio
 
 
-@pytest.fixture(name="engine", autouse=True)
+@pytest.fixture(name="engine")
 async def fx_engine(
-    postgres_docker_ip: str,
-    postgres_service: None,
-    redis_service: None,
-    postgres_port: int,
-    postgres_user: str,
-    postgres_password: str,
-    postgres_database: str,
+    postgres_service: "PostgresService",
 ) -> AsyncEngine:
     """Postgresql instance for end-to-end testing.
 
@@ -48,11 +41,11 @@ async def fx_engine(
     return create_async_engine(
         URL(
             drivername="postgresql+asyncpg",
-            username=postgres_user,
-            password=postgres_password,
-            host=postgres_docker_ip,
-            port=postgres_port,
-            database=postgres_database,
+            username=postgres_service.user,
+            password=postgres_service.password,
+            host=postgres_service.host,
+            port=postgres_service.port,
+            database=postgres_service.database,
             query={},  # type:ignore[arg-type]
         ),
         echo=False,
@@ -110,49 +103,129 @@ async def _seed_db(
 
 
 @pytest.fixture(autouse=True)
-def _patch_db(
+async def _patch_db(
     app: "Litestar",
     engine: AsyncEngine,
     sessionmaker: async_sessionmaker[AsyncSession],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(alchemy._config, "session_maker", sessionmaker)
-    if isinstance(alchemy._config, list):
-        monkeypatch.setitem(app.state, alchemy._config[0].engine_app_state_key, engine)
-        monkeypatch.setitem(
-            app.state,
-            alchemy._config[0].session_maker_app_state_key,
-            async_sessionmaker(bind=engine, expire_on_commit=False),
-        )
-    else:
-        monkeypatch.setitem(app.state, alchemy._config.engine_app_state_key, engine)
-        monkeypatch.setitem(
-            app.state,
-            alchemy._config.session_maker_app_state_key,
-            async_sessionmaker(bind=engine, expire_on_commit=False),
-        )
+    monkeypatch.setattr(config.alchemy, "session_maker", sessionmaker)
+    monkeypatch.setattr(config.alchemy, "engine_instance", engine)
+    # Also patch app state for tests that check app.state directly
+    app.state[config.alchemy.engine_app_state_key] = engine
+    app.state[config.alchemy.session_maker_app_state_key] = sessionmaker
 
 
-@pytest.fixture(autouse=True)
-def _patch_redis(app: "Litestar", redis: Redis, monkeypatch: pytest.MonkeyPatch) -> None:
-    cache_config = app.response_cache_config
-    assert cache_config is not None
-    saq_plugin = get_saq_plugin(app)
-    app_plugin = app.plugins.get(ApplicationCore)
-    monkeypatch.setattr(app_plugin, "redis", redis)
-    monkeypatch.setattr(app.stores.get(cache_config.store), "_redis", redis)
-    if saq_plugin._config.queue_instances is not None:
-        for queue in saq_plugin._config.queue_instances.values():
-            monkeypatch.setattr(queue, "redis", redis)
+def _fresh_state_lifespan_middleware(
+    app: "Litestar", initial_state: dict[str, Any],
+) -> Callable[["Scope", "Receive", "Send"], Awaitable[None]]:
+    """Middleware that creates a fresh state dict for each HTTP request.
+
+    This prevents state bleeding between requests when using LifespanManager,
+    which normally shares the same state dict across all requests.
+    """
+
+    async def app_with_state(scope: "Scope", receive: "Receive", send: "Send") -> None:
+        if scope["type"] == "http":  # type: ignore[comparison-overlap]
+            # Create a copy of initial_state for each HTTP request
+            # This prevents _ls_connection_state from being reused
+            scope["state"] = dict(initial_state)  # type: ignore[unreachable]
+        else:
+            # Lifespan events can share state
+            scope["state"] = initial_state
+        await app(scope, receive, send)
+
+    return app_with_state
 
 
 @pytest.fixture(name="client")
 async def fx_client(app: Litestar) -> AsyncIterator[AsyncClient]:
     """Async client that calls requests on the app.
 
-    ```text
-    ValueError: The future belongs to a different loop than the one specified as the loop argument
-    ```
+    Uses asgi-lifespan LifespanManager to ensure app lifespan hooks run
+    (e.g., ViteSPAHandler initialization), with a custom middleware that
+    prevents state bleeding between requests.
     """
-    async with AsyncClient(app, base_url="http://testserver", timeout=10) as client:  # type: ignore[arg-type,misc]
+    from asgi_lifespan import LifespanManager
+
+    manager = LifespanManager(app)  # type: ignore[arg-type]
+    # Replace the wrapped app with one that creates fresh state per request
+    manager.app = _fresh_state_lifespan_middleware(app, manager._state)  # type: ignore[assignment]
+
+    async with manager, AsyncClient(
+        transport=ASGITransport(app=manager.app),
+        base_url="http://testserver",
+        timeout=10,
+    ) as client:
         yield client
+
+
+async def _get_auth_headers(client: AsyncClient, username: str, password: str, *, inertia: bool = False) -> dict[str, str]:
+    """Helper to login a user and return auth headers with CSRF token.
+
+    Args:
+        client: The test client.
+        username: The username to login with.
+        password: The password to login with.
+        inertia: If True, include X-Inertia header for Inertia page routes.
+    """
+    # Clear existing cookies to ensure fresh session for each login
+    client.cookies.clear()
+
+    # First get CSRF token
+    response = await client.get("/login")
+    csrf_token: str = response.cookies.get("XSRF-TOKEN") or ""
+
+    headers: dict[str, str] = {
+        "X-XSRF-TOKEN": csrf_token,
+        "Content-Type": "application/json",
+    }
+
+    # Login the user
+    response = await client.post(
+        "/login/",
+        json={"username": username, "password": password},
+        headers=headers,
+        follow_redirects=False,
+    )
+
+    # Get updated CSRF token after login
+    csrf_token = response.cookies.get("XSRF-TOKEN") or csrf_token
+
+    # Capture cookies at this moment - create a copy to avoid mutation issues
+    cookies_snapshot = dict(client.cookies.items())
+
+    result = {
+        "X-XSRF-TOKEN": csrf_token,
+        "Content-Type": "application/json",
+        "Cookie": "; ".join([f"{k}={v}" for k, v in cookies_snapshot.items()]),
+    }
+
+    if inertia:
+        result["X-Inertia"] = "true"
+
+    return result
+
+
+@pytest.fixture(name="superuser_token_headers")
+async def fx_superuser_token_headers(client: AsyncClient) -> dict[str, str]:
+    """Auth headers for superuser (API routes without Inertia)."""
+    return await _get_auth_headers(client, "superuser@example.com", "Test_Password1!")
+
+
+@pytest.fixture(name="user_token_headers")
+async def fx_user_token_headers(client: AsyncClient) -> dict[str, str]:
+    """Auth headers for regular user (API routes without Inertia)."""
+    return await _get_auth_headers(client, "user@example.com", "Test_Password2!")
+
+
+@pytest.fixture(name="superuser_inertia_headers")
+async def fx_superuser_inertia_headers(client: AsyncClient) -> dict[str, str]:
+    """Auth headers for superuser (Inertia page routes)."""
+    return await _get_auth_headers(client, "superuser@example.com", "Test_Password1!", inertia=True)
+
+
+@pytest.fixture(name="user_inertia_headers")
+async def fx_user_inertia_headers(client: AsyncClient) -> dict[str, str]:
+    """Auth headers for regular user (Inertia page routes)."""
+    return await _get_auth_headers(client, "user@example.com", "Test_Password2!", inertia=True)

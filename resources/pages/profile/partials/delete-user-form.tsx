@@ -1,3 +1,5 @@
+import { useForm } from "@inertiajs/react"
+import { useRef, useState } from "react"
 import { InputError } from "@/components/input-error"
 import {
 	AlertDialog,
@@ -13,12 +15,10 @@ import {
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { useForm } from "@inertiajs/react"
-import { route } from "litestar-vite-plugin/inertia-helpers"
-import { useRef, useState } from "react"
+import { route } from "@/lib/generated/routes"
 
 export default function DeleteUserForm() {
-	const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false)
+	const [_confirmingUserDeletion, setConfirmingUserDeletion] = useState(false)
 	const passwordInput = useRef<HTMLInputElement>(null)
 	const {
 		data,
@@ -31,7 +31,7 @@ export default function DeleteUserForm() {
 		password: "",
 	})
 
-	const confirmUserDeletion = () => {
+	const _confirmUserDeletion = () => {
 		setConfirmingUserDeletion(true)
 	}
 
