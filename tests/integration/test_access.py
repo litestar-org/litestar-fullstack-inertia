@@ -54,8 +54,12 @@ async def test_user_login_failure(client: AsyncClient, username: str, password: 
         headers=headers,
         follow_redirects=False,
     )
-    # Failed login should return 401 or similar error, not redirect to dashboard
-    assert response.status_code != 303 or "/dashboard" not in response.headers.get("location", "")
+    # Failed login redirects back to login page with error, not to dashboard
+    # Inertia uses 303 redirect but location should be /login, not /dashboard
+    assert response.status_code == 303, f"Expected 303 redirect, got {response.status_code}"
+    location = response.headers.get("location", "")
+    assert "/dashboard" not in location, f"Failed login should not redirect to dashboard, got: {location}"
+    assert "/login" in location, f"Failed login should redirect to login page, got: {location}"
 
 
 @pytest.mark.parametrize(
