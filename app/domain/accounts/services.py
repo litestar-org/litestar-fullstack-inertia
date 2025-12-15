@@ -12,7 +12,7 @@ from advanced_alchemy.service import (
     is_dict_without_field,
     schema_dump,
 )
-from litestar.exceptions import PermissionDeniedException
+from litestar.exceptions import NotAuthorizedException, PermissionDeniedException
 
 from app.db.models import Role, User, UserOauthAccount, UserRole
 from app.domain.accounts.repositories import (
@@ -63,7 +63,7 @@ class UserService(SQLAlchemyAsyncRepositoryService[User]):
             password: The user's password.
 
         Raises:
-            PermissionDeniedException: Raised when the user doesn't exist, isn't verified, or is not active.
+            NotAuthorizedException: Raised when the user doesn't exist, isn't verified, or is not active.
 
         Returns:
             User: The user object
@@ -71,16 +71,16 @@ class UserService(SQLAlchemyAsyncRepositoryService[User]):
         db_obj = await self.get_one_or_none(email=username)
         if db_obj is None:
             msg = "User not found or password invalid"
-            raise PermissionDeniedException(detail=msg)
+            raise NotAuthorizedException(detail=msg)
         if db_obj.hashed_password is None:
             msg = "User not found or password invalid."
-            raise PermissionDeniedException(detail=msg)
+            raise NotAuthorizedException(detail=msg)
         if not await crypt.verify_password(password, db_obj.hashed_password):
             msg = "User not found or password invalid"
-            raise PermissionDeniedException(detail=msg)
+            raise NotAuthorizedException(detail=msg)
         if not db_obj.is_active:
             msg = "User account is inactive"
-            raise PermissionDeniedException(detail=msg)
+            raise NotAuthorizedException(detail=msg)
         return db_obj
 
     async def update_password(self, data: dict[str, Any], db_obj: User) -> None:
