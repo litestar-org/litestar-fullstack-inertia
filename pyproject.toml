@@ -52,6 +52,7 @@ Source = "https://github.com/litestar-org/litestar-fullstack-inertia"
 dev = [
   "asgi-lifespan",
   "bump-my-version",
+  "hatch",
   { include-group = "lint" },
   { include-group = "test" },
   { include-group = "docs" },
@@ -119,6 +120,18 @@ skip-excluded-dirs = false
 include = ["CHANGELOG.md", "/app/domain/web/public/**/*", "/app/**/*.sql", "/app/db/**/*.ini"]
 packages = ["app"]
 
+# PyApp single-file binary configuration
+# Build with: uv run hatch build --target binary
+# Produces a standalone executable with Python + all dependencies bundled
+[tool.hatch.build.targets.binary]
+scripts = ["app"]
+pyapp-version = "0.29.0"
+python-version = "3.12"
+
+[tool.hatch.build.targets.binary.env]
+PYAPP_DISTRIBUTION_EMBED = "1"
+PYAPP_FULL_ISOLATION = "1"
+PYAPP_UV_ENABLED = "1"
 
 [tool.bumpversion]
 allow_dirty = false

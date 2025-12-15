@@ -1,0 +1,292 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PYTHONUNBUFFERED: "1"
+  FORCE_COLOR: "1"
+
+jobs:
+  # ============================================================================
+  # Validate Release Tag
+  # ============================================================================
+  validate:
+    name: Validate Release Tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Validate tag format
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid tag format: $TAG"
+            echo "Expected format: vX.Y.Z (e.g., v0.2.0)"
+            exit 1
+          fi
+          echo "Valid tag: $TAG"
+
+  # ============================================================================
+  # Run Tests
+  # ============================================================================
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: validate
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql+asyncpg://app:app@localhost:5432/app
+        run: uv run pytest tests -v
+
+  # ============================================================================
+  # Build Python Wheel
+  # ============================================================================
+  build-wheel:
+    name: Build Python Wheel
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install frontend dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build frontend assets
+        run: uv run app assets build
+
+      - name: Build wheel
+        run: uv build --wheel
+
+      - name: Verify wheel contents
+        run: |
+          unzip -l dist/*.whl | grep -E "(public|migrations)" || echo "Warning: Expected assets may be missing"
+
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-wheel
+          path: dist/*.whl
+          retention-days: 7
+
+  # ============================================================================
+  # Build Binaries (Multi-Platform)
+  # ============================================================================
+  build-binaries:
+    name: Build Binary (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+    needs: build-wheel
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux-x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            binary_name: app
+
+          - platform: linux-aarch64
+            os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+            binary_name: app
+
+          - platform: macos-x86_64
+            os: macos-13
+            target: x86_64-apple-darwin
+            binary_name: app
+
+          - platform: macos-aarch64
+            os: macos-14
+            target: aarch64-apple-darwin
+            binary_name: app
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Download wheel artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: python-wheel
+          path: dist/
+
+      - name: Get version from wheel
+        id: version
+        run: |
+          WHEEL=$(ls dist/*.whl | head -1)
+          VERSION=$(echo $WHEEL | sed -E 's/.*-([0-9]+\.[0-9]+\.[0-9]+)-.*/\1/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "wheel=$WHEEL" >> $GITHUB_OUTPUT
+
+      - name: Build binary with PyApp
+        env:
+          PYAPP_PROJECT_PATH: ${{ steps.version.outputs.wheel }}
+          PYAPP_PYTHON_VERSION: "3.12"
+          PYAPP_DISTRIBUTION_EMBED: "1"
+          PYAPP_FULL_ISOLATION: "1"
+          PYAPP_UV_ENABLED: "1"
+          CARGO_BUILD_TARGET: ${{ matrix.target }}
+        run: |
+          uv run hatch build --target binary
+
+      - name: Rename and prepare binary
+        run: |
+          mkdir -p release
+          mv dist/binary/${{ matrix.binary_name }} release/app-${{ matrix.platform }}
+          chmod +x release/app-${{ matrix.platform }}
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.platform }}
+          path: release/app-${{ matrix.platform }}
+          retention-days: 7
+
+  # ============================================================================
+  # Create GitHub Release
+  # ============================================================================
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs:
+      - build-wheel
+      - build-binaries
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          PREV_TAG=$(git describe --tags --abbrev=0 ${TAG}^ 2>/dev/null || echo "")
+
+          cat > RELEASE_NOTES.md << 'EOF'
+          ## Litestar Fullstack Inertia
+
+          A modern fullstack application with Litestar, Inertia.js, React, and shadcn/ui.
+
+          ### Installation Options
+
+          **Python Package (pip/uv):**
+          ```bash
+          pip install app-${TAG#v}-py3-none-any.whl
+          ```
+
+          **Standalone Binary (no Python required):**
+          Download the appropriate binary for your platform below. The binary includes Python, all dependencies, and frontend assets bundled together.
+
+          ### Available Binaries
+
+          | Platform | Binary | Notes |
+          |----------|--------|-------|
+          | Linux x86_64 | `app-linux-x86_64` | glibc 2.28+ (Ubuntu 20.04+, RHEL 8+) |
+          | Linux ARM64 | `app-linux-aarch64` | glibc 2.28+ (AWS Graviton, Raspberry Pi 4+) |
+          | macOS Intel | `app-macos-x86_64` | macOS 10.15+ |
+          | macOS Apple Silicon | `app-macos-aarch64` | macOS 11+ (M1/M2/M3) |
+
+          ### Running the Binary
+
+          ```bash
+          # Make executable (Linux/macOS)
+          chmod +x app-linux-x86_64
+
+          # Run database migrations and start server
+          ./app-linux-x86_64 database upgrade --no-prompt
+          ./app-linux-x86_64 run --host 0.0.0.0 --port 8000
+          ```
+
+          EOF
+
+          if [ -n "$PREV_TAG" ]; then
+            echo "### Changes since $PREV_TAG" >> RELEASE_NOTES.md
+            echo "" >> RELEASE_NOTES.md
+            git log ${PREV_TAG}..${TAG} --pretty=format:"- %s (%h)" >> RELEASE_NOTES.md
+          fi
+
+      - name: Organize release files
+        run: |
+          mkdir -p release-files
+          cp artifacts/python-wheel/*.whl release-files/ || true
+          find artifacts/binary-* -type f -exec cp {} release-files/ \;
+          ls -lah release-files/
+
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          gh release create "$TAG" \
+            --title "Litestar Fullstack Inertia $TAG" \
+            --notes-file RELEASE_NOTES.md \
+            release-files/*
+
+          echo "Release created successfully!"

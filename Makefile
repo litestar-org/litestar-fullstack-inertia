@@ -103,6 +103,35 @@ release:                                           ## Bump version and create re
 
 
 # =============================================================================
+# Build
+# =============================================================================
+.PHONY: build
+build: build-assets build-wheel                    ## Build wheel with frontend assets
+
+.PHONY: build-assets
+build-assets:                                      ## Build frontend assets
+	@echo "${INFO} Building frontend assets... 🎨"
+	@uv run app assets build
+	@echo "${OK} Frontend assets built"
+
+.PHONY: build-wheel
+build-wheel:                                       ## Build Python wheel
+	@echo "${INFO} Building Python wheel... 📦"
+	@uv build --wheel >/dev/null 2>&1
+	@echo "${OK} Wheel built: dist/*.whl"
+
+.PHONY: build-binary
+build-binary: build                                ## Build standalone binary (requires Rust toolchain)
+	@echo "${INFO} Building standalone binary... 🔨"
+	@echo "${INFO} This requires Rust toolchain (cargo) to be installed"
+	@uv run hatch build --target binary
+	@echo "${OK} Binary built: dist/app"
+
+.PHONY: build-all
+build-all: build build-binary                      ## Build wheel and standalone binary
+
+
+# =============================================================================
 # Tests, Linting, Coverage
 # =============================================================================
 .PHONY: mypy
