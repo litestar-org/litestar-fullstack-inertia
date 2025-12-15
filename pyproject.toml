@@ -296,6 +296,7 @@ known-first-party = ['tests', 'app', 'config']
 
 [tool.slotscheck]
 strict-imports = false
+exclude-modules = "app.db.migrations"
 
 [tool.codespell]
 ignore-words-list = "alog"
