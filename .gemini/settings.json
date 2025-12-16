@@ -1,0 +1,22 @@
+{
+  "context": {
+    "fileName": ["GEMINI.md"],
+    "includeDirectories": [".gemini/context", "specs/guides"],
+    "loadFromIncludeDirectories": true
+  },
+  "model": {
+    "name": "gemini-3-pro-preview"
+  },
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "trust": true
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "trust": true
+    }
+  }
+}

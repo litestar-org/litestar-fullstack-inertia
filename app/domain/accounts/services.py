@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
-from typing import Any
+import hashlib
+import secrets
+from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING, Any
 from uuid import UUID  # noqa: TC003
 
 from advanced_alchemy.service import (
@@ -14,8 +16,9 @@ from advanced_alchemy.service import (
 )
 from litestar.exceptions import NotAuthorizedException, PermissionDeniedException
 
-from app.db.models import Role, User, UserOauthAccount, UserRole
+from app.db.models import EmailToken, Role, TokenType, User, UserOauthAccount, UserRole
 from app.domain.accounts.repositories import (
+    EmailTokenRepository,
     RoleRepository,
     UserOauthAccountRepository,
     UserRepository,
@@ -23,8 +26,11 @@ from app.domain.accounts.repositories import (
 )
 from app.lib import crypt
 
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
-class UserService(SQLAlchemyAsyncRepositoryService[User]):
+
+class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
     """Handles database operations for users."""
 
     repository_type = UserRepository
@@ -84,16 +90,16 @@ class UserService(SQLAlchemyAsyncRepositoryService[User]):
         return db_obj
 
     async def update_password(self, data: dict[str, Any], db_obj: User) -> None:
-        """Update stored user password.
+        """Update stored user password with current password verification.
 
-        This is only used when not used IAP authentication.
+        This is used when the user knows their current password.
 
         Args:
-            data (UserPasswordUpdate): _description_
-            db_obj (User): _description_
+            data: Dict containing current_password and new_password.
+            db_obj: User database object.
 
         Raises:
-            PermissionDeniedException: _description_
+            PermissionDeniedException: If current password is invalid or user inactive.
         """
         if db_obj.hashed_password is None:
             msg = "User not found or password invalid."
@@ -105,6 +111,24 @@ class UserService(SQLAlchemyAsyncRepositoryService[User]):
             msg = "User account is not active"
             raise PermissionDeniedException(detail=msg)
         db_obj.hashed_password = await crypt.get_password_hash(data["new_password"])
+        await self.repository.update(db_obj)
+
+    async def reset_password(self, new_password: str, db_obj: User) -> None:
+        """Reset user password without current password verification.
+
+        Used for password reset flows where user has verified identity via email token.
+
+        Args:
+            new_password: The new password to set.
+            db_obj: User database object.
+
+        Raises:
+            PermissionDeniedException: If user account is inactive.
+        """
+        if not db_obj.is_active:
+            msg = "User account is not active"
+            raise PermissionDeniedException(detail=msg)
+        db_obj.hashed_password = await crypt.get_password_hash(new_password)
         await self.repository.update(db_obj)
 
     @staticmethod
@@ -125,7 +149,7 @@ class UserService(SQLAlchemyAsyncRepositoryService[User]):
         )
 
 
-class RoleService(SQLAlchemyAsyncRepositoryService[Role]):
+class RoleService(SQLAlchemyAsyncRepositoryService[Role, RoleRepository]):
     """Handles database operations for roles."""
 
     repository_type = RoleRepository
@@ -146,13 +170,181 @@ class RoleService(SQLAlchemyAsyncRepositoryService[Role]):
         return data
 
 
-class UserRoleService(SQLAlchemyAsyncRepositoryService[UserRole]):
+class UserRoleService(SQLAlchemyAsyncRepositoryService[UserRole, UserRoleRepository]):
     """Handles database operations for user roles."""
 
     repository_type = UserRoleRepository
 
 
-class UserOAuthAccountService(SQLAlchemyAsyncRepositoryService[UserOauthAccount]):
-    """Handles database operations for user roles."""
+class UserOAuthAccountService(SQLAlchemyAsyncRepositoryService[UserOauthAccount, UserOauthAccountRepository]):
+    """Handles database operations for user OAuth accounts."""
 
     repository_type = UserOauthAccountRepository
+
+
+class EmailTokenService(SQLAlchemyAsyncRepositoryService[EmailToken, EmailTokenRepository]):
+    """Service for managing email tokens.
+
+    Handles creation, validation, and consumption of secure tokens
+    for email verification, password reset, and similar flows.
+
+    Tokens are hashed (SHA-256) before storage - plain tokens are
+    only returned once during creation.
+    """
+
+    repository_type = EmailTokenRepository
+
+    @staticmethod
+    def _hash_token(token: str) -> str:
+        """Hash a token using SHA-256.
+
+        Args:
+            token: Plain text token to hash.
+
+        Returns:
+            SHA-256 hex digest of the token.
+        """
+        return hashlib.sha256(token.encode()).hexdigest()
+
+    @staticmethod
+    def _generate_token() -> str:
+        """Generate a secure random token.
+
+        Returns:
+            URL-safe base64 encoded random token.
+        """
+        return secrets.token_urlsafe(32)
+
+    async def create_token(
+        self,
+        email: str,
+        token_type: TokenType,
+        expires_delta: timedelta,
+        user_id: UUID | None = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+        metadata: dict | None = None,
+    ) -> tuple[EmailToken, str]:
+        """Create a new email token.
+
+        Args:
+            email: Email address to associate with token.
+            token_type: Type of token (verification, password reset, etc).
+            expires_delta: Duration until token expires.
+            user_id: Optional user ID to associate with token.
+            ip_address: Optional IP address of request origin.
+            user_agent: Optional user agent string.
+            metadata: Optional additional metadata.
+
+        Returns:
+            Tuple of (database record, plain token). Plain token should
+            be sent to user via email.
+        """
+        plain_token = self._generate_token()
+        token_hash = self._hash_token(plain_token)
+        expires_at = datetime.now(UTC) + expires_delta
+
+        token_record = await self.create(
+            {
+                "email": email,
+                "token_type": token_type,
+                "token_hash": token_hash,
+                "expires_at": expires_at,
+                "user_id": user_id,
+                "ip_address": ip_address,
+                "user_agent": user_agent,
+                "metadata_": metadata or {},
+            },
+            auto_commit=True,
+        )
+
+        return token_record, plain_token
+
+    async def validate_token(
+        self, plain_token: str, token_type: TokenType, email: str | None = None,
+    ) -> EmailToken | None:
+        """Validate a token without consuming it.
+
+        Args:
+            plain_token: The plain text token to validate.
+            token_type: Expected token type.
+            email: Optional email to verify against token.
+
+        Returns:
+            EmailToken record if valid, None otherwise.
+        """
+        token_hash = self._hash_token(plain_token)
+
+        token_record = await self.get_one_or_none(token_hash=token_hash, token_type=token_type)
+
+        if token_record is None:
+            return None
+
+        if not token_record.is_valid:
+            return None
+
+        if email and token_record.email != email:
+            return None
+
+        return token_record
+
+    async def consume_token(
+        self, plain_token: str, token_type: TokenType, email: str | None = None,
+    ) -> EmailToken | None:
+        """Validate and consume a token.
+
+        Token cannot be used again after consumption.
+
+        Args:
+            plain_token: The plain text token to consume.
+            token_type: Expected token type.
+            email: Optional email to verify against token.
+
+        Returns:
+            EmailToken record if valid and consumed, None otherwise.
+        """
+        token_record = await self.validate_token(plain_token, token_type, email)
+
+        if token_record is None:
+            return None
+
+        token_record.mark_used()
+        await self.update(token_record, auto_commit=True)
+
+        return token_record
+
+    async def invalidate_existing_tokens(self, email: str, token_type: TokenType) -> int:
+        """Invalidate all existing tokens of a type for an email.
+
+        Args:
+            email: Email address to invalidate tokens for.
+            token_type: Type of tokens to invalidate.
+
+        Returns:
+            Number of tokens invalidated.
+        """
+        tokens = await self.list(email=email, token_type=token_type, used_at=None)
+
+        count = 0
+        for token in tokens:
+            if token.is_valid:
+                token.mark_used()
+                await self.update(token, auto_commit=False)
+                count += 1
+
+        if count > 0:
+            await self.repository.session.commit()
+
+        return count
+
+
+async def provide_email_token_service(db_session: AsyncSession) -> EmailTokenService:
+    """Provide EmailTokenService instance.
+
+    Args:
+        db_session: Database session.
+
+    Returns:
+        Configured EmailTokenService instance.
+    """
+    return EmailTokenService(session=db_session)

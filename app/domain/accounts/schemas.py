@@ -11,6 +11,10 @@ from app.lib.schema import CamelizedBaseStruct
 __all__ = (
     "AccountLogin",
     "AccountRegister",
+    "EmailSent",
+    "ForgotPasswordRequest",
+    "PasswordReset",
+    "PasswordResetToken",
     "PasswordUpdate",
     "PasswordVerify",
     "ProfileUpdate",
@@ -128,3 +132,29 @@ class UserRoleRevoke(CamelizedBaseStruct):
     """User role revoke ."""
 
     user_name: str
+
+
+class ForgotPasswordRequest(CamelizedBaseStruct):
+    """Request to send a password reset email."""
+
+    email: str
+
+
+class PasswordReset(CamelizedBaseStruct):
+    """Reset password with token."""
+
+    token: str
+    password: str
+
+
+class EmailSent(CamelizedBaseStruct):
+    """Confirmation that an email was sent."""
+
+    email_sent: bool = True
+
+
+class PasswordResetToken(CamelizedBaseStruct):
+    """Token data for password reset form."""
+
+    token: str
+    email: str

@@ -26,13 +26,16 @@ const formSchema = z.object({
 type FormProps = z.infer<typeof formSchema>
 
 export default function UserLoginForm({ className, ...props }: UserLoginFormProps) {
-	const { content, flash } = usePage<{
+	const { content, flash, githubOAuthEnabled, googleOAuthEnabled } = usePage<{
 		content: {
 			status_code: number
 			message: string
 		}
 		flash: FlashMessages
+		githubOAuthEnabled: boolean
+		googleOAuthEnabled: boolean
 	}>().props
+	const hasOAuthProviders = githubOAuthEnabled || googleOAuthEnabled
 	const [isLoading, setIsLoading] = useState<boolean>(false)
 	const form = useForm<FormProps>({
 		resolver: zodResolver(formSchema),
@@ -122,20 +125,28 @@ export default function UserLoginForm({ className, ...props }: UserLoginFormProp
 					</div>
 				</form>
 			</Form>
-			<div className="relative">
-				<div className="absolute inset-0 flex items-center">
-					<span className="w-full border-t" />
-				</div>
-				<div className="relative flex justify-center text-xs uppercase">
-					<span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-				</div>
-			</div>
-			<Button variant="outline" type="button" disabled={isLoading} onClick={() => router.post(route("github.register"))}>
-				{isLoading ? <Icons.spinner className="mr-2 h-5 w-5" /> : <Icons.gitHub className="mr-2 h-5 w-5" />} Sign in with Github
-			</Button>
-			<Button variant="outline" type="button" disabled={isLoading}>
-				{isLoading ? <Icons.spinner className="mr-2 h-5 w-5" /> : <Icons.google className="mr-2 h-5 w-5" />} Sign in with Google
-			</Button>
+			{hasOAuthProviders && (
+				<>
+					<div className="relative">
+						<div className="absolute inset-0 flex items-center">
+							<span className="w-full border-t" />
+						</div>
+						<div className="relative flex justify-center text-xs uppercase">
+							<span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+						</div>
+					</div>
+					{githubOAuthEnabled && (
+						<Button variant="outline" type="button" disabled={isLoading} onClick={() => router.post(route("github.register"))}>
+							{isLoading ? <Icons.spinner className="mr-2 h-5 w-5" /> : <Icons.gitHub className="mr-2 h-5 w-5" />} Sign in with GitHub
+						</Button>
+					)}
+					{googleOAuthEnabled && (
+						<Button variant="outline" type="button" disabled={isLoading} onClick={() => router.post(route("google.register"))}>
+							{isLoading ? <Icons.spinner className="mr-2 h-5 w-5" /> : <Icons.google className="mr-2 h-5 w-5" />} Sign in with Google
+						</Button>
+					)}
+				</>
+			)}
 		</div>
 	)
 }

@@ -14,3 +14,7 @@ class CamelizedBaseStruct(BaseStruct, rename="camel"):
 
 class Message(CamelizedBaseStruct):
     message: str
+
+
+class NoProps(CamelizedBaseStruct):
+    """Empty page props for Inertia pages with no data."""

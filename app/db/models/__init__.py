@@ -1,3 +1,4 @@
+from .email_token import EmailToken, TokenType
 from .oauth_account import UserOauthAccount
 from .role import Role
 from .tag import Tag
@@ -10,12 +11,14 @@ from .user import User
 from .user_role import UserRole
 
 __all__ = (
+    "EmailToken",
     "Role",
     "Tag",
     "Team",
     "TeamInvitation",
     "TeamMember",
     "TeamRoles",
+    "TokenType",
     "User",
     "UserOauthAccount",
     "UserRole",

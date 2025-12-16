@@ -4,11 +4,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import structlog
-from advanced_alchemy.extensions.litestar import (
-    AlembicAsyncConfig,
-    AsyncSessionConfig,
-    SQLAlchemyAsyncConfig,
-)
+from advanced_alchemy.extensions.litestar import AlembicAsyncConfig, AsyncSessionConfig, SQLAlchemyAsyncConfig
 from httpx_oauth.clients.github import GitHubOAuth2
 from httpx_oauth.clients.google import GoogleOAuth2
 from litestar.config.compression import CompressionConfig
@@ -28,6 +24,7 @@ from litestar.plugins.structlog import StructlogConfig
 from litestar.template import TemplateConfig
 from litestar_vite import InertiaConfig, PathConfig, TypeGenConfig, ViteConfig
 
+from app.domain.teams.schemas import CurrentTeam
 from app.lib.settings import BASE_DIR, get_settings
 
 settings = get_settings()
@@ -67,8 +64,12 @@ vite = ViteConfig(
             "canResetPassword": True,
             "hasTermsAndPrivacyPolicyFeature": True,
             "mustVerifyEmail": True,
+            "githubOAuthEnabled": settings.app.github_oauth_enabled,
+            "googleOAuthEnabled": settings.app.google_oauth_enabled,
+            "registrationEnabled": settings.app.REGISTRATION_ENABLED,
+            "mfaEnabled": settings.app.MFA_ENABLED,
         },
-        extra_session_page_props={"currentTeam"},
+        extra_session_page_props={"currentTeam": CurrentTeam},
     ),
     types=TypeGenConfig(
         output=BASE_DIR.parent / "resources" / "lib" / "generated",
@@ -95,6 +96,7 @@ log = StructlogConfig(
         processors=_structlog_default_processors,
         logger_factory=default_logger_factory(as_json=_render_as_json),
         standard_lib_logging_config=LoggingConfig(
+            disable_existing_loggers=True,
             root={"level": logging.getLevelName(settings.log.LEVEL), "handlers": ["queue_listener"]},
             formatters={
                 "standard": {

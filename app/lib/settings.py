@@ -145,6 +145,46 @@ class LogSettings:
 
 
 @dataclass
+class EmailSettings:
+    """Email service configuration."""
+
+    ENABLED: bool = field(default_factory=get_env("EMAIL_ENABLED", False))
+    """Enable email sending. If False, emails are logged but not sent."""
+    BACKEND: str = field(default_factory=get_env("EMAIL_BACKEND", "console"))
+    """Email backend: 'smtp', 'console', or 'locmem'."""
+    FROM_EMAIL: str = field(default_factory=get_env("EMAIL_FROM", "noreply@example.com"))
+    """Default from email address."""
+
+    # SMTP Settings
+    SMTP_HOST: str = field(default_factory=get_env("EMAIL_SMTP_HOST", "localhost"))
+    """SMTP server hostname."""
+    SMTP_PORT: int = field(default_factory=get_env("EMAIL_SMTP_PORT", 587))
+    """SMTP server port."""
+    SMTP_USER: str = field(default_factory=get_env("EMAIL_SMTP_USER", ""))
+    """SMTP username for authentication."""
+    SMTP_PASSWORD: str = field(default_factory=get_env("EMAIL_SMTP_PASSWORD", ""))
+    """SMTP password for authentication."""
+    SMTP_USE_TLS: bool = field(default_factory=get_env("EMAIL_SMTP_USE_TLS", True))
+    """Use STARTTLS for SMTP connection."""
+    SMTP_USE_SSL: bool = field(default_factory=get_env("EMAIL_SMTP_USE_SSL", False))
+    """Use implicit SSL for SMTP connection."""
+    SMTP_TIMEOUT: int = field(default_factory=get_env("EMAIL_SMTP_TIMEOUT", 30))
+    """SMTP connection timeout in seconds."""
+
+    # Token expiration settings
+    VERIFICATION_TOKEN_EXPIRES_HOURS: int = field(
+        default_factory=get_env("EMAIL_VERIFICATION_TOKEN_EXPIRES_HOURS", 24),
+    )
+    """Hours until email verification token expires."""
+    PASSWORD_RESET_TOKEN_EXPIRES_MINUTES: int = field(
+        default_factory=get_env("EMAIL_PASSWORD_RESET_TOKEN_EXPIRES_MINUTES", 60),
+    )
+    """Minutes until password reset token expires."""
+    INVITATION_TOKEN_EXPIRES_DAYS: int = field(default_factory=get_env("EMAIL_INVITATION_TOKEN_EXPIRES_DAYS", 7))
+    """Days until team invitation token expires."""
+
+
+@dataclass
 class AppSettings:
     """Application configuration"""
 
@@ -174,6 +214,10 @@ class AppSettings:
     """Google Client ID"""
     GOOGLE_OAUTH2_CLIENT_SECRET: str = field(default_factory=get_env("GOOGLE_OAUTH2_CLIENT_SECRET", ""))
     """Google Client Secret"""
+    REGISTRATION_ENABLED: bool = field(default_factory=get_env("REGISTRATION_ENABLED", True))
+    """Enable user registration. If False, only existing users can log in."""
+    MFA_ENABLED: bool = field(default_factory=get_env("MFA_ENABLED", False))
+    """Enable Multi-Factor Authentication (TOTP) support in the UI."""
 
     @property
     def slug(self) -> str:
@@ -184,11 +228,30 @@ class AppSettings:
         """
         return slugify(self.NAME)
 
+    @property
+    def github_oauth_enabled(self) -> bool:
+        """Check if GitHub OAuth is configured.
+
+        Returns:
+            True if both client ID and secret are set.
+        """
+        return bool(self.GITHUB_OAUTH2_CLIENT_ID and self.GITHUB_OAUTH2_CLIENT_SECRET)
+
+    @property
+    def google_oauth_enabled(self) -> bool:
+        """Check if Google OAuth is configured.
+
+        Returns:
+            True if both client ID and secret are set.
+        """
+        return bool(self.GOOGLE_OAUTH2_CLIENT_ID and self.GOOGLE_OAUTH2_CLIENT_SECRET)
+
 
 @dataclass
 class Settings:
     app: AppSettings = field(default_factory=AppSettings)
     db: DatabaseSettings = field(default_factory=DatabaseSettings)
+    email: EmailSettings = field(default_factory=EmailSettings)
     vite: ViteSettings = field(default_factory=ViteSettings)
     server: ServerSettings = field(default_factory=ServerSettings)
     log: LogSettings = field(default_factory=LogSettings)

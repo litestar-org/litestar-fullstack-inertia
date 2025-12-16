@@ -16,9 +16,9 @@ To install an environment, with all development packages run:
 
 This command does the following:
 
-- Install ``pdm`` if it is not available in the path.
+- Install ``uv`` if it is not available in the path.
 - Create a virtual environment with all dependencies configured
-- Build assets to be hosted by production asset server
+- Install node dependencies via ``bun``
 
 Edit ``.env`` configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -27,7 +27,7 @@ There is a sample ``.env`` file located in the root of the repository.
 
 .. code-block:: bash
 
-    cp .env.example .env
+    cp .env.local.example .env
 
 .. tip:: ``SECRET_KEY``, ``DATABASE_URI``, and ``REDIS_URL`` are the most important config settings.
   Be sure to set this properly.

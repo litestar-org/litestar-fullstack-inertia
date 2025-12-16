@@ -30,7 +30,7 @@ __all__ = (
 )
 
 
-class TeamService(SQLAlchemyAsyncRepositoryService[Team]):
+class TeamService(SQLAlchemyAsyncRepositoryService[Team, TeamRepository]):
     """Team Service."""
 
     repository_type = TeamRepository
@@ -117,13 +117,13 @@ class TeamService(SQLAlchemyAsyncRepositoryService[Team]):
         )
 
 
-class TeamMemberService(SQLAlchemyAsyncRepositoryService[TeamMember]):
+class TeamMemberService(SQLAlchemyAsyncRepositoryService[TeamMember, TeamMemberRepository]):
     """Team Member Service."""
 
     repository_type = TeamMemberRepository
 
 
-class TeamInvitationService(SQLAlchemyAsyncRepositoryService[TeamInvitation]):
+class TeamInvitationService(SQLAlchemyAsyncRepositoryService[TeamInvitation, TeamInvitationRepository]):
     """Team Invitation Service."""
 
     repository_type = TeamInvitationRepository

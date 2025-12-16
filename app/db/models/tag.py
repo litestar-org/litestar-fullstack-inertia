@@ -5,11 +5,7 @@ from typing import TYPE_CHECKING
 from advanced_alchemy.base import UUIDAuditBase
 from advanced_alchemy.mixins import SlugKey, UniqueMixin
 from advanced_alchemy.utils.text import slugify
-from sqlalchemy import (
-    ColumnElement,
-    String,
-    Table,
-)
+from sqlalchemy import ColumnElement, String, Table
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:

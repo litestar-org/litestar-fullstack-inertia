@@ -2,7 +2,7 @@
 name: docs-vision
 description: Documentation and pattern extraction specialist. Use for quality gate verification and knowledge accumulation.
 tools: Read, Write, Edit, Glob, Grep, Bash, mcp__pal__analyze
-model: sonnet
+model: opus
 ---
 
 # Documentation & Pattern Vision Agent

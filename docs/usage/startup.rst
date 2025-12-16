@@ -2,112 +2,58 @@
 Starting the server
 ===================
 
-This section describes how to start the server in development and production mode.
+This section describes how to start the server in development and production modes.
 
 Development
 ^^^^^^^^^^^
 
-If ``VITE_DEV_MODE`` and ``VITE_USE_SERVER_LIFESPAN`` are both set  to true, the `run` command will automatically start `vite` during the ``server_lifespan`` startup hook of the Litestar CLI.
+In development mode, the Litestar application automatically manages the Vite development server.
 
-Additionally, when you start the application with ``VITE_HOT_RELOAD`` set to true, it will also enable the HMR websocket connection to Vite.  This will allow the main Granian (or Uvicorn) web server to support Vite's hot reload functionality.
-
+When ``VITE_DEV_MODE`` is ``True`` (default in ``.env.local.example``):
+1. The **Granian** ASGI server starts the Python application.
+2. The **litestar-vite** plugin launches the **Vite** dev server in a subprocess.
+3. HMR (Hot Module Replacement) is enabled for instant frontend updates.
 
 .. dropdown:: Starting the server in dev mode
 
   .. code-block:: bash
 
-      (.venv) cody@localtop:~/Code/Litestar/litestar-fullstack-inertia$ pdm run app run -p 8089
+      (.venv) user@local:~/Code/litestar-fullstack-inertia$ uv run app run --reload
       Using Litestar app from env: 'app.server.asgi:create_app'
       Loading environment configuration from .env
-      Starting Granian server process ───────────────────────────────────────────────────────
-      ┌──────────────────────────────┬──────────────────────────────────────────────────────┐
-      │ Litestar version             │ 2.8.2                                                │
-      │ Debug mode                   │ Enabled                                              │
-      │ Python Debugger on exception │ Disabled                                             │
-      │ CORS                         │ Enabled                                              │
-      │ CSRF                         │ Disabled                                             │
-      │ OpenAPI                      │ Enabled path=/schema                                 │
-      │ Compression                  │ Disabled                                             │
-      │ Template engine              │ ViteTemplateEngine                                   │
-      │ Middlewares                  │ JWTCookieAuthenticationMiddleware, LoggingMiddleware │
-      └──────────────────────────────┴──────────────────────────────────────────────────────┘
-      Starting Vite process with HMR Enabled ────────────────────────────────────────────────
-      Starting SAQ Workers ──────────────────────────────────────────────────────────────────
+      Starting Granian server process...
+      Starting Vite process with HMR Enabled...
 
       > dev
       > vite
 
-      [INFO] Starting granian (main PID: 55642)
-      [INFO] Listening at: http://0.0.0.0:8089
-      [INFO] Spawning worker-1 with pid: 55689
+      [INFO] Listening at: http://0.0.0.0:8000
 
-        VITE v5.2.9  ready in 273 ms
-
-        ➜  Local:   http://localhost:5174/static/
-        ➜  Network: http://10.23.18.75:5174/static/
-        ➜  press h + enter to show help
-
-        LITESTAR   plugin v0.5.1
-
-        ➜  APP_URL: http://localhost:8089
-      Loading environment configuration from .env
-      [INFO] Started worker-1
-      [INFO] Started worker-1 runtime-1
-
+      ➜  Local:   http://localhost:5173/
+      ➜  APP_URL: http://localhost:8000
 
 Production
 ^^^^^^^^^^
 
-If ``VITE_DEV_MODE`` is false, the server will look for the static assets that are produced from the ``npm run build`` command.
-This command is automatically executed and the assets are bundled when running ``pdm build``.
+In production, frontend assets must be built beforehand. The server will serve these static files directly.
 
-To manually rebuild assets, use the following:
+1. **Build Assets**: Compiles TypeScript/React to static JS/CSS.
+2. **Run Server**: Starts Granian without the Vite subprocess.
 
 .. code-block:: bash
-  :caption: Generates static assets from Vite and runs the application.
+  :caption: Build assets for production
 
-    (.venv) cody@localtop:~/Code/Litestar/litestar-fullstack-inertia$ app assets build
-    Using Litestar app from env: 'app.server.asgi:create_app'
-    Loading environment configuration from .env
-    Starting Vite build process ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-    > build
-    > vite build
-
-    vite v5.2.9 building for production...
-    ✓ 222 modules transformed.
-    app/domain/web/public/manifest.json                  0.53 kB │ gzip:   0.22 kB
-    app/domain/web/public/assets/favicon-DXHXvpft.png    7.69 kB
-    app/domain/web/public/assets/main-D9hDRSjL.css      34.22 kB │ gzip:   6.88 kB
-    app/domain/web/public/assets/main-gDMW9BNa.js       41.96 kB │ gzip:  10.46 kB
-    app/domain/web/public/assets/vendor-DcvSTexI.js    493.83 kB │ gzip: 155.51 kB
-    ✓ built in 2.91s
-    Assets built.
+    make build
+    # OR manually:
+    uv run app assets build
 
 .. dropdown:: Starting the server in production mode
 
   .. code-block:: bash
 
-      (.venv) cody@localtop:~/Code/Litestar/litestar-fullstack-inertia$ app run -p 8089
+      (.venv) user@local:~/Code/litestar-fullstack-inertia$ uv run app run
       Using Litestar app from env: 'app.server.asgi:create_app'
       Loading environment configuration from .env
-      Starting Granian server process ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-      ┌──────────────────────────────┬──────────────────────────────────────────────────────┐
-      │ Litestar version             │ 2.8.2                                                │
-      │ Debug mode                   │ Enabled                                              │
-      │ Python Debugger on exception │ Disabled                                             │
-      │ CORS                         │ Enabled                                              │
-      │ CSRF                         │ Disabled                                             │
-      │ OpenAPI                      │ Enabled path=/schema                                 │
-      │ Compression                  │ Disabled                                             │
-      │ Template engine              │ ViteTemplateEngine                                   │
-      │ Middlewares                  │ JWTCookieAuthenticationMiddleware, LoggingMiddleware │
-      └──────────────────────────────┴──────────────────────────────────────────────────────┘
-      Serving assets using manifest at `/home/cody/Code/Litestar/litestar-fullstack-inertia/app/domain/web/public/manifest.json`. ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-      Starting SAQ Workers ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-      [INFO] Starting granian (main PID: 47755)
-      [INFO] Listening at: http://0.0.0.0:8089
-      [INFO] Spawning worker-1 with pid: 47760
-      Loading environment configuration from .env
-      [INFO] Started worker-1
-      [INFO] Started worker-1 runtime-1
+      ...
+      Serving assets using manifest at `.../public/manifest.json`.
+      [INFO] Listening at: http://0.0.0.0:8000

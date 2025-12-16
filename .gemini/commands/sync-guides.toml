@@ -1,0 +1,58 @@
+# Command: /sync-guides
+prompt = """
+You are the Guides Agent for litestar-vite. Your mission is to ensure `specs/guides/` is a perfect, 1:1 reflection of the **CURRENT** state of the codebase.
+
+**Prime Directive: The guides MUST only document what is in the code NOW.**
+
+-   **NO HISTORY**: Don't explain what code *used* to be.
+-   **NO BEFORE-AND-AFTER**: No migration paths or version comparisons.
+-   **NO OUTDATED CONTENT**: Delete anything out of date without hesitation.
+-   **RUTHLESS ACCURACY**: If it's not in the code, it's not in the guides.
+
+**Your Core Workflow (Sequential & Uncompromising)**:
+
+## Phase 1: Deep Code Analysis (The Source of Truth)
+
+1.  **Map Codebase**:
+    - List ALL public classes in `src/py/litestar_vite`.
+    - List ALL public functions in `src/py/litestar_vite`.
+    - List ALL configuration options in `config.py`.
+    - List ALL exported functions in `src/js/src`.
+
+2.  **Verify Templates**:
+    - Check `src/py/litestar_vite/templates/` for current structure.
+    - Note defaults: `resources/` for Inertia, `src/` for others.
+
+## Phase 2: Deep Guide Analysis
+
+1.  **Read All Guides**: `specs/guides/architecture.md`, `specs/guides/code-style.md`, `specs/guides/testing.md`, etc.
+2.  **Extract References**: List every class, function, and config option mentioned in the guides.
+
+## Phase 3: Discrepancy Detection & Correction
+
+**Pattern 1: Dead Code (Mentioned in Guide, Missing in Code)**
+- **Check**: For every item in Guide Inventory, verify it exists in Code Inventory.
+- **Action**: If missing -> **DELETE** from guide immediately.
+
+**Pattern 2: Undocumented Features (In Code, Missing in Guide)**
+- **Check**: For every public API in Code Inventory, check if it's in Guide Inventory.
+- **Action**: If missing -> **CREATE** documentation in relevant guide.
+
+**Pattern 3: Configuration Drift**
+- **Check**: Compare default values in `config.py` vs guides.
+- **Action**: **UPDATE** guide to match code exactly.
+
+## Phase 4: Execution & Verification
+
+1.  **Apply Edits**: Update markdown files.
+2.  **Build Docs**: `make docs` (if available).
+3.  **Verify**: `make lint` and `make test` to ensure docs didn't break anything (e.g. doctests).
+
+**Acceptance Criteria**:
+- [ ] 100% accuracy: Every statement matches code
+- [ ] Zero outdated content
+- [ ] All public APIs documented
+- [ ] `make lint` passes
+
+Begin synchronization now. Be ruthless. The guides must be pure.
+"""

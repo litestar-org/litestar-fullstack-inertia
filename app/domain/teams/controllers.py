@@ -22,12 +22,11 @@ from app.domain.accounts.dependencies import provide_users_service
 from app.domain.accounts.guards import requires_active_user
 from app.domain.accounts.services import UserService
 from app.domain.teams.guards import requires_team_admin, requires_team_membership, requires_team_ownership
-from app.domain.teams.schemas import Team, TeamCreate, TeamMemberModify, TeamUpdate
+from app.domain.teams.schemas import CurrentTeam, Team, TeamCreate, TeamMemberModify, TeamUpdate
 from app.domain.teams.services import TeamInvitationService, TeamMemberService, TeamService
 
 if TYPE_CHECKING:
     from advanced_alchemy.filters import FilterTypes
-    from advanced_alchemy.service.pagination import OffsetPagination
 
 
 class TeamController(Controller):
@@ -72,14 +71,48 @@ class TeamController(Controller):
         teams_service: TeamService,
         current_user: UserModel,
         filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
-    ) -> OffsetPagination[Team]:
-        """List teams that your account can access.."""
+    ) -> dict:
+        """List teams that your account can access."""
         if not teams_service.can_view_all(current_user):
             filters.append(
                 TeamModel.id.in_(select(TeamMemberModel.team_id).where(TeamMemberModel.user_id == current_user.id)),  # type: ignore[arg-type]
             )
         results, total = await teams_service.list_and_count(*filters)
-        return teams_service.to_schema(data=results, total=total, schema_type=Team, filters=filters)
+
+        # Build teams list with user's role per team
+        teams_with_roles = []
+        for team in results:
+            user_membership = next(
+                (m for m in team.members if m.user_id == current_user.id),
+                None,
+            )
+            user_role = (
+                "owner" if user_membership.is_owner else str(user_membership.role)
+            ) if user_membership else "member"
+
+            teams_with_roles.append(
+                {
+                    "id": str(team.id),
+                    "name": team.name,
+                    "description": team.description,
+                    "slug": team.slug,
+                    "memberCount": len(team.members),
+                    "userRole": user_role,
+                    "createdAt": team.created_at.isoformat() if team.created_at else None,
+                },
+            )
+
+        return {"teams": teams_with_roles, "total": total}
+
+    @get(
+        component="team/create",
+        name="teams.create",
+        operation_id="CreateTeamPage",
+        path="/teams/create/",
+    )
+    async def create_team_page(self) -> dict:
+        """Show team creation page."""
+        return {}
 
     @post(
         name="teams.add",
@@ -112,12 +145,51 @@ class TeamController(Controller):
         self,
         request: Request,
         teams_service: TeamService,
+        current_user: UserModel,
         team_id: Annotated[UUID, Parameter(title="Team ID", description="The team to retrieve.")],
-    ) -> Team:
+    ) -> dict:
         """Get details about a team."""
         db_obj = await teams_service.get(team_id)
-        request.session.update({"currentTeam": {"teamId": db_obj.id, "teamName": db_obj.name}})
-        return teams_service.to_schema(schema_type=Team, data=db_obj)
+        request.session.update({"currentTeam": CurrentTeam(team_id=str(db_obj.id), team_name=db_obj.name)})
+
+        # Determine user's permissions
+        user_membership = next(
+            (m for m in db_obj.members if m.user_id == current_user.id),
+            None,
+        )
+        is_owner = user_membership.is_owner if user_membership else False
+        is_admin = is_owner or (user_membership and user_membership.role == TeamRoles.ADMIN)
+
+        # Build members list with proper structure
+        members = []
+        for member in db_obj.members:
+            role = "owner" if member.is_owner else str(member.role)
+            members.append(
+                {
+                    "id": str(member.id),
+                    "userId": str(member.user_id),
+                    "name": member.user.name,
+                    "email": member.user.email,
+                    "avatarUrl": member.user.avatar_url,
+                    "role": role,
+                },
+            )
+
+        return {
+            "team": {
+                "id": str(db_obj.id),
+                "name": db_obj.name,
+                "description": db_obj.description,
+                "slug": db_obj.slug,
+            },
+            "members": members,
+            "permissions": {
+                "canAddTeamMembers": is_admin,
+                "canDeleteTeam": is_owner,
+                "canRemoveTeamMembers": is_admin,
+                "canUpdateTeam": is_admin,
+            },
+        }
 
     @patch(
         component="team/edit",
@@ -138,7 +210,7 @@ class TeamController(Controller):
             item_id=team_id,
             data=data.to_dict(),
         )
-        request.session.update({"currentTeam": {"teamId": db_obj.id, "teamName": db_obj.name}})
+        request.session.update({"currentTeam": CurrentTeam(team_id=str(db_obj.id), team_name=db_obj.name)})
         return teams_service.to_schema(schema_type=Team, data=db_obj)
 
     @delete(

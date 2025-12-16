@@ -1,4 +1,4 @@
-import { Head, Link } from "@inertiajs/react"
+import { Head, Link, usePage } from "@inertiajs/react"
 import { Icons } from "@/components/icons"
 import { buttonVariants } from "@/components/ui/button"
 import { GuestLayout } from "@/layouts/guest-layout"
@@ -7,12 +7,16 @@ import { cn } from "@/lib/utils"
 import UserLoginForm from "./partials/user-login-form"
 
 export default function Login() {
+	const { registrationEnabled } = usePage<{ registrationEnabled: boolean }>().props
+
 	return (
 		<>
 			<Head title="Log in" />
-			<Link href={route("register")} className={cn(buttonVariants({ variant: "ghost" }), "absolute top-4 right-4 md:top-8 md:right-8")}>
-				Need an account?
-			</Link>
+			{registrationEnabled && (
+				<Link href={route("register")} className={cn(buttonVariants({ variant: "ghost" }), "absolute top-4 right-4 md:top-8 md:right-8")}>
+					Need an account?
+				</Link>
+			)}
 			<div className="relative hidden h-full flex-col p-10 lg:flex dark:border-r">
 				<div className="absolute inset-0 bg-none" />
 				<Link href={route("home")}>

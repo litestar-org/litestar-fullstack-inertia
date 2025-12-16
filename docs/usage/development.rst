@@ -2,71 +2,64 @@
 Development
 ===========
 
-This section describes tips on developing using this example repository.
+This section describes the development workflow, tools, and standards for the project.
 
-Makefile
---------
+Makefile & Tools
+----------------
 
-This repository includes a ``Makefile`` with common commands for development.
+We use ``make`` to orchestrate development tasks, wrapping modern tools like ``uv`` (Python) and ``bun`` (JavaScript).
 
+Common Commands
+^^^^^^^^^^^^^^^
 
-Install Development Environment
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. list-table::
+   :widths: 30 70
+   :header-rows: 1
 
-This command will remove any existing environment and install a new environment with the latest dependencies.
+   * - Command
+     - Description
+   * - ``make install``
+     - Fresh install of all dependencies (Python + JS) and environment setup.
+   * - ``make start-infra``
+     - Start Dockerized services (PostgreSQL, Redis).
+   * - ``make run``
+     - Start the full stack (Backend + Vite) in development mode.
+   * - ``make test``
+     - Run the full test suite with ``pytest``.
+   * - ``make lint``
+     - Run all linters (Ruff, Mypy, Biome, Slotscheck).
+   * - ``make upgrade``
+     - Upgrade all dependencies and pre-commit hooks.
 
-.. code-block:: shell
+Code Style & Quality
+--------------------
 
-    make install
+We enforce strict quality gates using pre-commit hooks.
 
-Upgrade Project Dependencies
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Python Standards
+^^^^^^^^^^^^^^^^
+- **Linter/Formatter**: `Ruff <https://docs.astral.sh/ruff/>`_
+- **Type Checking**: `Mypy <https://mypy-lang.org/>`_ and `Pyright <https://github.com/microsoft/pyright>`_
+- **Style**: Google-style docstrings, strict type hints (PEP 604 `T | None`), no `from __future__ import annotations`.
 
-This command will upgrade all components of the application at the same time. It automatically executes:
-
-- ``pdm upgrade``
-- ``npm update``
-- ``pre-commit autoupdate``
-
-.. code-block:: shell
-
-    make upgrade
-
-Execute Pre-commit
+Frontend Standards
 ^^^^^^^^^^^^^^^^^^
+- **Linter/Formatter**: `Biome <https://biomejs.dev/>`_
+- **Style**: strict TypeScript, functional React components.
 
-This command will automatically execute the pre-commit process for the project.
+Testing Strategy
+----------------
 
-.. code-block:: shell
+We use **pytest** with **anyio** for async support.
 
-    make lint
-
-Generate New Migrations
-^^^^^^^^^^^^^^^^^^^^^^^
-
-This command is a shorthand for executing ``app database make-migrations``.
-
-.. code-block:: shell
-
-    make migrations
-
-Upgrade a Database to the Latest Revision
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This command is a shorthand for executing ``app database upgrade``.
+- **Unit Tests**: Isolated logic tests.
+- **Integration Tests**: Full API and Database integration tests using `pytest-databases`.
+- **Frontend Tests**: Component testing via Vitest (configured in ``vite.config.ts``).
 
 .. code-block:: shell
 
-    make migrate
-
-Execute Full Test Suite
-^^^^^^^^^^^^^^^^^^^^^^^
-
-This command executes all tests for the project.
-
-.. code-block:: shell
-
-    make test
+    # Run tests with coverage
+    make coverage
 
 Full Makefile
 -------------

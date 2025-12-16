@@ -122,4 +122,5 @@ def create_sqlalchemy_engine(settings: "DatabaseSettings") -> "AsyncEngine":
             pool_use_lifo=True,  # use lifo to reduce the number of idle connections
             poolclass=NullPool if settings.POOL_DISABLED else None,
         )
+
     return engine

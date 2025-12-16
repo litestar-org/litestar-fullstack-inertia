@@ -47,3 +47,10 @@ class TeamMemberModify(CamelizedBaseStruct):
     """Team Member Modify."""
 
     user_name: str
+
+
+class CurrentTeam(CamelizedBaseStruct):
+    """Current team stored in session."""
+
+    team_id: str
+    team_name: str

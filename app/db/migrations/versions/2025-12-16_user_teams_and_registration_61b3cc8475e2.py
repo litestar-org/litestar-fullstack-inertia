@@ -1,11 +1,10 @@
-"""Users and teams
+"""User, teams, and registration
 
-Revision ID: 3e043bbb9ac2
+Revision ID: 61b3cc8475e2
 Revises:
-Create Date: 2025-12-07 00:44:03.743901+00:00
+Create Date: 2025-12-16 17:30:40.577669+00:00
 
 """
-# pyright: reportAttributeAccessIssue=none
 
 import warnings
 from typing import TYPE_CHECKING
@@ -15,7 +14,7 @@ from alembic import op
 from advanced_alchemy.types import EncryptedString, EncryptedText, GUID, ORA_JSONB, DateTimeUTC, StoredObject, PasswordHash, FernetBackend
 from advanced_alchemy.types.encrypted_string import PGCryptoBackend
 from advanced_alchemy.types.password_hash.pwdlib import PwdlibHasher
-
+from sqlalchemy.dialects import postgresql
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
@@ -33,7 +32,7 @@ sa.FernetBackend = FernetBackend
 sa.PGCryptoBackend = PGCryptoBackend
 
 # revision identifiers, used by Alembic.
-revision = '3e043bbb9ac2'
+revision = '61b3cc8475e2'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -131,6 +130,10 @@ def schema_upgrades() -> None:
     sa.Column('is_verified', sa.Boolean(), nullable=False),
     sa.Column('verified_at', sa.Date(), nullable=True),
     sa.Column('joined_at', sa.Date(), nullable=False),
+    sa.Column('totp_secret', sa.Text(), nullable=True, comment='Encrypted TOTP secret key for 2FA'),
+    sa.Column('is_two_factor_enabled', sa.Boolean(), nullable=False, comment='Whether 2FA is enabled for this user'),
+    sa.Column('two_factor_confirmed_at', sa.DateTimeUTC(timezone=True), nullable=True, comment='When 2FA was confirmed/enabled'),
+    sa.Column('backup_codes', postgresql.JSONB(astext_type=sa.Text()), nullable=True, comment='Hashed backup codes for 2FA recovery'),
     sa.Column('sa_orm_sentinel', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTimeUTC(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTimeUTC(timezone=True), nullable=False),
@@ -138,6 +141,28 @@ def schema_upgrades() -> None:
     )
     with op.batch_alter_table('user_account', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_user_account_email'), ['email'], unique=True)
+
+    op.create_table('email_token',
+    sa.Column('id', sa.GUID(length=16), nullable=False),
+    sa.Column('user_id', sa.GUID(length=16), nullable=True),
+    sa.Column('email', sa.String(length=255), nullable=False),
+    sa.Column('token_type', sa.String(length=50), nullable=False),
+    sa.Column('token_hash', sa.String(length=255), nullable=False),
+    sa.Column('expires_at', sa.DateTimeUTC(timezone=True), nullable=False),
+    sa.Column('used_at', sa.DateTimeUTC(timezone=True), nullable=True),
+    sa.Column('ip_address', sa.String(length=45), nullable=True),
+    sa.Column('user_agent', sa.Text(), nullable=True),
+    sa.Column('metadata', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+    sa.Column('sa_orm_sentinel', sa.Integer(), nullable=True),
+    sa.Column('created_at', sa.DateTimeUTC(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTimeUTC(timezone=True), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['user_account.id'], name=op.f('fk_email_token_user_id_user_account'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_email_token'))
+    )
+    with op.batch_alter_table('email_token', schema=None) as batch_op:
+        batch_op.create_index('ix_email_token_email_type', ['email', 'token_type'], unique=False)
+        batch_op.create_index('ix_email_token_hash', ['token_hash'], unique=False)
+        batch_op.create_index(batch_op.f('ix_email_token_user_id'), ['user_id'], unique=False)
 
     op.create_table('team_invitation',
     sa.Column('id', sa.GUID(length=16), nullable=False),
@@ -147,6 +172,9 @@ def schema_upgrades() -> None:
     sa.Column('is_accepted', sa.Boolean(), nullable=False),
     sa.Column('invited_by_id', sa.GUID(length=16), nullable=True),
     sa.Column('invited_by_email', sa.String(), nullable=False),
+    sa.Column('token_hash', sa.String(length=255), nullable=True, comment='SHA-256 hash of invitation token'),
+    sa.Column('expires_at', sa.DateTimeUTC(timezone=True), nullable=True, comment='When this invitation expires'),
+    sa.Column('accepted_at', sa.DateTimeUTC(timezone=True), nullable=True, comment='When the invitation was accepted'),
     sa.Column('sa_orm_sentinel', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTimeUTC(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTimeUTC(timezone=True), nullable=False),
@@ -156,6 +184,8 @@ def schema_upgrades() -> None:
     )
     with op.batch_alter_table('team_invitation', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_team_invitation_email'), ['email'], unique=False)
+        batch_op.create_index('ix_team_invitation_email_team', ['email', 'team_id'], unique=False)
+        batch_op.create_index('ix_team_invitation_token', ['token_hash'], unique=False)
 
     op.create_table('team_member',
     sa.Column('id', sa.GUID(length=16), nullable=False),
@@ -229,9 +259,17 @@ def schema_downgrades() -> None:
 
     op.drop_table('team_member')
     with op.batch_alter_table('team_invitation', schema=None) as batch_op:
+        batch_op.drop_index('ix_team_invitation_token')
+        batch_op.drop_index('ix_team_invitation_email_team')
         batch_op.drop_index(batch_op.f('ix_team_invitation_email'))
 
     op.drop_table('team_invitation')
+    with op.batch_alter_table('email_token', schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f('ix_email_token_user_id'))
+        batch_op.drop_index('ix_email_token_hash')
+        batch_op.drop_index('ix_email_token_email_type')
+
+    op.drop_table('email_token')
     with op.batch_alter_table('user_account', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_user_account_email'))
 

@@ -48,6 +48,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         from app.domain.accounts import signals as account_signals
         from app.domain.accounts.controllers import (
             AccessController,
+            PasswordResetController,
             ProfileController,
             RegistrationController,
             UserController,
@@ -98,6 +99,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         app_config.route_handlers.extend(
             [
                 AccessController,
+                PasswordResetController,
                 ProfileController,
                 RegistrationController,
                 UserController,
@@ -118,6 +120,11 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         app_config.dependencies.update({"current_user": Provide(provide_user)})
         # listeners
         app_config.listeners.extend(
-            [account_signals.user_created_event_handler, team_signals.team_created_event_handler],
+            [
+                account_signals.user_created_event_handler,
+                account_signals.password_reset_requested_handler,
+                account_signals.password_reset_completed_handler,
+                team_signals.team_created_event_handler,
+            ],
         )
         return app_config

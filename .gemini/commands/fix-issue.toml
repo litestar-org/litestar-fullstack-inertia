@@ -1,0 +1,21 @@
+description = "Fix a GitHub issue"
+prompt = """
+Fixing issue: #{issue_number}
+
+## Workflow
+
+1. Fetch issue details: `gh issue view {issue_number}`
+2. Search for affected code
+3. Read related files and understand context
+4. Implement fix following code standards
+5. Run tests: `make test`
+6. Run linting: `make lint`
+7. Create commit with issue reference
+
+## Code Standards
+
+- Type hints: `T | None` (PEP 604)
+- NO future annotations
+- Google-style docstrings
+- Function-based tests only
+"""

@@ -9,12 +9,8 @@ from typing import TYPE_CHECKING
 import structlog
 from litestar.data_extractors import ConnectionDataExtractor, ResponseDataExtractor
 from litestar.enums import ScopeType
-from litestar.exceptions import (
-    HTTPException,
-)
-from litestar.status_codes import (
-    HTTP_500_INTERNAL_SERVER_ERROR,
-)
+from litestar.exceptions import HTTPException
+from litestar.status_codes import HTTP_500_INTERNAL_SERVER_ERROR
 from litestar.utils.empty import value_or_default
 from litestar.utils.scope.state import ScopeState
 from structlog.contextvars import bind_contextvars

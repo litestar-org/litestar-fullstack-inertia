@@ -77,11 +77,16 @@ async def test_teams_list(client: "AsyncClient", superuser_inertia_headers: dict
     assert response.status_code == 200
     data = response.json()
     # Inertia responses wrap handler return value in props
-    # The OffsetPagination items are serialized directly to props.items
     assert "props" in data
     props = data["props"]
-    assert "items" in props
-    assert len(props["items"]) > 0
+    assert "teams" in props
+    assert len(props["teams"]) > 0
+    # Verify team structure includes role information
+    team = props["teams"][0]
+    assert "id" in team
+    assert "name" in team
+    assert "userRole" in team
+    assert "memberCount" in team
 
 
 async def test_teams_get(client: "AsyncClient", superuser_inertia_headers: dict[str, str]) -> None:
@@ -89,11 +94,16 @@ async def test_teams_get(client: "AsyncClient", superuser_inertia_headers: dict[
     response = await client.get("/teams/97108ac1-ffcb-411d-8b1e-d9183399f63b", headers=superuser_inertia_headers)
     assert response.status_code == 200
     data = response.json()
-    # Inertia responses wrap handler return value in props.content
+    # Inertia responses wrap handler return value in props
     assert "props" in data
     props = data["props"]
-    assert "content" in props
-    assert props["content"]["name"] == "Test Team"
+    assert "team" in props
+    assert props["team"]["name"] == "Test Team"
+    # Verify permissions are included
+    assert "permissions" in props
+    assert "canUpdateTeam" in props["permissions"]
+    # Verify members are included
+    assert "members" in props
 
 
 async def test_teams_create(client: "AsyncClient", superuser_inertia_headers: dict[str, str]) -> None:

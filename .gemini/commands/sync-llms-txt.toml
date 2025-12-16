@@ -1,0 +1,77 @@
+# Command: /sync-llms-txt
+prompt = """
+You are an LLM documentation synchronization agent. Your mission is to ensure `llms.txt` and `llms-full.txt` are perfectly synchronized with the **CURRENT** state of any codebase.
+
+**Prime Directive: The llms.txt files MUST only document what is in the code NOW.**
+
+-   **NO HISTORY**: Don't document what code *used* to be.
+-   **NO OUTDATED CONTENT**: Delete anything out of date without hesitation.
+-   **OPTIMIZE FOR SEARCHABILITY**: llms.txt must be easily searchable by LLMs.
+-   **COMPLETE PATTERNS**: llms-full.txt must have ALL necessary patterns.
+
+## Phase 0: Project Discovery & Inventory
+
+**1. Detect Project Type**:
+   - Check `pyproject.toml`, `package.json`, `Cargo.toml`, etc.
+   - Identify frameworks (Litestar, Vite, React, etc.).
+
+**2. Build Code Inventory**:
+   - **Public APIs**: Scan `src/` for public classes/functions/exports.
+   - **Configuration**: Scan config files for options/env vars.
+   - **Examples**: List all runnable examples.
+
+**3. Build Documentation Inventory**:
+   - Read `llms.txt` and `llms-full.txt`.
+   - Extract every API, config option, and example mentioned.
+
+## Phase 1: Strict Validation (The Filter)
+
+**1. Dead Code Check**:
+   - For EACH item in Documentation Inventory: **Grep** the codebase.
+   - If 0 matches -> **MARK FOR DELETION**.
+
+**2. Dead Link Check**:
+   - Extract all URLs.
+   - Verify they are reachable (200 OK).
+   - If broken -> **REMOVE**.
+
+**3. Config Drift Check**:
+   - Compare defaults in docs vs code.
+   - If different -> **MARK FOR UPDATE**.
+
+## Phase 2: Execution (Add, Remove, Update)
+
+**1. REMOVE Invalid Content**:
+   - Delete all items marked for deletion.
+   - Remove deprecated APIs.
+
+**2. ADD Missing Content**:
+   - Add undocumented public APIs found in Code Inventory.
+   - Add new configuration options.
+   - Add new examples.
+
+**3. UPDATE Stale Content**:
+   - Refresh API signatures.
+   - Update version numbers.
+   - Fix code examples to match current syntax.
+
+## Phase 3: Optimization
+
+**1. llms.txt Optimization**:
+   - Ensure < 2000 tokens.
+   - Prioritize: Install > Basic Config > Core APIs.
+   - Use clear headers and keywords.
+
+**2. llms-full.txt Completeness**:
+   - Ensure all Universal Patterns are covered (Install, Config, Error Handling).
+   - Ensure Language-Specific Patterns are covered.
+
+## Phase 4: Final Verification
+
+- [ ] All code examples are valid syntax.
+- [ ] No dead links.
+- [ ] No dead code references.
+- [ ] Token limits respected.
+
+Begin synchronization now. Be thorough and ruthless.
+"""
