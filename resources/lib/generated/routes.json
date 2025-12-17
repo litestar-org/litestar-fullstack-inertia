@@ -1,0 +1,440 @@
+{
+  "litestar_version": "2.19.0",
+  "routes": {
+    "about": {
+      "component": "about",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/about"
+    },
+    "account.remove": {
+      "methods": [
+        "DELETE"
+      ],
+      "uri": "/profile"
+    },
+    "dashboard": {
+      "component": "dashboard",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/dashboard"
+    },
+    "favicon": {
+      "methods": [
+        "GET"
+      ],
+      "uri": "/favicon.ico"
+    },
+    "forgot-password": {
+      "component": "auth/forgot-password",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/forgot-password"
+    },
+    "forgot-password.send": {
+      "component": "auth/forgot-password",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/forgot-password"
+    },
+    "github.complete": {
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "code": "string | undefined",
+        "code_verifier": "string | undefined",
+        "error": "string | undefined",
+        "state": "string | undefined"
+      },
+      "uri": "/o/github/complete"
+    },
+    "github.register": {
+      "methods": [
+        "POST"
+      ],
+      "uri": "/register/github"
+    },
+    "google.complete": {
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "code": "string | undefined",
+        "code_verifier": "string | undefined",
+        "error": "string | undefined",
+        "state": "string | undefined"
+      },
+      "uri": "/o/google/complete"
+    },
+    "google.register": {
+      "methods": [
+        "POST"
+      ],
+      "uri": "/register/google"
+    },
+    "home": {
+      "methods": [
+        "GET"
+      ],
+      "uri": "/"
+    },
+    "landing": {
+      "component": "landing",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/landing"
+    },
+    "login": {
+      "component": "auth/login",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/login"
+    },
+    "login.check": {
+      "component": "auth/login",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/login"
+    },
+    "logout": {
+      "methods": [
+        "POST"
+      ],
+      "uri": "/logout"
+    },
+    "openapi.json": {
+      "methods": [
+        "GET"
+      ],
+      "uri": "/schema/openapi.json"
+    },
+    "password.update": {
+      "component": "profile/edit",
+      "methods": [
+        "PATCH"
+      ],
+      "uri": "/profile/password-update"
+    },
+    "privacy-policy": {
+      "component": "legal/privacy-policy",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/privacy-policy"
+    },
+    "profile.show": {
+      "component": "profile/edit",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/profile"
+    },
+    "profile.update": {
+      "component": "profile/edit",
+      "methods": [
+        "PATCH"
+      ],
+      "uri": "/profile"
+    },
+    "register": {
+      "component": "auth/register",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/register"
+    },
+    "register.add": {
+      "component": "auth/register",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/register"
+    },
+    "reset-password": {
+      "component": "auth/reset-password",
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "email": "string | undefined",
+        "token": "string | undefined"
+      },
+      "uri": "/reset-password"
+    },
+    "reset-password.update": {
+      "component": "auth/reset-password",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/reset-password"
+    },
+    "tags:create": {
+      "methods": [
+        "POST"
+      ],
+      "uri": "/api/tags"
+    },
+    "tags:delete": {
+      "methods": [
+        "DELETE"
+      ],
+      "parameterTypes": {
+        "tag_id": "UUID"
+      },
+      "parameters": [
+        "tag_id"
+      ],
+      "uri": "/api/tags/{tag_id}"
+    },
+    "tags:get": {
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "tag_id": "UUID"
+      },
+      "parameters": [
+        "tag_id"
+      ],
+      "uri": "/api/tags/{tag_id}"
+    },
+    "tags:list": {
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "createdAfter": "DateTime | undefined",
+        "createdBefore": "DateTime | undefined",
+        "currentPage": "number | undefined",
+        "ids": "string[] | undefined",
+        "orderBy": "string | undefined",
+        "pageSize": "number | undefined",
+        "searchIgnoreCase": "boolean | undefined",
+        "searchString": "string | undefined",
+        "sortOrder": "\"asc\" | \"desc\" | undefined",
+        "updatedAfter": "DateTime | undefined",
+        "updatedBefore": "DateTime | undefined"
+      },
+      "uri": "/api/tags"
+    },
+    "tags:update": {
+      "methods": [
+        "PATCH"
+      ],
+      "parameterTypes": {
+        "tag_id": "UUID"
+      },
+      "parameters": [
+        "tag_id"
+      ],
+      "uri": "/api/tags/{tag_id}"
+    },
+    "teams.add": {
+      "methods": [
+        "POST"
+      ],
+      "uri": "/teams"
+    },
+    "teams.create": {
+      "component": "team/create",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/teams/create"
+    },
+    "teams.edit": {
+      "component": "team/edit",
+      "methods": [
+        "PATCH"
+      ],
+      "parameterTypes": {
+        "team_id": "UUID"
+      },
+      "parameters": [
+        "team_id"
+      ],
+      "uri": "/teams/{team_id}"
+    },
+    "teams.list": {
+      "component": "team/list",
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "createdAfter": "DateTime | undefined",
+        "createdBefore": "DateTime | undefined",
+        "currentPage": "number | undefined",
+        "ids": "string[] | undefined",
+        "orderBy": "string | undefined",
+        "pageSize": "number | undefined",
+        "searchIgnoreCase": "boolean | undefined",
+        "searchString": "string | undefined",
+        "sortOrder": "\"asc\" | \"desc\" | undefined",
+        "updatedAfter": "DateTime | undefined",
+        "updatedBefore": "DateTime | undefined"
+      },
+      "uri": "/teams"
+    },
+    "teams.remove": {
+      "methods": [
+        "DELETE"
+      ],
+      "parameterTypes": {
+        "team_id": "UUID"
+      },
+      "parameters": [
+        "team_id"
+      ],
+      "uri": "/teams/{team_id}"
+    },
+    "teams.show": {
+      "component": "team/show",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "team_id": "UUID"
+      },
+      "parameters": [
+        "team_id"
+      ],
+      "uri": "/teams/{team_id}"
+    },
+    "teams:add-member": {
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "team_id": "UUID"
+      },
+      "parameters": [
+        "team_id"
+      ],
+      "uri": "/api/teams/{team_id}/members/add"
+    },
+    "teams:remove-member": {
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "team_id": "UUID"
+      },
+      "parameters": [
+        "team_id"
+      ],
+      "uri": "/api/teams/{team_id}/members/remove"
+    },
+    "terms-of-service": {
+      "component": "legal/terms-of-service",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/terms-of-service"
+    },
+    "users:assign-role": {
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "role_slug": "string"
+      },
+      "parameters": [
+        "role_slug"
+      ],
+      "uri": "/api/roles/{role_slug}/assign"
+    },
+    "users:create": {
+      "methods": [
+        "POST"
+      ],
+      "uri": "/api/users"
+    },
+    "users:delete": {
+      "methods": [
+        "DELETE"
+      ],
+      "parameterTypes": {
+        "user_id": "UUID"
+      },
+      "parameters": [
+        "user_id"
+      ],
+      "uri": "/api/users/{user_id}"
+    },
+    "users:get": {
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "user_id": "UUID"
+      },
+      "parameters": [
+        "user_id"
+      ],
+      "uri": "/api/users/{user_id}"
+    },
+    "users:list": {
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "createdAfter": "DateTime | undefined",
+        "createdBefore": "DateTime | undefined",
+        "currentPage": "number | undefined",
+        "ids": "string[] | undefined",
+        "orderBy": "string | undefined",
+        "pageSize": "number | undefined",
+        "searchIgnoreCase": "boolean | undefined",
+        "searchString": "string | undefined",
+        "sortOrder": "\"asc\" | \"desc\" | undefined",
+        "updatedAfter": "DateTime | undefined",
+        "updatedBefore": "DateTime | undefined"
+      },
+      "uri": "/api/users"
+    },
+    "users:revoke-role": {
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "role_slug": "string"
+      },
+      "parameters": [
+        "role_slug"
+      ],
+      "uri": "/api/roles/{role_slug}/revoke"
+    },
+    "users:update": {
+      "methods": [
+        "PATCH"
+      ],
+      "parameterTypes": {
+        "user_id": "UUID"
+      },
+      "parameters": [
+        "user_id"
+      ],
+      "uri": "/api/users/{user_id}"
+    },
+    "vite": {
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "file_path": "any"
+      },
+      "parameters": [
+        "file_path"
+      ],
+      "uri": "/static/{file_path}"
+    }
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "fallbackType": "unknown",
+  "generatedAt": "2025-12-17T21:25:56.425926+00:00",
+  "pages": {
+    "about": {
+      "handler": "about",
+      "propsType": "{}",
+      "route": "/about"
+    },
+    "auth/forgot-password": {
+      "customTypes": [
+        "EmailSent",
+        "NoProps"
+      ],
+      "handler": "send_reset_email",
+      "propsType": "EmailSent",
+      "route": "/forgot-password",
+      "tsType": "EmailSent"
+    },
+    "auth/login": {
+      "customTypes": [
+        "NoProps"
+      ],
+      "handler": "show_login",
+      "propsType": "any | NoProps",
+      "route": "/login"
+    },
+    "auth/register": {
+      "handler": "signup",
+      "propsType": "any",
+      "route": "/register"
+    },
+    "auth/reset-password": {
+      "customTypes": [
+        "PasswordResetToken"
+      ],
+      "handler": "show_reset_password",
+      "propsType": "any | PasswordResetToken",
+      "route": "/reset-password"
+    },
+    "dashboard": {
+      "handler": "dashboard",
+      "propsType": "{}",
+      "route": "/dashboard"
+    },
+    "landing": {
+      "handler": "landing",
+      "propsType": "{}",
+      "route": "/landing"
+    },
+    "legal/privacy-policy": {
+      "handler": "privacy_policy",
+      "propsType": "{}",
+      "route": "/privacy-policy"
+    },
+    "legal/terms-of-service": {
+      "handler": "terms_of_service",
+      "propsType": "{}",
+      "route": "/terms-of-service"
+    },
+    "profile/edit": {
+      "customTypes": [
+        "Message"
+      ],
+      "handler": "update_password",
+      "propsType": "Message",
+      "route": "/profile/password-update",
+      "tsType": "Message"
+    },
+    "team/create": {
+      "handler": "create_team_page",
+      "propsType": "{}",
+      "route": "/teams/create"
+    },
+    "team/edit": {
+      "customTypes": [
+        "Team",
+        "TeamMember",
+        "TeamTag"
+      ],
+      "handler": "update_team",
+      "propsType": "Team",
+      "route": "/teams/{team_id}",
+      "schemaRef": "#/components/schemas/Team",
+      "tsType": "Team"
+    },
+    "team/list": {
+      "handler": "list_teams",
+      "propsType": "{}",
+      "route": "/teams"
+    },
+    "team/show": {
+      "handler": "get_team",
+      "propsType": "{}",
+      "route": "/teams/{team_id}"
+    }
+  },
+  "sharedProps": {
+    "auth": {
+      "optional": true,
+      "type": "AuthData"
+    },
+    "canResetPassword": {
+      "optional": true,
+      "type": "boolean"
+    },
+    "csrf_token": {
+      "optional": true,
+      "type": "string"
+    },
+    "currentTeam": {
+      "optional": true,
+      "type": "CurrentTeam"
+    },
+    "errors": {
+      "optional": true,
+      "type": "Record<string, string[]>"
+    },
+    "flash": {
+      "optional": true,
+      "type": "FlashMessages"
+    },
+    "githubOAuthEnabled": {
+      "optional": true,
+      "type": "boolean"
+    },
+    "googleOAuthEnabled": {
+      "optional": true,
+      "type": "boolean"
+    },
+    "hasTermsAndPrivacyPolicyFeature": {
+      "optional": true,
+      "type": "boolean"
+    },
+    "mfaEnabled": {
+      "optional": true,
+      "type": "boolean"
+    },
+    "mustVerifyEmail": {
+      "optional": true,
+      "type": "boolean"
+    },
+    "registrationEnabled": {
+      "optional": true,
+      "type": "boolean"
+    }
+  },
+  "typeGenConfig": {
+    "includeDefaultAuth": true,
+    "includeDefaultFlash": true
+  },
+  "typeImportPaths": {}
+}
