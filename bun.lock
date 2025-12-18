@@ -717,7 +717,7 @@
 
     "lightningcss-win32-x64-msvc": ["lightningcss-win32-x64-msvc@1.30.2", "", { "os": "win32", "cpu": "x64" }, "sha512-5g1yc73p+iAkid5phb4oVFMB45417DkRevRbt/El/gKXJk4jid+vPFF/AXbxn05Aky8PapwzZrdJShv5C0avjw=="],
 
-    "litestar-vite-plugin": ["litestar-vite-plugin@file:../litestar-vite", { "dependencies": { "picocolors": "^1.1.1", "vite-plugin-full-reload": "^1.2.0" }, "devDependencies": { "@biomejs/biome": "2.0.6", "@types/node": "^22.15.3", "@vitest/coverage-v8": "^3.2.4", "esbuild": "0.25.3", "happy-dom": "^20.0.2", "typescript": "^5.8.3", "vite": "^7.1.2", "vitest": "^3.1.2" }, "peerDependencies": { "vite": "^6.0.0 || ^7.0.0" }, "bin": { "clean-orphaned-assets": "tools/clean.js", "emit-page-props": "dist/js/emit-page-props-cli.js" } }],
+    "litestar-vite-plugin": ["litestar-vite-plugin@file:../litestar-vite", { "dependencies": { "picocolors": "^1.1.1", "vite-plugin-full-reload": "^1.2.0" }, "devDependencies": { "@biomejs/biome": "2.0.6", "@types/node": "^22.15.3", "@vitest/coverage-v8": "^3.2.4", "esbuild": "0.25.3", "happy-dom": "^20.0.2", "typescript": "^5.8.3", "vite": "^7.1.2", "vitest": "^3.1.2" }, "peerDependencies": { "vite": "^6.0.0 || ^7.0.0" }, "bin": { "clean-orphaned-assets": "tools/clean.js", "litestar-vite-typegen": "dist/js/typegen-cli.js" } }],
 
     "lodash": ["lodash@4.17.21", "", {}, "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg=="],
 

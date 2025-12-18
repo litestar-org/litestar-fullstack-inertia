@@ -251,6 +251,7 @@ export const routeDefinitions = {
   'about': {
     path: '/about',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'about',
@@ -258,12 +259,14 @@ export const routeDefinitions = {
   'account.remove': {
     path: '/profile',
     methods: ['DELETE'] as const,
+    method: 'delete',
     pathParams: [] as const,
     queryParams: [] as const,
   },
   'dashboard': {
     path: '/dashboard',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'dashboard',
@@ -271,12 +274,14 @@ export const routeDefinitions = {
   'favicon': {
     path: '/favicon.ico',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
   },
   'forgot-password': {
     path: '/forgot-password',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'auth/forgot-password',
@@ -284,6 +289,7 @@ export const routeDefinitions = {
   'forgot-password.send': {
     path: '/forgot-password',
     methods: ['POST'] as const,
+    method: 'post',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'auth/forgot-password',
@@ -291,36 +297,42 @@ export const routeDefinitions = {
   'github.complete': {
     path: '/o/github/complete',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: ['code', 'code_verifier', 'error', 'state'] as const,
   },
   'github.register': {
     path: '/register/github',
     methods: ['POST'] as const,
+    method: 'post',
     pathParams: [] as const,
     queryParams: [] as const,
   },
   'google.complete': {
     path: '/o/google/complete',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: ['code', 'code_verifier', 'error', 'state'] as const,
   },
   'google.register': {
     path: '/register/google',
     methods: ['POST'] as const,
+    method: 'post',
     pathParams: [] as const,
     queryParams: [] as const,
   },
   'home': {
     path: '/',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
   },
   'landing': {
     path: '/landing',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'landing',
@@ -328,6 +340,7 @@ export const routeDefinitions = {
   'login': {
     path: '/login',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'auth/login',
@@ -335,6 +348,7 @@ export const routeDefinitions = {
   'login.check': {
     path: '/login',
     methods: ['POST'] as const,
+    method: 'post',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'auth/login',
@@ -342,18 +356,21 @@ export const routeDefinitions = {
   'logout': {
     path: '/logout',
     methods: ['POST'] as const,
+    method: 'post',
     pathParams: [] as const,
     queryParams: [] as const,
   },
   'openapi.json': {
     path: '/schema/openapi.json',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
   },
   'password.update': {
     path: '/profile/password-update',
     methods: ['PATCH'] as const,
+    method: 'patch',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'profile/edit',
@@ -361,6 +378,7 @@ export const routeDefinitions = {
   'privacy-policy': {
     path: '/privacy-policy',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'legal/privacy-policy',
@@ -368,6 +386,7 @@ export const routeDefinitions = {
   'profile.show': {
     path: '/profile',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'profile/edit',
@@ -375,6 +394,7 @@ export const routeDefinitions = {
   'profile.update': {
     path: '/profile',
     methods: ['PATCH'] as const,
+    method: 'patch',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'profile/edit',
@@ -382,6 +402,7 @@ export const routeDefinitions = {
   'register': {
     path: '/register',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'auth/register',
@@ -389,6 +410,7 @@ export const routeDefinitions = {
   'register.add': {
     path: '/register',
     methods: ['POST'] as const,
+    method: 'post',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'auth/register',
@@ -396,6 +418,7 @@ export const routeDefinitions = {
   'reset-password': {
     path: '/reset-password',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: ['email', 'token'] as const,
     component: 'auth/reset-password',
@@ -403,6 +426,7 @@ export const routeDefinitions = {
   'reset-password.update': {
     path: '/reset-password',
     methods: ['POST'] as const,
+    method: 'post',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'auth/reset-password',
@@ -410,42 +434,49 @@ export const routeDefinitions = {
   'tags:create': {
     path: '/api/tags',
     methods: ['POST'] as const,
+    method: 'post',
     pathParams: [] as const,
     queryParams: [] as const,
   },
   'tags:delete': {
     path: '/api/tags/{tag_id}',
     methods: ['DELETE'] as const,
+    method: 'delete',
     pathParams: ['tag_id'] as const,
     queryParams: [] as const,
   },
   'tags:get': {
     path: '/api/tags/{tag_id}',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: ['tag_id'] as const,
     queryParams: [] as const,
   },
   'tags:list': {
     path: '/api/tags',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: ['createdAfter', 'createdBefore', 'currentPage', 'ids', 'orderBy', 'pageSize', 'searchIgnoreCase', 'searchString', 'sortOrder', 'updatedAfter', 'updatedBefore'] as const,
   },
   'tags:update': {
     path: '/api/tags/{tag_id}',
     methods: ['PATCH'] as const,
+    method: 'patch',
     pathParams: ['tag_id'] as const,
     queryParams: [] as const,
   },
   'teams.add': {
     path: '/teams',
     methods: ['POST'] as const,
+    method: 'post',
     pathParams: [] as const,
     queryParams: [] as const,
   },
   'teams.create': {
     path: '/teams/create',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'team/create',
@@ -453,6 +484,7 @@ export const routeDefinitions = {
   'teams.edit': {
     path: '/teams/{team_id}',
     methods: ['PATCH'] as const,
+    method: 'patch',
     pathParams: ['team_id'] as const,
     queryParams: [] as const,
     component: 'team/edit',
@@ -460,6 +492,7 @@ export const routeDefinitions = {
   'teams.list': {
     path: '/teams',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: ['createdAfter', 'createdBefore', 'currentPage', 'ids', 'orderBy', 'pageSize', 'searchIgnoreCase', 'searchString', 'sortOrder', 'updatedAfter', 'updatedBefore'] as const,
     component: 'team/list',
@@ -467,12 +500,14 @@ export const routeDefinitions = {
   'teams.remove': {
     path: '/teams/{team_id}',
     methods: ['DELETE'] as const,
+    method: 'delete',
     pathParams: ['team_id'] as const,
     queryParams: [] as const,
   },
   'teams.show': {
     path: '/teams/{team_id}',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: ['team_id'] as const,
     queryParams: [] as const,
     component: 'team/show',
@@ -480,18 +515,21 @@ export const routeDefinitions = {
   'teams:add-member': {
     path: '/api/teams/{team_id}/members/add',
     methods: ['POST'] as const,
+    method: 'post',
     pathParams: ['team_id'] as const,
     queryParams: [] as const,
   },
   'teams:remove-member': {
     path: '/api/teams/{team_id}/members/remove',
     methods: ['POST'] as const,
+    method: 'post',
     pathParams: ['team_id'] as const,
     queryParams: [] as const,
   },
   'terms-of-service': {
     path: '/terms-of-service',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'legal/terms-of-service',
@@ -499,48 +537,56 @@ export const routeDefinitions = {
   'users:assign-role': {
     path: '/api/roles/{role_slug}/assign',
     methods: ['POST'] as const,
+    method: 'post',
     pathParams: ['role_slug'] as const,
     queryParams: [] as const,
   },
   'users:create': {
     path: '/api/users',
     methods: ['POST'] as const,
+    method: 'post',
     pathParams: [] as const,
     queryParams: [] as const,
   },
   'users:delete': {
     path: '/api/users/{user_id}',
     methods: ['DELETE'] as const,
+    method: 'delete',
     pathParams: ['user_id'] as const,
     queryParams: [] as const,
   },
   'users:get': {
     path: '/api/users/{user_id}',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: ['user_id'] as const,
     queryParams: [] as const,
   },
   'users:list': {
     path: '/api/users',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: ['createdAfter', 'createdBefore', 'currentPage', 'ids', 'orderBy', 'pageSize', 'searchIgnoreCase', 'searchString', 'sortOrder', 'updatedAfter', 'updatedBefore'] as const,
   },
   'users:revoke-role': {
     path: '/api/roles/{role_slug}/revoke',
     methods: ['POST'] as const,
+    method: 'post',
     pathParams: ['role_slug'] as const,
     queryParams: [] as const,
   },
   'users:update': {
     path: '/api/users/{user_id}',
     methods: ['PATCH'] as const,
+    method: 'patch',
     pathParams: ['user_id'] as const,
     queryParams: [] as const,
   },
   'vite': {
     path: '/static/{file_path}',
     methods: ['GET'] as const,
+    method: 'get',
     pathParams: ['file_path'] as const,
     queryParams: [] as const,
   },
@@ -577,6 +623,9 @@ type RoutesWithoutRequiredParams = Exclude<RouteName, RoutesWithRequiredParams>;
  * route('books')                              // '/api/books'
  * route('book_detail', { book_id: 123 })      // '/api/books/123'
  * route('search', { q: 'test', limit: 5 })    // '/api/search?q=test&limit=5'
+ *
+ * // Access HTTP method from route definition when needed:
+ * routeDefinitions.login.method               // 'post'
  */
 export function route<T extends RoutesWithoutRequiredParams>(name: T): string;
 export function route<T extends RoutesWithoutRequiredParams>(
@@ -755,4 +804,3 @@ export function isCurrentRoute(pattern: string): boolean {
   const regex = new RegExp(`^${escaped.replace(/\*/g, '.*')}$`);
   return regex.test(current);
 }
-

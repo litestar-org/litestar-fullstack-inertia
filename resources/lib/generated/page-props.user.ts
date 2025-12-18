@@ -1,33 +1,39 @@
 /**
- * User-defined type overrides for Inertia page props.
+ * User-defined type extensions for Inertia page props.
  * This file is generated ONCE and never overwritten - edit freely!
  *
- * Use module augmentation to extend generated types.
- *
- * IMPORTANT: If you see "module 'litestar-vite-plugin/inertia' cannot be found":
- * 1. Ensure litestar-vite-plugin is installed: npm install litestar-vite-plugin
- * 2. Make sure your tsconfig.json has "moduleResolution": "bundler" or "node16"
+ * Add properties to these interfaces to extend the generated types.
+ * The main page-props.ts file imports and uses these extensions.
  */
 
-// Reference the base types to enable module augmentation
-/// <reference types="litestar-vite-plugin/inertia" />
+/**
+ * Extend the User interface with additional properties.
+ *
+ * @example
+ * export interface UserExtensions {
+ *   avatarUrl?: string | null
+ *   roles: string[]
+ *   teams: Team[]
+ * }
+ */
+export interface UserExtensions {
+  // Add your custom User properties here
+}
 
-declare module "litestar-vite-plugin/inertia" {
-  // Example: Add fields to the User interface
-  // interface User {
-  //   avatarUrl?: string | null
-  //   roles: string[]
-  //   teams: Team[]
-  // }
-
-  // Example: Add session-based shared props
-  // interface SharedProps {
-  //   currentTeam?: {
-  //     teamId: string
-  //     teamName: string
-  //   }
-  //   locale?: string
-  // }
+/**
+ * Extend SharedProps with session-based or dynamic properties.
+ *
+ * @example
+ * export interface SharedPropsExtensions {
+ *   locale?: string
+ *   currentTeam?: {
+ *     teamId: string
+ *     teamName: string
+ *   }
+ * }
+ */
+export interface SharedPropsExtensions {
+  // Add your custom shared props here
 }
 
 // Export custom types that can be used in page props
@@ -35,5 +41,3 @@ declare module "litestar-vite-plugin/inertia" {
 //   teamId: string
 //   teamName: string
 // }
-
-export {}

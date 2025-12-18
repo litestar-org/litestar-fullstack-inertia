@@ -3,12 +3,14 @@
   "routes": {
     "about": {
       "component": "about",
+      "method": "get",
       "methods": [
         "GET"
       ],
       "uri": "/about"
     },
     "account.remove": {
+      "method": "delete",
       "methods": [
         "DELETE"
       ],
@@ -16,12 +18,14 @@
     },
     "dashboard": {
       "component": "dashboard",
+      "method": "get",
       "methods": [
         "GET"
       ],
       "uri": "/dashboard"
     },
     "favicon": {
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -29,6 +33,7 @@
     },
     "forgot-password": {
       "component": "auth/forgot-password",
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -36,12 +41,14 @@
     },
     "forgot-password.send": {
       "component": "auth/forgot-password",
+      "method": "post",
       "methods": [
         "POST"
       ],
       "uri": "/forgot-password"
     },
     "github.complete": {
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -54,12 +61,14 @@
       "uri": "/o/github/complete"
     },
     "github.register": {
+      "method": "post",
       "methods": [
         "POST"
       ],
       "uri": "/register/github"
     },
     "google.complete": {
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -72,12 +81,14 @@
       "uri": "/o/google/complete"
     },
     "google.register": {
+      "method": "post",
       "methods": [
         "POST"
       ],
       "uri": "/register/google"
     },
     "home": {
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -85,6 +96,7 @@
     },
     "landing": {
       "component": "landing",
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -92,6 +104,7 @@
     },
     "login": {
       "component": "auth/login",
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -99,18 +112,21 @@
     },
     "login.check": {
       "component": "auth/login",
+      "method": "post",
       "methods": [
         "POST"
       ],
       "uri": "/login"
     },
     "logout": {
+      "method": "post",
       "methods": [
         "POST"
       ],
       "uri": "/logout"
     },
     "openapi.json": {
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -118,6 +134,7 @@
     },
     "password.update": {
       "component": "profile/edit",
+      "method": "patch",
       "methods": [
         "PATCH"
       ],
@@ -125,6 +142,7 @@
     },
     "privacy-policy": {
       "component": "legal/privacy-policy",
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -132,6 +150,7 @@
     },
     "profile.show": {
       "component": "profile/edit",
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -139,6 +158,7 @@
     },
     "profile.update": {
       "component": "profile/edit",
+      "method": "patch",
       "methods": [
         "PATCH"
       ],
@@ -146,6 +166,7 @@
     },
     "register": {
       "component": "auth/register",
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -153,6 +174,7 @@
     },
     "register.add": {
       "component": "auth/register",
+      "method": "post",
       "methods": [
         "POST"
       ],
@@ -160,6 +182,7 @@
     },
     "reset-password": {
       "component": "auth/reset-password",
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -171,18 +194,21 @@
     },
     "reset-password.update": {
       "component": "auth/reset-password",
+      "method": "post",
       "methods": [
         "POST"
       ],
       "uri": "/reset-password"
     },
     "tags:create": {
+      "method": "post",
       "methods": [
         "POST"
       ],
       "uri": "/api/tags"
     },
     "tags:delete": {
+      "method": "delete",
       "methods": [
         "DELETE"
       ],
@@ -195,6 +221,7 @@
       "uri": "/api/tags/{tag_id}"
     },
     "tags:get": {
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -207,6 +234,7 @@
       "uri": "/api/tags/{tag_id}"
     },
     "tags:list": {
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -226,6 +254,7 @@
       "uri": "/api/tags"
     },
     "tags:update": {
+      "method": "patch",
       "methods": [
         "PATCH"
       ],
@@ -238,6 +267,7 @@
       "uri": "/api/tags/{tag_id}"
     },
     "teams.add": {
+      "method": "post",
       "methods": [
         "POST"
       ],
@@ -245,6 +275,7 @@
     },
     "teams.create": {
       "component": "team/create",
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -252,6 +283,7 @@
     },
     "teams.edit": {
       "component": "team/edit",
+      "method": "patch",
       "methods": [
         "PATCH"
       ],
@@ -265,6 +297,7 @@
     },
     "teams.list": {
       "component": "team/list",
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -284,6 +317,7 @@
       "uri": "/teams"
     },
     "teams.remove": {
+      "method": "delete",
       "methods": [
         "DELETE"
       ],
@@ -297,6 +331,7 @@
     },
     "teams.show": {
       "component": "team/show",
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -309,6 +344,7 @@
       "uri": "/teams/{team_id}"
     },
     "teams:add-member": {
+      "method": "post",
       "methods": [
         "POST"
       ],
@@ -321,6 +357,7 @@
       "uri": "/api/teams/{team_id}/members/add"
     },
     "teams:remove-member": {
+      "method": "post",
       "methods": [
         "POST"
       ],
@@ -334,12 +371,14 @@
     },
     "terms-of-service": {
       "component": "legal/terms-of-service",
+      "method": "get",
       "methods": [
         "GET"
       ],
       "uri": "/terms-of-service"
     },
     "users:assign-role": {
+      "method": "post",
       "methods": [
         "POST"
       ],
@@ -352,12 +391,14 @@
       "uri": "/api/roles/{role_slug}/assign"
     },
     "users:create": {
+      "method": "post",
       "methods": [
         "POST"
       ],
       "uri": "/api/users"
     },
     "users:delete": {
+      "method": "delete",
       "methods": [
         "DELETE"
       ],
@@ -370,6 +411,7 @@
       "uri": "/api/users/{user_id}"
     },
     "users:get": {
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -382,6 +424,7 @@
       "uri": "/api/users/{user_id}"
     },
     "users:list": {
+      "method": "get",
       "methods": [
         "GET"
       ],
@@ -401,6 +444,7 @@
       "uri": "/api/users"
     },
     "users:revoke-role": {
+      "method": "post",
       "methods": [
         "POST"
       ],
@@ -413,6 +457,7 @@
       "uri": "/api/roles/{role_slug}/revoke"
     },
     "users:update": {
+      "method": "patch",
       "methods": [
         "PATCH"
       ],
@@ -425,6 +470,7 @@
       "uri": "/api/users/{user_id}"
     },
     "vite": {
+      "method": "get",
       "methods": [
         "GET"
       ],

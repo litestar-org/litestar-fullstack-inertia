@@ -20,6 +20,7 @@ from litestar.logging.config import (
 )
 from litestar.middleware.logging import LoggingMiddlewareConfig
 from litestar.middleware.session.server_side import ServerSideSessionConfig
+from litestar.exceptions import NotFoundException
 from litestar.plugins.structlog import StructlogConfig
 from litestar.template import TemplateConfig
 from litestar_vite import InertiaConfig, PathConfig, RuntimeConfig, TypeGenConfig, ViteConfig
@@ -88,6 +89,7 @@ log = StructlogConfig(
     enable_middleware_logging=False,
     structlog_logging_config=StructLoggingConfig(
         log_exceptions="always",
+        disable_stack_trace={404, NotFoundException},
         processors=_structlog_default_processors,
         logger_factory=default_logger_factory(as_json=_render_as_json),
         standard_lib_logging_config=LoggingConfig(
@@ -97,7 +99,7 @@ log = StructlogConfig(
                 "standard": {
                     "()": structlog.stdlib.ProcessorFormatter,
                     "processors": _structlog_standard_lib_processors,
-                }
+                },
             },
             loggers={
                 "sqlalchemy.engine": {
@@ -132,13 +134,13 @@ log = StructlogConfig(
         ),
     ),
     middleware_logging_config=LoggingMiddlewareConfig(
-        request_log_fields=["method", "path", "path_params", "query"], response_log_fields=["status_code"]
+        request_log_fields=["method", "path", "path_params", "query"], response_log_fields=["status_code"],
     ),
 )
 
 github_oauth2_client = GitHubOAuth2(
-    client_id=settings.app.GITHUB_OAUTH2_CLIENT_ID, client_secret=settings.app.GITHUB_OAUTH2_CLIENT_SECRET
+    client_id=settings.app.GITHUB_OAUTH2_CLIENT_ID, client_secret=settings.app.GITHUB_OAUTH2_CLIENT_SECRET,
 )
 google_oauth2_client = GoogleOAuth2(
-    client_id=settings.app.GOOGLE_OAUTH2_CLIENT_ID, client_secret=settings.app.GOOGLE_OAUTH2_CLIENT_SECRET
+    client_id=settings.app.GOOGLE_OAUTH2_CLIENT_ID, client_secret=settings.app.GOOGLE_OAUTH2_CLIENT_SECRET,
 )

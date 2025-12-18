@@ -12,18 +12,18 @@
     },
     "auth/forgot-password": {
       "customTypes": [
-        "EmailSent"
+        "NoProps"
       ],
-      "handler": "send_reset_email",
-      "propsType": "EmailSent",
+      "handler": "show_forgot_password",
+      "propsType": "NoProps",
       "route": "/forgot-password",
-      "tsType": "EmailSent"
+      "tsType": "NoProps"
     },
     "auth/login": {
       "customTypes": [
         "NoProps"
       ],
-      "handler": "login",
+      "handler": "show_login",
       "propsType": "NoProps",
       "route": "/login",
       "tsType": "NoProps"
@@ -41,7 +41,7 @@
       "customTypes": [
         "PasswordResetToken"
       ],
-      "handler": "reset_password",
+      "handler": "show_reset_password",
       "propsType": "PasswordResetToken",
       "route": "/reset-password",
       "tsType": "PasswordResetToken"
@@ -86,9 +86,9 @@
       "customTypes": [
         "Message"
       ],
-      "handler": "update_password",
+      "handler": "profile",
       "propsType": "Message",
-      "route": "/profile/password-update",
+      "route": "/profile",
       "tsType": "Message"
     },
     "team/create": {
