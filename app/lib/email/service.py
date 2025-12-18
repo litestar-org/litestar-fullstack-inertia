@@ -4,7 +4,6 @@ This module provides the EmailService class which offers a high-level
 API for sending various types of transactional emails including
 verification, password reset, welcome, and team invitation emails.
 """
-# ruff: noqa: PLR0917
 
 from __future__ import annotations
 
@@ -150,7 +149,7 @@ class EmailService:
                 html_content = self._generate_fallback_html(template_name, context)
 
             return await self.send_email(
-                to_email=to_email, subject=subject, html_content=html_content, from_email=from_email
+                to_email=to_email, subject=subject, html_content=html_content, from_email=from_email,
             )
 
         except Exception:
@@ -203,7 +202,7 @@ class EmailService:
         }
 
         return await self.send_template_email(
-            template_name="welcome", to_email=user.email, subject=f"Welcome to {self.app_name}!", context=context
+            template_name="welcome", to_email=user.email, subject=f"Welcome to {self.app_name}!", context=context,
         )
 
     async def send_password_reset_email(self, user: UserProtocol, token: str, ip_address: str = "unknown") -> bool:
@@ -260,7 +259,7 @@ class EmailService:
         )
 
     async def send_team_invitation_email(
-        self, invitee_email: str, inviter_name: str, team_name: str, token: str
+        self, invitee_email: str, inviter_name: str, team_name: str, token: str,
     ) -> bool:
         """Send team invitation email.
 

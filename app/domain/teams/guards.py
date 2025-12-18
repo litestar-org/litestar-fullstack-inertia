@@ -11,11 +11,11 @@ def requires_team_membership(connection: ASGIConnection, _: BaseRouteHandler) ->
     """Verify the connection user is a member of the team.
 
     Args:
-        connection (ASGIConnection): _description_
-        _ (BaseRouteHandler): _description_
+        connection: HTTP connection object.
+        _: Route handler (unused).
 
     Raises:
-        PermissionDeniedException: _description_
+        PermissionDeniedException: If user is not a team member.
     """
     team_id = connection.path_params["team_id"]
     has_system_role = any(
@@ -31,11 +31,11 @@ def requires_team_admin(connection: ASGIConnection, _: BaseRouteHandler) -> None
     """Verify the connection user is a team admin.
 
     Args:
-        connection (ASGIConnection): _description_
-        _ (BaseRouteHandler): _description_
+        connection: HTTP connection object.
+        _: Route handler (unused).
 
     Raises:
-        PermissionDeniedException: _description_
+        PermissionDeniedException: If user is not a team admin.
     """
     team_id = connection.path_params["team_id"]
     has_system_role = any(
@@ -53,11 +53,11 @@ def requires_team_ownership(connection: ASGIConnection, _: BaseRouteHandler) -> 
     """Verify that the connection user is the team owner.
 
     Args:
-        connection (ASGIConnection): _description_
-        _ (BaseRouteHandler): _description_
+        connection: HTTP connection object.
+        _: Route handler (unused).
 
     Raises:
-        PermissionDeniedException: _description_
+        PermissionDeniedException: If user is not the team owner.
     """
     team_id = connection.path_params["team_id"]
     has_system_role = any(

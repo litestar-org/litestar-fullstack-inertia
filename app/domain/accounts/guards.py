@@ -98,7 +98,7 @@ def requires_verified_user(connection: ASGIConnection, _: BaseRouteHandler) -> N
 
 
 async def current_user_from_session(
-    session: dict[str, Any], connection: ASGIConnection[Any, Any, Any, Any]
+    session: dict[str, Any], connection: ASGIConnection[Any, Any, Any, Any],
 ) -> UserModel | None:
     """Lookup current user from server session state.
 

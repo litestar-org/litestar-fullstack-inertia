@@ -130,7 +130,7 @@ class PasswordResetController(Controller):
 
         # Validate token without consuming it
         token_record = await email_token_service.validate_token(
-            plain_token=token, token_type=TokenType.PASSWORD_RESET, email=email
+            plain_token=token, token_type=TokenType.PASSWORD_RESET, email=email,
         )
 
         if not token_record:
@@ -141,7 +141,7 @@ class PasswordResetController(Controller):
 
     @post(component="auth/reset-password", name="reset-password.update", path="/reset-password/")
     async def reset_password(
-        self, request: Request, users_service: UserService, email_token_service: EmailTokenService, data: PasswordReset
+        self, request: Request, users_service: UserService, email_token_service: EmailTokenService, data: PasswordReset,
     ) -> InertiaRedirect:
         """Reset the user's password.
 
@@ -150,7 +150,7 @@ class PasswordResetController(Controller):
         """
         # Consume the token (validates and marks as used)
         token_record = await email_token_service.consume_token(
-            plain_token=data.token, token_type=TokenType.PASSWORD_RESET
+            plain_token=data.token, token_type=TokenType.PASSWORD_RESET,
         )
 
         if not token_record:
@@ -195,7 +195,7 @@ class AccessController(Controller):
 
     @post(component="auth/login", name="login.check", path="/login/")
     async def login(
-        self, request: Request[Any, Any, Any], users_service: UserService, data: AccountLogin
+        self, request: Request[Any, Any, Any], users_service: UserService, data: AccountLogin,
     ) -> InertiaRedirect:
         """Authenticate a user.
 
@@ -255,7 +255,7 @@ class RegistrationController(Controller):
 
     @post(component="auth/register", name="register.add", path="/register/", guards=[requires_registration_enabled])
     async def signup(
-        self, request: Request, users_service: UserService, roles_service: RoleService, data: AccountRegister
+        self, request: Request, users_service: UserService, roles_service: RoleService, data: AccountRegister,
     ) -> InertiaRedirect:
         """Register a new user account.
 
@@ -289,7 +289,7 @@ class RegistrationController(Controller):
         signature_namespace={"AccessTokenState": AccessTokenState},
     )
     async def github_complete(
-        self, request: Request, access_token_state: AccessTokenState, users_service: UserService
+        self, request: Request, access_token_state: AccessTokenState, users_service: UserService,
     ) -> InertiaRedirect:
         """Complete login with GitHub and redirect to the dashboard.
 
@@ -315,7 +315,7 @@ class RegistrationController(Controller):
         signature_namespace={"AccessTokenState": AccessTokenState},
     )
     async def google_complete(
-        self, request: Request, access_token_state: AccessTokenState, users_service: UserService
+        self, request: Request, access_token_state: AccessTokenState, users_service: UserService,
     ) -> InertiaRedirect:
         """Complete login with Google and redirect to the dashboard.
 
@@ -323,12 +323,12 @@ class RegistrationController(Controller):
             Redirect to dashboard after successful OAuth authentication.
         """
         return await RegistrationController._auth_complete(
-            request, access_token_state, users_service, google_oauth2_client
+            request, access_token_state, users_service, google_oauth2_client,
         )
 
     @staticmethod
     async def _auth_complete(
-        request: Request, access_token_state: AccessTokenState, users_service: UserService, oauth_client: BaseOAuth2
+        request: Request, access_token_state: AccessTokenState, users_service: UserService, oauth_client: BaseOAuth2,
     ) -> InertiaRedirect:
         """Complete the OAuth2 flow and redirect to the dashboard.
 
@@ -338,7 +338,7 @@ class RegistrationController(Controller):
         token, _ = access_token_state
         id_, email = await oauth_client.get_id_email(token=token["access_token"])
         user, created = await users_service.get_or_upsert(
-            match_fields=["email"], email=email, is_verified=True, is_active=True
+            match_fields=["email"], email=email, is_verified=True, is_active=True,
         )
         request.set_session({"user_id": user.email})
         request.logger.info("auth request complete", id=id_, email=email, provider=oauth_client.name)
@@ -381,7 +381,7 @@ class ProfileController(Controller):
 
     @patch(component="profile/edit", name="password.update", path="/profile/password-update/")
     async def update_password(
-        self, current_user: UserModel, data: PasswordUpdate, users_service: UserService
+        self, current_user: UserModel, data: PasswordUpdate, users_service: UserService,
     ) -> Message:
         """Update the current user's password.
 
@@ -393,7 +393,7 @@ class ProfileController(Controller):
 
     @delete(name="account.remove", path="/profile/", status_code=303)
     async def remove_account(
-        self, request: Request, current_user: UserModel, users_service: UserService
+        self, request: Request, current_user: UserModel, users_service: UserService,
     ) -> InertiaRedirect:
         """Remove the current user's account from the system.
 
@@ -516,7 +516,7 @@ class UserController(Controller):
         cache=60,
     )
     async def list_users(
-        self, users_service: UserService, filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)]
+        self, users_service: UserService, filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
     ) -> OffsetPagination[User]:
         """List users with filtering and pagination.
 

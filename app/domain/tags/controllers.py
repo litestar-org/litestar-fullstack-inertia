@@ -54,7 +54,11 @@ class TagController(Controller):
         tags_service: TagService,
         filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
     ) -> OffsetPagination[Tag]:
-        """List tags."""
+        """List tags.
+
+        Returns:
+            Paginated list of tags.
+        """
         results, total = await tags_service.list_and_count(*filters)
         return tags_service.to_schema(data=results, total=total, filters=filters)
 
@@ -69,7 +73,11 @@ class TagController(Controller):
         tags_service: TagService,
         tag_id: Annotated[UUID, Parameter(title="Tag ID", description="The tag to retrieve.")],
     ) -> Tag:
-        """Get a tag."""
+        """Get a tag.
+
+        Returns:
+            Tag data for the requested tag.
+        """
         db_obj = await tags_service.get(tag_id)
         return tags_service.to_schema(db_obj)
 
@@ -88,7 +96,11 @@ class TagController(Controller):
         tags_service: TagService,
         data: DTOData[Tag],
     ) -> Tag:
-        """Create a new tag."""
+        """Create a new tag.
+
+        Returns:
+            Newly created tag data.
+        """
         db_obj = await tags_service.create(data)  # pyright: ignore[reportArgumentType]
         return tags_service.to_schema(db_obj)
 
@@ -105,7 +117,11 @@ class TagController(Controller):
         data: DTOData[Tag],
         tag_id: Annotated[UUID, Parameter(title="Tag ID", description="The tag to update.")],
     ) -> Tag:
-        """Update a tag."""
+        """Update a tag.
+
+        Returns:
+            Updated tag data.
+        """
         db_obj = await tags_service.update(item_id=tag_id, data=data)
         return tags_service.to_schema(db_obj)
 

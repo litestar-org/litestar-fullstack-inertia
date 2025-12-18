@@ -37,19 +37,31 @@ class TeamService(SQLAlchemyAsyncRepositoryService[Team, TeamRepository]):
     match_fields = ["name"]
 
     async def to_model_on_create(self, data: ModelDictT[Team]) -> ModelDictT[Team]:
-        """Transform data before creating a team."""
+        """Transform data before creating a team.
+
+        Returns:
+            Transformed team data with slug, owner, and tags.
+        """
         data = schema_dump(data)
         data = await self._populate_slug(data)
         return await self._populate_with_owner_and_tags(data, "create")
 
     async def to_model_on_update(self, data: ModelDictT[Team]) -> ModelDictT[Team]:
-        """Transform data before updating a team."""
+        """Transform data before updating a team.
+
+        Returns:
+            Transformed team data with slug and tags if provided.
+        """
         data = schema_dump(data)
         data = await self._populate_slug(data)
         return await self._populate_with_owner_and_tags(data, "update")
 
     async def _populate_slug(self, data: ModelDictT[Team]) -> ModelDictT[Team]:
-        """Auto-generate slug if not provided."""
+        """Auto-generate slug if not provided.
+
+        Returns:
+            Team data with auto-generated slug if not provided.
+        """
         if is_dict_without_field(data, "slug") and is_dict_with_field(data, "name"):
             data["slug"] = await self.repository.get_available_slug(data["name"])
         return data
@@ -60,6 +72,9 @@ class TeamService(SQLAlchemyAsyncRepositoryService[Team, TeamRepository]):
         operation: str,
     ) -> ModelDictT[Team]:
         """Handle owner and tags assignment.
+
+        Returns:
+            Team data with owner member and tags populated.
 
         Raises:
             RepositoryError: If owner_id is not provided on create.
@@ -111,6 +126,11 @@ class TeamService(SQLAlchemyAsyncRepositoryService[Team, TeamRepository]):
 
     @staticmethod
     def can_view_all(user: User) -> bool:
+        """Check if user can view all teams.
+
+        Returns:
+            True if user is superuser, False otherwise.
+        """
         return bool(
             user.is_superuser
             or any(assigned_role.role.name for assigned_role in user.roles if assigned_role.role.name in {"Superuser"}),

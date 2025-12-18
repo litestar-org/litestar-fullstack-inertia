@@ -2,9 +2,6 @@
 
 export const CreateTagTagRequestBodySchema = {
     properties: {
-        name: {
-            type: 'string'
-        },
         description: {
             oneOf: [
                 {
@@ -15,23 +12,23 @@ export const CreateTagTagRequestBodySchema = {
                 }
             ]
         },
+        name: {
+            type: 'string'
+        },
         slug: {
             type: 'string'
         }
     },
-    type: 'object',
     required: [
         'name',
         'slug'
     ],
-    title: 'CreateTagTagRequestBody'
+    title: 'CreateTagTagRequestBody',
+    type: 'object'
 } as const;
 
 export const CreateTagTagResponseBodySchema = {
     properties: {
-        name: {
-            type: 'string'
-        },
         description: {
             oneOf: [
                 {
@@ -43,26 +40,55 @@ export const CreateTagTagResponseBodySchema = {
             ]
         },
         id: {
-            type: 'string',
-            format: 'uuid'
+            format: 'uuid',
+            type: 'string'
+        },
+        name: {
+            type: 'string'
         },
         slug: {
             type: 'string'
         }
     },
-    type: 'object',
     required: [
         'name',
         'slug'
     ],
-    title: 'CreateTagTagResponseBody'
+    title: 'CreateTagTagResponseBody',
+    type: 'object'
+} as const;
+
+export const CurrentTeamSchema = {
+    properties: {
+        teamId: {
+            type: 'string'
+        },
+        teamName: {
+            type: 'string'
+        }
+    },
+    required: [
+        'teamId',
+        'teamName'
+    ],
+    title: 'CurrentTeam',
+    type: 'object'
+} as const;
+
+export const EmailSentSchema = {
+    properties: {
+        emailSent: {
+            default: true,
+            type: 'boolean'
+        }
+    },
+    required: [],
+    title: 'EmailSent',
+    type: 'object'
 } as const;
 
 export const GetTagTagResponseBodySchema = {
     properties: {
-        name: {
-            type: 'string'
-        },
         description: {
             oneOf: [
                 {
@@ -74,26 +100,26 @@ export const GetTagTagResponseBodySchema = {
             ]
         },
         id: {
-            type: 'string',
-            format: 'uuid'
+            format: 'uuid',
+            type: 'string'
+        },
+        name: {
+            type: 'string'
         },
         slug: {
             type: 'string'
         }
     },
-    type: 'object',
     required: [
         'name',
         'slug'
     ],
-    title: 'GetTagTagResponseBody'
+    title: 'GetTagTagResponseBody',
+    type: 'object'
 } as const;
 
 export const ListTagsTagResponseBodySchema = {
     properties: {
-        name: {
-            type: 'string'
-        },
         description: {
             oneOf: [
                 {
@@ -105,19 +131,22 @@ export const ListTagsTagResponseBodySchema = {
             ]
         },
         id: {
-            type: 'string',
-            format: 'uuid'
+            format: 'uuid',
+            type: 'string'
+        },
+        name: {
+            type: 'string'
         },
         slug: {
             type: 'string'
         }
     },
-    type: 'object',
     required: [
         'name',
         'slug'
     ],
-    title: 'ListTagsTagResponseBody'
+    title: 'ListTagsTagResponseBody',
+    type: 'object'
 } as const;
 
 export const MessageSchema = {
@@ -126,29 +155,29 @@ export const MessageSchema = {
             type: 'string'
         }
     },
-    type: 'object',
     required: [
         'message'
     ],
-    title: 'Message'
+    title: 'Message',
+    type: 'object'
+} as const;
+
+export const NoPropsSchema = {
+    properties: {},
+    required: [],
+    title: 'NoProps',
+    type: 'object'
 } as const;
 
 export const OauthAccountSchema = {
     properties: {
-        id: {
-            type: 'string',
-            format: 'uuid'
-        },
-        oauthName: {
-            type: 'string'
-        },
         accessToken: {
             type: 'string'
         },
-        accountId: {
+        accountEmail: {
             type: 'string'
         },
-        accountEmail: {
+        accountId: {
             type: 'string'
         },
         expiresAt: {
@@ -161,6 +190,13 @@ export const OauthAccountSchema = {
                 }
             ]
         },
+        id: {
+            format: 'uuid',
+            type: 'string'
+        },
+        oauthName: {
+            type: 'string'
+        },
         refreshToken: {
             oneOf: [
                 {
@@ -172,7 +208,6 @@ export const OauthAccountSchema = {
             ]
         }
     },
-    type: 'object',
     required: [
         'accessToken',
         'accountEmail',
@@ -180,18 +215,29 @@ export const OauthAccountSchema = {
         'id',
         'oauthName'
     ],
-    title: 'OauthAccount'
+    title: 'OauthAccount',
+    type: 'object'
+} as const;
+
+export const PasswordResetTokenSchema = {
+    properties: {
+        email: {
+            type: 'string'
+        },
+        token: {
+            type: 'string'
+        }
+    },
+    required: [
+        'email',
+        'token'
+    ],
+    title: 'PasswordResetToken',
+    type: 'object'
 } as const;
 
 export const TeamSchema = {
     properties: {
-        id: {
-            type: 'string',
-            format: 'uuid'
-        },
-        name: {
-            type: 'string'
-        },
         description: {
             oneOf: [
                 {
@@ -202,11 +248,18 @@ export const TeamSchema = {
                 }
             ]
         },
+        id: {
+            format: 'uuid',
+            type: 'string'
+        },
         members: {
             items: {
                 $ref: '#/components/schemas/TeamMember'
             },
             type: 'array'
+        },
+        name: {
+            type: 'string'
         },
         tags: {
             items: {
@@ -215,19 +268,16 @@ export const TeamSchema = {
             type: 'array'
         }
     },
-    type: 'object',
     required: [
         'id',
         'name'
     ],
-    title: 'Team'
+    title: 'Team',
+    type: 'object'
 } as const;
 
 export const TeamCreateSchema = {
     properties: {
-        name: {
-            type: 'string'
-        },
         description: {
             oneOf: [
                 {
@@ -238,6 +288,9 @@ export const TeamCreateSchema = {
                 }
             ]
         },
+        name: {
+            type: 'string'
+        },
         tags: {
             items: {
                 type: 'string'
@@ -245,25 +298,33 @@ export const TeamCreateSchema = {
             type: 'array'
         }
     },
-    type: 'object',
     required: [
         'name'
     ],
-    title: 'TeamCreate'
+    title: 'TeamCreate',
+    type: 'object'
 } as const;
 
 export const TeamMemberSchema = {
     properties: {
-        id: {
-            type: 'string',
-            format: 'uuid'
-        },
-        userId: {
-            type: 'string',
-            format: 'uuid'
-        },
         email: {
             type: 'string'
+        },
+        id: {
+            format: 'uuid',
+            type: 'string'
+        },
+        isOwner: {
+            default: false,
+            oneOf: [
+                {
+                    default: false,
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ]
         },
         name: {
             oneOf: [
@@ -276,6 +337,7 @@ export const TeamMemberSchema = {
             ]
         },
         role: {
+            default: 'member',
             oneOf: [
                 {
                     $ref: '#/components/schemas/TeamRoles'
@@ -283,29 +345,20 @@ export const TeamMemberSchema = {
                 {
                     type: 'null'
                 }
-            ],
-            default: 'member'
+            ]
         },
-        isOwner: {
-            oneOf: [
-                {
-                    type: 'boolean',
-                    default: false
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            default: false
+        userId: {
+            format: 'uuid',
+            type: 'string'
         }
     },
-    type: 'object',
     required: [
         'email',
         'id',
         'userId'
     ],
-    title: 'TeamMember'
+    title: 'TeamMember',
+    type: 'object'
 } as const;
 
 export const TeamMemberModifySchema = {
@@ -314,50 +367,50 @@ export const TeamMemberModifySchema = {
             type: 'string'
         }
     },
-    type: 'object',
     required: [
         'userName'
     ],
-    title: 'TeamMemberModify'
+    title: 'TeamMemberModify',
+    type: 'object'
 } as const;
 
 export const TeamRolesSchema = {
-    type: 'string',
+    default: 'member',
+    description: 'Valid values for team roles.\n\n    Roles follow Jetstream conventions:\n    - ADMIN: Full permissions (create, read, update, delete)\n    - EDITOR: Limited permissions (read, create, update)\n    - MEMBER: Basic read-only access\n\n    Note: Team ownership is tracked separately via is_owner on TeamMember.\n    ',
     enum: [
         'admin',
         'editor',
         'member'
     ],
     title: 'TeamRoles',
-    description: 'Valid values for team roles.\n\n    Roles follow Jetstream conventions:\n    - ADMIN: Full permissions (create, read, update, delete)\n    - EDITOR: Limited permissions (read, create, update)\n    - MEMBER: Basic read-only access\n\n    Note: Team ownership is tracked separately via is_owner on TeamMember.\n    ',
-    default: 'member'
+    type: 'string'
 } as const;
 
 export const TeamTagSchema = {
     properties: {
         id: {
-            type: 'string',
-            format: 'uuid'
-        },
-        slug: {
+            format: 'uuid',
             type: 'string'
         },
         name: {
             type: 'string'
+        },
+        slug: {
+            type: 'string'
         }
     },
-    type: 'object',
     required: [
         'id',
         'name',
         'slug'
     ],
-    title: 'TeamTag'
+    title: 'TeamTag',
+    type: 'object'
 } as const;
 
 export const TeamUpdateSchema = {
     properties: {
-        name: {
+        description: {
             oneOf: [
                 {
                     type: 'string'
@@ -367,7 +420,7 @@ export const TeamUpdateSchema = {
                 }
             ]
         },
-        description: {
+        name: {
             oneOf: [
                 {
                     type: 'string'
@@ -391,20 +444,13 @@ export const TeamUpdateSchema = {
             ]
         }
     },
-    type: 'object',
     required: [],
-    title: 'TeamUpdate'
+    title: 'TeamUpdate',
+    type: 'object'
 } as const;
 
 export const UpdateTagTagRequestBodySchema = {
     properties: {
-        name: {
-            oneOf: [
-                {
-                    type: 'string'
-                }
-            ]
-        },
         description: {
             oneOf: [
                 {
@@ -412,6 +458,13 @@ export const UpdateTagTagRequestBodySchema = {
                 },
                 {
                     type: 'null'
+                }
+            ]
+        },
+        name: {
+            oneOf: [
+                {
+                    type: 'string'
                 }
             ]
         },
@@ -423,16 +476,13 @@ export const UpdateTagTagRequestBodySchema = {
             ]
         }
     },
-    type: 'object',
     required: [],
-    title: 'UpdateTagTagRequestBody'
+    title: 'UpdateTagTagRequestBody',
+    type: 'object'
 } as const;
 
 export const UpdateTagTagResponseBodySchema = {
     properties: {
-        name: {
-            type: 'string'
-        },
         description: {
             oneOf: [
                 {
@@ -444,74 +494,26 @@ export const UpdateTagTagResponseBodySchema = {
             ]
         },
         id: {
-            type: 'string',
-            format: 'uuid'
+            format: 'uuid',
+            type: 'string'
+        },
+        name: {
+            type: 'string'
         },
         slug: {
             type: 'string'
         }
     },
-    type: 'object',
     required: [
         'name',
         'slug'
     ],
-    title: 'UpdateTagTagResponseBody'
+    title: 'UpdateTagTagResponseBody',
+    type: 'object'
 } as const;
 
 export const UserSchema = {
     properties: {
-        id: {
-            type: 'string',
-            format: 'uuid'
-        },
-        email: {
-            type: 'string'
-        },
-        name: {
-            oneOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ]
-        },
-        isSuperuser: {
-            type: 'boolean',
-            default: false
-        },
-        isActive: {
-            type: 'boolean',
-            default: false
-        },
-        isVerified: {
-            type: 'boolean',
-            default: false
-        },
-        hasPassword: {
-            type: 'boolean',
-            default: false
-        },
-        teams: {
-            items: {
-                $ref: '#/components/schemas/UserTeam'
-            },
-            type: 'array'
-        },
-        roles: {
-            items: {
-                $ref: '#/components/schemas/UserRole'
-            },
-            type: 'array'
-        },
-        oauthAccounts: {
-            items: {
-                $ref: '#/components/schemas/OauthAccount'
-            },
-            type: 'array'
-        },
         avatarUrl: {
             oneOf: [
                 {
@@ -521,23 +523,29 @@ export const UserSchema = {
                     type: 'null'
                 }
             ]
-        }
-    },
-    type: 'object',
-    required: [
-        'email',
-        'id'
-    ],
-    title: 'User'
-} as const;
-
-export const UserCreateSchema = {
-    properties: {
+        },
         email: {
             type: 'string'
         },
-        password: {
+        hasPassword: {
+            default: false,
+            type: 'boolean'
+        },
+        id: {
+            format: 'uuid',
             type: 'string'
+        },
+        isActive: {
+            default: false,
+            type: 'boolean'
+        },
+        isSuperuser: {
+            default: false,
+            type: 'boolean'
+        },
+        isVerified: {
+            default: false,
+            type: 'boolean'
         },
         name: {
             oneOf: [
@@ -549,52 +557,97 @@ export const UserCreateSchema = {
                 }
             ]
         },
-        isSuperuser: {
-            type: 'boolean',
-            default: false
+        oauthAccounts: {
+            items: {
+                $ref: '#/components/schemas/OauthAccount'
+            },
+            type: 'array'
         },
-        isActive: {
-            type: 'boolean',
-            default: true
+        roles: {
+            items: {
+                $ref: '#/components/schemas/UserRole'
+            },
+            type: 'array'
         },
-        isVerified: {
-            type: 'boolean',
-            default: false
+        teams: {
+            items: {
+                $ref: '#/components/schemas/UserTeam'
+            },
+            type: 'array'
         }
     },
-    type: 'object',
+    required: [
+        'email',
+        'id'
+    ],
+    title: 'User',
+    type: 'object'
+} as const;
+
+export const UserCreateSchema = {
+    properties: {
+        email: {
+            type: 'string'
+        },
+        isActive: {
+            default: true,
+            type: 'boolean'
+        },
+        isSuperuser: {
+            default: false,
+            type: 'boolean'
+        },
+        isVerified: {
+            default: false,
+            type: 'boolean'
+        },
+        name: {
+            oneOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        password: {
+            type: 'string'
+        }
+    },
     required: [
         'email',
         'password'
     ],
-    title: 'UserCreate'
+    title: 'UserCreate',
+    type: 'object'
 } as const;
 
 export const UserRoleSchema = {
     properties: {
-        roleId: {
-            type: 'string',
-            format: 'uuid'
+        assignedAt: {
+            format: 'date-time',
+            type: 'string'
         },
-        roleSlug: {
+        roleId: {
+            format: 'uuid',
             type: 'string'
         },
         roleName: {
             type: 'string'
         },
-        assignedAt: {
-            type: 'string',
-            format: 'date-time'
+        roleSlug: {
+            type: 'string'
         }
     },
-    type: 'object',
     required: [
         'assignedAt',
         'roleId',
         'roleName',
         'roleSlug'
     ],
-    title: 'UserRole'
+    title: 'UserRole',
+    type: 'object'
 } as const;
 
 export const UserRoleAddSchema = {
@@ -603,11 +656,11 @@ export const UserRoleAddSchema = {
             type: 'string'
         }
     },
-    type: 'object',
     required: [
         'userName'
     ],
-    title: 'UserRoleAdd'
+    title: 'UserRoleAdd',
+    type: 'object'
 } as const;
 
 export const UserRoleRevokeSchema = {
@@ -616,36 +669,36 @@ export const UserRoleRevokeSchema = {
             type: 'string'
         }
     },
-    type: 'object',
     required: [
         'userName'
     ],
-    title: 'UserRoleRevoke'
+    title: 'UserRoleRevoke',
+    type: 'object'
 } as const;
 
 export const UserTeamSchema = {
     properties: {
-        teamId: {
-            type: 'string',
-            format: 'uuid'
-        },
-        teamName: {
-            type: 'string'
-        },
         isOwner: {
-            type: 'boolean',
-            default: false
+            default: false,
+            type: 'boolean'
         },
         role: {
             $ref: '#/components/schemas/TeamRoles'
+        },
+        teamId: {
+            format: 'uuid',
+            type: 'string'
+        },
+        teamName: {
+            type: 'string'
         }
     },
-    type: 'object',
     required: [
         'teamId',
         'teamName'
     ],
-    title: 'UserTeam'
+    title: 'UserTeam',
+    type: 'object'
 } as const;
 
 export const UserUpdateSchema = {
@@ -660,27 +713,7 @@ export const UserUpdateSchema = {
                 }
             ]
         },
-        password: {
-            oneOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ]
-        },
-        name: {
-            oneOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ]
-        },
-        isSuperuser: {
+        isActive: {
             oneOf: [
                 {
                     type: 'boolean'
@@ -690,7 +723,7 @@ export const UserUpdateSchema = {
                 }
             ]
         },
-        isActive: {
+        isSuperuser: {
             oneOf: [
                 {
                     type: 'boolean'
@@ -709,62 +742,29 @@ export const UserUpdateSchema = {
                     type: 'null'
                 }
             ]
-        }
-    },
-    type: 'object',
-    required: [],
-    title: 'UserUpdate'
-} as const;
-
-export const EmailSentSchema = {
-    properties: {
-        emailSent: {
-            type: 'boolean',
-            default: true
-        }
-    },
-    type: 'object',
-    required: [],
-    title: 'EmailSent'
-} as const;
-
-export const NoPropsSchema = {
-    properties: {},
-    type: 'object',
-    required: [],
-    title: 'NoProps'
-} as const;
-
-export const PasswordResetTokenSchema = {
-    properties: {
-        token: {
-            type: 'string'
         },
-        email: {
-            type: 'string'
-        }
-    },
-    type: 'object',
-    required: [
-        'email',
-        'token'
-    ],
-    title: 'PasswordResetToken'
-} as const;
-
-export const CurrentTeamSchema = {
-    properties: {
-        teamId: {
-            type: 'string'
+        name: {
+            oneOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ]
         },
-        teamName: {
-            type: 'string'
+        password: {
+            oneOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ]
         }
     },
-    type: 'object',
-    required: [
-        'teamId',
-        'teamName'
-    ],
-    title: 'CurrentTeam'
+    required: [],
+    title: 'UserUpdate',
+    type: 'object'
 } as const;

@@ -19,6 +19,180 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 };
 
 /**
+ * AssignRole
+ *
+ * Assign a role to a user.
+ *
+ * Returns:
+ * Success message indicating role assignment status.
+ */
+export const assignUserRole = <ThrowOnError extends boolean = false>(options: Options<AssignUserRoleData, ThrowOnError>) => (options.client ?? client).post<AssignUserRoleResponses, AssignUserRoleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/api/roles/{role_slug}/assign',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove Role
+ *
+ * Removes an assigned role from a user.
+ */
+export const revokeUserRole = <ThrowOnError extends boolean = false>(options: Options<RevokeUserRoleData, ThrowOnError>) => (options.client ?? client).post<RevokeUserRoleResponses, RevokeUserRoleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/api/roles/{role_slug}/revoke',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List Tags
+ *
+ * Retrieve the tags.
+ */
+export const listTags = <ThrowOnError extends boolean = false>(options?: Options<ListTagsData, ThrowOnError>) => (options?.client ?? client).get<ListTagsResponses, ListTagsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/api/tags',
+    ...options
+});
+
+/**
+ * Create a new tag.
+ *
+ * A tag is a place where you can upload and group collections of databases.
+ */
+export const createTag = <ThrowOnError extends boolean = false>(options: Options<CreateTagData, ThrowOnError>) => (options.client ?? client).post<CreateTagResponses, CreateTagErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/api/tags',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove Tag
+ *
+ * Removes a tag and its associations
+ */
+export const deleteTag = <ThrowOnError extends boolean = false>(options: Options<DeleteTagData, ThrowOnError>) => (options.client ?? client).delete<DeleteTagResponses, DeleteTagErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/api/tags/{tag_id}',
+    ...options
+});
+
+/**
+ * Retrieve the details of a tag.
+ *
+ * Get a tag.
+ *
+ * Returns:
+ * Tag data for the requested tag.
+ */
+export const getTag = <ThrowOnError extends boolean = false>(options: Options<GetTagData, ThrowOnError>) => (options.client ?? client).get<GetTagResponses, GetTagErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/api/tags/{tag_id}',
+    ...options
+});
+
+/**
+ * UpdateTag
+ *
+ * Update a tag.
+ *
+ * Returns:
+ * Updated tag data.
+ */
+export const updateTag = <ThrowOnError extends boolean = false>(options: Options<UpdateTagData, ThrowOnError>) => (options.client ?? client).patch<UpdateTagResponses, UpdateTagErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/api/tags/{tag_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * AddMemberToTeam
+ *
+ * Add a member to a team.
+ *
+ * Returns:
+ * Updated team data with new member.
+ *
+ * Raises:
+ * IntegrityError: If the user is already a member of the team.
+ */
+export const addMemberToTeam = <ThrowOnError extends boolean = false>(options: Options<AddMemberToTeamData, ThrowOnError>) => (options.client ?? client).post<AddMemberToTeamResponses, AddMemberToTeamErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/api/teams/{team_id}/members/add',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove Team Member
+ *
+ * Removes a member from a team
+ */
+export const removeMemberFromTeam = <ThrowOnError extends boolean = false>(options: Options<RemoveMemberFromTeamData, ThrowOnError>) => (options.client ?? client).post<RemoveMemberFromTeamResponses, RemoveMemberFromTeamErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/api/teams/{team_id}/members/remove',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * List Users
  *
  * Retrieve the users.
@@ -111,6 +285,9 @@ export const updateUser = <ThrowOnError extends boolean = false>(options: Option
  * ListTeams
  *
  * List teams that your account can access.
+ *
+ * Returns:
+ * Teams list with user roles and total count.
  */
 export const listTeams = <ThrowOnError extends boolean = false>(options?: Options<ListTeamsData, ThrowOnError>) => (options?.client ?? client).get<ListTeamsResponses, ListTeamsErrors, ThrowOnError>({
     security: [{
@@ -126,6 +303,9 @@ export const listTeams = <ThrowOnError extends boolean = false>(options?: Option
  * Create a new team.
  *
  * Create a new team.
+ *
+ * Returns:
+ * Redirect to the newly created team's detail page.
  */
 export const createTeam = <ThrowOnError extends boolean = false>(options: Options<CreateTeamData, ThrowOnError>) => (options.client ?? client).post<CreateTeamResponses, CreateTeamErrors, ThrowOnError>({
     security: [{
@@ -145,6 +325,9 @@ export const createTeam = <ThrowOnError extends boolean = false>(options: Option
  * CreateTeamPage
  *
  * Show team creation page.
+ *
+ * Returns:
+ * Empty page props.
  */
 export const createTeamPage = <ThrowOnError extends boolean = false>(options?: Options<CreateTeamPageData, ThrowOnError>) => (options?.client ?? client).get<CreateTeamPageResponses, unknown, ThrowOnError>({
     security: [{
@@ -160,6 +343,9 @@ export const createTeamPage = <ThrowOnError extends boolean = false>(options?: O
  * DeleteTeam
  *
  * Delete a team.
+ *
+ * Returns:
+ * Redirect to teams list page.
  */
 export const deleteTeam = <ThrowOnError extends boolean = false>(options: Options<DeleteTeamData, ThrowOnError>) => (options.client ?? client).delete<unknown, DeleteTeamErrors, ThrowOnError>({
     security: [{
@@ -175,6 +361,9 @@ export const deleteTeam = <ThrowOnError extends boolean = false>(options: Option
  * GetTeam
  *
  * Get details about a team.
+ *
+ * Returns:
+ * Team details, members list, and user permissions.
  */
 export const getTeam = <ThrowOnError extends boolean = false>(options: Options<GetTeamData, ThrowOnError>) => (options.client ?? client).get<GetTeamResponses, GetTeamErrors, ThrowOnError>({
     security: [{
@@ -190,6 +379,9 @@ export const getTeam = <ThrowOnError extends boolean = false>(options: Options<G
  * UpdateTeam
  *
  * Update a migration team.
+ *
+ * Returns:
+ * Updated team data.
  */
 export const updateTeam = <ThrowOnError extends boolean = false>(options: Options<UpdateTeamData, ThrowOnError>) => (options.client ?? client).patch<UpdateTeamResponses, UpdateTeamErrors, ThrowOnError>({
     security: [{
@@ -198,171 +390,6 @@ export const updateTeam = <ThrowOnError extends boolean = false>(options: Option
             type: 'apiKey'
         }],
     url: '/teams/{team_id}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * AssignRole
- *
- * Assign a role to a user.
- *
- * Returns:
- * Success message indicating role assignment status.
- */
-export const assignUserRole = <ThrowOnError extends boolean = false>(options: Options<AssignUserRoleData, ThrowOnError>) => (options.client ?? client).post<AssignUserRoleResponses, AssignUserRoleErrors, ThrowOnError>({
-    security: [{
-            in: 'cookie',
-            name: 'session',
-            type: 'apiKey'
-        }],
-    url: '/api/roles/{role_slug}/assign',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Remove Role
- *
- * Removes an assigned role from a user.
- */
-export const revokeUserRole = <ThrowOnError extends boolean = false>(options: Options<RevokeUserRoleData, ThrowOnError>) => (options.client ?? client).post<RevokeUserRoleResponses, RevokeUserRoleErrors, ThrowOnError>({
-    security: [{
-            in: 'cookie',
-            name: 'session',
-            type: 'apiKey'
-        }],
-    url: '/api/roles/{role_slug}/revoke',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * AddMemberToTeam
- *
- * Add a member to a team.
- *
- * Raises:
- * IntegrityError: If the user is already a member of the team.
- */
-export const addMemberToTeam = <ThrowOnError extends boolean = false>(options: Options<AddMemberToTeamData, ThrowOnError>) => (options.client ?? client).post<AddMemberToTeamResponses, AddMemberToTeamErrors, ThrowOnError>({
-    security: [{
-            in: 'cookie',
-            name: 'session',
-            type: 'apiKey'
-        }],
-    url: '/api/teams/{team_id}/members/add',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Remove Team Member
- *
- * Removes a member from a team
- */
-export const removeMemberFromTeam = <ThrowOnError extends boolean = false>(options: Options<RemoveMemberFromTeamData, ThrowOnError>) => (options.client ?? client).post<RemoveMemberFromTeamResponses, RemoveMemberFromTeamErrors, ThrowOnError>({
-    security: [{
-            in: 'cookie',
-            name: 'session',
-            type: 'apiKey'
-        }],
-    url: '/api/teams/{team_id}/members/remove',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * List Tags
- *
- * Retrieve the tags.
- */
-export const listTags = <ThrowOnError extends boolean = false>(options?: Options<ListTagsData, ThrowOnError>) => (options?.client ?? client).get<ListTagsResponses, ListTagsErrors, ThrowOnError>({
-    security: [{
-            in: 'cookie',
-            name: 'session',
-            type: 'apiKey'
-        }],
-    url: '/api/tags',
-    ...options
-});
-
-/**
- * Create a new tag.
- *
- * A tag is a place where you can upload and group collections of databases.
- */
-export const createTag = <ThrowOnError extends boolean = false>(options: Options<CreateTagData, ThrowOnError>) => (options.client ?? client).post<CreateTagResponses, CreateTagErrors, ThrowOnError>({
-    security: [{
-            in: 'cookie',
-            name: 'session',
-            type: 'apiKey'
-        }],
-    url: '/api/tags',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Remove Tag
- *
- * Removes a tag and its associations
- */
-export const deleteTag = <ThrowOnError extends boolean = false>(options: Options<DeleteTagData, ThrowOnError>) => (options.client ?? client).delete<DeleteTagResponses, DeleteTagErrors, ThrowOnError>({
-    security: [{
-            in: 'cookie',
-            name: 'session',
-            type: 'apiKey'
-        }],
-    url: '/api/tags/{tag_id}',
-    ...options
-});
-
-/**
- * Retrieve the details of a tag.
- *
- * Get a tag.
- */
-export const getTag = <ThrowOnError extends boolean = false>(options: Options<GetTagData, ThrowOnError>) => (options.client ?? client).get<GetTagResponses, GetTagErrors, ThrowOnError>({
-    security: [{
-            in: 'cookie',
-            name: 'session',
-            type: 'apiKey'
-        }],
-    url: '/api/tags/{tag_id}',
-    ...options
-});
-
-/**
- * UpdateTag
- *
- * Update a tag.
- */
-export const updateTag = <ThrowOnError extends boolean = false>(options: Options<UpdateTagData, ThrowOnError>) => (options.client ?? client).patch<UpdateTagResponses, UpdateTagErrors, ThrowOnError>({
-    security: [{
-            in: 'cookie',
-            name: 'session',
-            type: 'apiKey'
-        }],
-    url: '/api/tags/{tag_id}',
     ...options,
     headers: {
         'Content-Type': 'application/json',

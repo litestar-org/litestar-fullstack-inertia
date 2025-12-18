@@ -97,6 +97,11 @@ class OAuth2AuthorizeCallback:
         callback_state: str | None = Parameter(query="state", required=False),
         error: str | None = Parameter(query="error", required=False),
     ) -> AccessTokenState:
+        """Handle OAuth2 authorization callback.
+
+        Returns:
+            Tuple of access token and callback state.
+        """
         if code is None or error is not None:
             raise OAuth2AuthorizeCallbackError(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -136,8 +141,10 @@ class OAuth2ProviderPlugin(InitPluginProtocol):
 
         Args:
             app_config: The :class:`AppConfig <.config.app.AppConfig>` instance.
-        """
 
+        Returns:
+            Updated application configuration.
+        """
         app_config.signature_namespace.update(
             {
                 "OAuth2AuthorizeCallback": OAuth2AuthorizeCallback,

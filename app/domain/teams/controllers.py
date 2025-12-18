@@ -24,6 +24,7 @@ from app.domain.accounts.services import UserService
 from app.domain.teams.guards import requires_team_admin, requires_team_membership, requires_team_ownership
 from app.domain.teams.schemas import CurrentTeam, Team, TeamCreate, TeamMemberModify, TeamUpdate
 from app.domain.teams.services import TeamInvitationService, TeamMemberService, TeamService
+from app.lib.schema import NoProps
 
 if TYPE_CHECKING:
     from advanced_alchemy.filters import FilterTypes
@@ -72,7 +73,11 @@ class TeamController(Controller):
         current_user: UserModel,
         filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
     ) -> dict:
-        """List teams that your account can access."""
+        """List teams that your account can access.
+
+        Returns:
+            Teams list with user roles and total count.
+        """
         if not teams_service.can_view_all(current_user):
             filters.append(
                 TeamModel.id.in_(select(TeamMemberModel.team_id).where(TeamMemberModel.user_id == current_user.id)),  # type: ignore[arg-type]
@@ -110,9 +115,13 @@ class TeamController(Controller):
         operation_id="CreateTeamPage",
         path="/teams/create/",
     )
-    async def create_team_page(self) -> dict:
-        """Show team creation page."""
-        return {}
+    async def create_team_page(self) -> NoProps:
+        """Show team creation page.
+
+        Returns:
+            Empty page props.
+        """
+        return NoProps()
 
     @post(
         name="teams.add",
@@ -127,7 +136,11 @@ class TeamController(Controller):
         current_user: UserModel,
         data: TeamCreate,
     ) -> InertiaRedirect:
-        """Create a new team."""
+        """Create a new team.
+
+        Returns:
+            Redirect to the newly created team's detail page.
+        """
         obj = data.to_dict()
         obj.update({"owner_id": current_user.id, "owner": current_user})
         db_obj = await teams_service.create(obj)
@@ -148,7 +161,11 @@ class TeamController(Controller):
         current_user: UserModel,
         team_id: Annotated[UUID, Parameter(title="Team ID", description="The team to retrieve.")],
     ) -> dict:
-        """Get details about a team."""
+        """Get details about a team.
+
+        Returns:
+            Team details, members list, and user permissions.
+        """
         db_obj = await teams_service.get(team_id)
         request.session.update({"currentTeam": CurrentTeam(team_id=str(db_obj.id), team_name=db_obj.name)})
 
@@ -205,7 +222,11 @@ class TeamController(Controller):
         teams_service: TeamService,
         team_id: Annotated[UUID, Parameter(title="Team ID", description="The team to update.")],
     ) -> Team:
-        """Update a migration team."""
+        """Update a migration team.
+
+        Returns:
+            Updated team data.
+        """
         db_obj = await teams_service.update(
             item_id=team_id,
             data=data.to_dict(),
@@ -226,7 +247,11 @@ class TeamController(Controller):
         teams_service: TeamService,
         team_id: Annotated[UUID, Parameter(title="Team ID", description="The team to delete.")],
     ) -> InertiaRedirect:
-        """Delete a team."""
+        """Delete a team.
+
+        Returns:
+            Redirect to teams list page.
+        """
         request.session.pop("currentTeam", None)
         db_obj = await teams_service.delete(team_id)
         flash(request, f'Removed team "{db_obj.name}".', category="info")
@@ -277,6 +302,9 @@ class TeamMemberController(Controller):
     ) -> Team:
         """Add a member to a team.
 
+        Returns:
+            Updated team data with new member.
+
         Raises:
             IntegrityError: If the user is already a member of the team.
         """
@@ -306,6 +334,9 @@ class TeamMemberController(Controller):
         team_id: Annotated[UUID, Parameter(title="Team ID", description="The team to delete.")],
     ) -> Team:
         """Remove a member from a team.
+
+        Returns:
+            Updated team data without the removed member.
 
         Raises:
             IntegrityError: If the user is not a member of this team.

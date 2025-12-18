@@ -8,8 +8,8 @@ export type ClientOptions = {
  * CreateTagTagRequestBody
  */
 export type CreateTagTagRequestBody = {
-    name: string;
     description?: string | null;
+    name: string;
     slug: string;
 };
 
@@ -17,19 +17,34 @@ export type CreateTagTagRequestBody = {
  * CreateTagTagResponseBody
  */
 export type CreateTagTagResponseBody = {
-    name: string;
     description?: string | null;
     id?: string;
+    name: string;
     slug: string;
+};
+
+/**
+ * CurrentTeam
+ */
+export type CurrentTeam = {
+    teamId: string;
+    teamName: string;
+};
+
+/**
+ * EmailSent
+ */
+export type EmailSent = {
+    emailSent?: boolean;
 };
 
 /**
  * GetTagTagResponseBody
  */
 export type GetTagTagResponseBody = {
-    name: string;
     description?: string | null;
     id?: string;
+    name: string;
     slug: string;
 };
 
@@ -37,9 +52,9 @@ export type GetTagTagResponseBody = {
  * ListTagsTagResponseBody
  */
 export type ListTagsTagResponseBody = {
-    name: string;
     description?: string | null;
     id?: string;
+    name: string;
     slug: string;
 };
 
@@ -51,26 +66,41 @@ export type Message = {
 };
 
 /**
+ * NoProps
+ */
+export type NoProps = {
+    [key: string]: unknown;
+};
+
+/**
  * OauthAccount
  */
 export type OauthAccount = {
+    accessToken: string;
+    accountEmail: string;
+    accountId: string;
+    expiresAt?: number | null;
     id: string;
     oauthName: string;
-    accessToken: string;
-    accountId: string;
-    accountEmail: string;
-    expiresAt?: number | null;
     refreshToken?: string | null;
+};
+
+/**
+ * PasswordResetToken
+ */
+export type PasswordResetToken = {
+    email: string;
+    token: string;
 };
 
 /**
  * Team
  */
 export type Team = {
-    id: string;
-    name: string;
     description?: string | null;
+    id: string;
     members?: Array<TeamMember>;
+    name: string;
     tags?: Array<TeamTag>;
 };
 
@@ -78,8 +108,8 @@ export type Team = {
  * TeamCreate
  */
 export type TeamCreate = {
-    name: string;
     description?: string | null;
+    name: string;
     tags?: Array<string>;
 };
 
@@ -87,12 +117,12 @@ export type TeamCreate = {
  * TeamMember
  */
 export type TeamMember = {
-    id: string;
-    userId: string;
     email: string;
+    id: string;
+    isOwner?: boolean | null;
     name?: string | null;
     role?: TeamRoles | null;
-    isOwner?: boolean | null;
+    userId: string;
 };
 
 /**
@@ -122,16 +152,16 @@ export type TeamRoles = 'admin' | 'editor' | 'member';
  */
 export type TeamTag = {
     id: string;
-    slug: string;
     name: string;
+    slug: string;
 };
 
 /**
  * TeamUpdate
  */
 export type TeamUpdate = {
-    name?: string | null;
     description?: string | null;
+    name?: string | null;
     tags?: Array<string> | null;
 };
 
@@ -139,8 +169,8 @@ export type TeamUpdate = {
  * UpdateTagTagRequestBody
  */
 export type UpdateTagTagRequestBody = {
-    name?: string;
     description?: string | null;
+    name?: string;
     slug?: string;
 };
 
@@ -148,9 +178,9 @@ export type UpdateTagTagRequestBody = {
  * UpdateTagTagResponseBody
  */
 export type UpdateTagTagResponseBody = {
-    name: string;
     description?: string | null;
     id?: string;
+    name: string;
     slug: string;
 };
 
@@ -158,17 +188,17 @@ export type UpdateTagTagResponseBody = {
  * User
  */
 export type User = {
-    id: string;
-    email: string;
-    name?: string | null;
-    isSuperuser?: boolean;
-    isActive?: boolean;
-    isVerified?: boolean;
-    hasPassword?: boolean;
-    teams?: Array<UserTeam>;
-    roles?: Array<UserRole>;
-    oauthAccounts?: Array<OauthAccount>;
     avatarUrl?: string | null;
+    email: string;
+    hasPassword?: boolean;
+    id: string;
+    isActive?: boolean;
+    isSuperuser?: boolean;
+    isVerified?: boolean;
+    name?: string | null;
+    oauthAccounts?: Array<OauthAccount>;
+    roles?: Array<UserRole>;
+    teams?: Array<UserTeam>;
 };
 
 /**
@@ -176,21 +206,21 @@ export type User = {
  */
 export type UserCreate = {
     email: string;
-    password: string;
-    name?: string | null;
-    isSuperuser?: boolean;
     isActive?: boolean;
+    isSuperuser?: boolean;
     isVerified?: boolean;
+    name?: string | null;
+    password: string;
 };
 
 /**
  * UserRole
  */
 export type UserRole = {
-    roleId: string;
-    roleSlug: string;
-    roleName: string;
     assignedAt: string;
+    roleId: string;
+    roleName: string;
+    roleSlug: string;
 };
 
 /**
@@ -211,10 +241,10 @@ export type UserRoleRevoke = {
  * UserTeam
  */
 export type UserTeam = {
-    teamId: string;
-    teamName: string;
     isOwner?: boolean;
     role?: TeamRoles;
+    teamId: string;
+    teamName: string;
 };
 
 /**
@@ -222,42 +252,378 @@ export type UserTeam = {
  */
 export type UserUpdate = {
     email?: string | null;
-    password?: string | null;
-    name?: string | null;
-    isSuperuser?: boolean | null;
     isActive?: boolean | null;
+    isSuperuser?: boolean | null;
     isVerified?: boolean | null;
+    name?: string | null;
+    password?: string | null;
 };
 
-/**
- * EmailSent
- */
-export type EmailSent = {
-    emailSent?: boolean;
+export type AssignUserRoleData = {
+    body: UserRoleAdd;
+    path: {
+        /**
+         * Role Slug
+         *
+         * The role to grant.
+         */
+        role_slug: string;
+    };
+    query?: never;
+    url: '/api/roles/{role_slug}/assign';
 };
 
-/**
- * NoProps
- */
-export type NoProps = {
-    [key: string]: unknown;
+export type AssignUserRoleErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
 };
 
-/**
- * PasswordResetToken
- */
-export type PasswordResetToken = {
-    token: string;
-    email: string;
+export type AssignUserRoleError = AssignUserRoleErrors[keyof AssignUserRoleErrors];
+
+export type AssignUserRoleResponses = {
+    /**
+     * Document created, URL follows
+     */
+    201: Message;
 };
 
-/**
- * CurrentTeam
- */
-export type CurrentTeam = {
-    teamId: string;
-    teamName: string;
+export type AssignUserRoleResponse = AssignUserRoleResponses[keyof AssignUserRoleResponses];
+
+export type RevokeUserRoleData = {
+    body: UserRoleRevoke;
+    path: {
+        /**
+         * Role Slug
+         *
+         * The role to revoke.
+         */
+        role_slug: string;
+    };
+    query?: never;
+    url: '/api/roles/{role_slug}/revoke';
 };
+
+export type RevokeUserRoleErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type RevokeUserRoleError = RevokeUserRoleErrors[keyof RevokeUserRoleErrors];
+
+export type RevokeUserRoleResponses = {
+    /**
+     * Document created, URL follows
+     */
+    201: Message;
+};
+
+export type RevokeUserRoleResponse = RevokeUserRoleResponses[keyof RevokeUserRoleResponses];
+
+export type ListTagsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        ids?: Array<string> | null;
+        createdBefore?: string | null;
+        createdAfter?: string | null;
+        updatedBefore?: string | null;
+        updatedAfter?: string | null;
+        /**
+         * Field to search
+         */
+        searchString?: string | null;
+        /**
+         * Search should be case sensitive
+         */
+        searchIgnoreCase?: boolean | null;
+        currentPage?: number;
+        pageSize?: number;
+        /**
+         * Order by field
+         */
+        orderBy?: string | null;
+        /**
+         * Field to search
+         */
+        sortOrder?: 'asc' | 'desc' | null;
+    };
+    url: '/api/tags';
+};
+
+export type ListTagsErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type ListTagsError = ListTagsErrors[keyof ListTagsErrors];
+
+export type ListTagsResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: {
+        items?: Array<ListTagsTagResponseBody>;
+        /**
+         * Maximal number of items to send.
+         */
+        limit?: number;
+        /**
+         * Offset from the beginning of the query.
+         */
+        offset?: number;
+        /**
+         * Total number of items.
+         */
+        total?: number;
+    };
+};
+
+export type ListTagsResponse = ListTagsResponses[keyof ListTagsResponses];
+
+export type CreateTagData = {
+    body: CreateTagTagRequestBody;
+    path?: never;
+    query?: never;
+    url: '/api/tags';
+};
+
+export type CreateTagErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type CreateTagError = CreateTagErrors[keyof CreateTagErrors];
+
+export type CreateTagResponses = {
+    /**
+     * Document created, URL follows
+     */
+    201: CreateTagTagResponseBody;
+};
+
+export type CreateTagResponse = CreateTagResponses[keyof CreateTagResponses];
+
+export type DeleteTagData = {
+    body?: never;
+    path: {
+        /**
+         * Tag ID
+         *
+         * The tag to delete.
+         */
+        tag_id: string;
+    };
+    query?: never;
+    url: '/api/tags/{tag_id}';
+};
+
+export type DeleteTagErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type DeleteTagError = DeleteTagErrors[keyof DeleteTagErrors];
+
+export type DeleteTagResponses = {
+    /**
+     * Request fulfilled, nothing follows
+     */
+    204: void;
+};
+
+export type DeleteTagResponse = DeleteTagResponses[keyof DeleteTagResponses];
+
+export type GetTagData = {
+    body?: never;
+    path: {
+        /**
+         * Tag ID
+         *
+         * The tag to retrieve.
+         */
+        tag_id: string;
+    };
+    query?: never;
+    url: '/api/tags/{tag_id}';
+};
+
+export type GetTagErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type GetTagError = GetTagErrors[keyof GetTagErrors];
+
+export type GetTagResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: GetTagTagResponseBody;
+};
+
+export type GetTagResponse = GetTagResponses[keyof GetTagResponses];
+
+export type UpdateTagData = {
+    body: UpdateTagTagRequestBody;
+    path: {
+        /**
+         * Tag ID
+         *
+         * The tag to update.
+         */
+        tag_id: string;
+    };
+    query?: never;
+    url: '/api/tags/{tag_id}';
+};
+
+export type UpdateTagErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type UpdateTagError = UpdateTagErrors[keyof UpdateTagErrors];
+
+export type UpdateTagResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: UpdateTagTagResponseBody;
+};
+
+export type UpdateTagResponse = UpdateTagResponses[keyof UpdateTagResponses];
+
+export type AddMemberToTeamData = {
+    body: TeamMemberModify;
+    path: {
+        /**
+         * Team ID
+         *
+         * The team to update.
+         */
+        team_id: string;
+    };
+    query?: never;
+    url: '/api/teams/{team_id}/members/add';
+};
+
+export type AddMemberToTeamErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AddMemberToTeamError = AddMemberToTeamErrors[keyof AddMemberToTeamErrors];
+
+export type AddMemberToTeamResponses = {
+    /**
+     * Document created, URL follows
+     */
+    201: Team;
+};
+
+export type AddMemberToTeamResponse = AddMemberToTeamResponses[keyof AddMemberToTeamResponses];
+
+export type RemoveMemberFromTeamData = {
+    body: TeamMemberModify;
+    path: {
+        /**
+         * Team ID
+         *
+         * The team to delete.
+         */
+        team_id: string;
+    };
+    query?: never;
+    url: '/api/teams/{team_id}/members/remove';
+};
+
+export type RemoveMemberFromTeamErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type RemoveMemberFromTeamError = RemoveMemberFromTeamErrors[keyof RemoveMemberFromTeamErrors];
+
+export type RemoveMemberFromTeamResponses = {
+    /**
+     * Document created, URL follows
+     */
+    201: Team;
+};
+
+export type RemoveMemberFromTeamResponse = RemoveMemberFromTeamResponses[keyof RemoveMemberFromTeamResponses];
 
 export type ListUsersData = {
     body?: never;
@@ -295,11 +661,11 @@ export type ListUsersErrors = {
      * Validation Exception
      */
     400: {
-        status_code: number;
         detail: string;
         extra?: null | {
             [key: string]: unknown;
         } | Array<unknown>;
+        status_code: number;
     };
 };
 
@@ -340,11 +706,11 @@ export type CreateUserErrors = {
      * Validation Exception
      */
     400: {
-        status_code: number;
         detail: string;
         extra?: null | {
             [key: string]: unknown;
         } | Array<unknown>;
+        status_code: number;
     };
 };
 
@@ -378,11 +744,11 @@ export type DeleteUserErrors = {
      * Validation Exception
      */
     400: {
-        status_code: number;
         detail: string;
         extra?: null | {
             [key: string]: unknown;
         } | Array<unknown>;
+        status_code: number;
     };
 };
 
@@ -416,11 +782,11 @@ export type GetUserErrors = {
      * Validation Exception
      */
     400: {
-        status_code: number;
         detail: string;
         extra?: null | {
             [key: string]: unknown;
         } | Array<unknown>;
+        status_code: number;
     };
 };
 
@@ -454,11 +820,11 @@ export type UpdateUserErrors = {
      * Validation Exception
      */
     400: {
-        status_code: number;
         detail: string;
         extra?: null | {
             [key: string]: unknown;
         } | Array<unknown>;
+        status_code: number;
     };
 };
 
@@ -509,11 +875,11 @@ export type ListTeamsErrors = {
      * Validation Exception
      */
     400: {
-        status_code: number;
         detail: string;
         extra?: null | {
             [key: string]: unknown;
         } | Array<unknown>;
+        status_code: number;
     };
 };
 
@@ -542,11 +908,11 @@ export type CreateTeamErrors = {
      * Validation Exception
      */
     400: {
-        status_code: number;
         detail: string;
         extra?: null | {
             [key: string]: unknown;
         } | Array<unknown>;
+        status_code: number;
     };
 };
 
@@ -570,9 +936,7 @@ export type CreateTeamPageResponses = {
     /**
      * Request fulfilled, document follows
      */
-    200: {
-        [key: string]: unknown;
-    };
+    200: NoProps;
 };
 
 export type CreateTeamPageResponse = CreateTeamPageResponses[keyof CreateTeamPageResponses];
@@ -596,11 +960,11 @@ export type DeleteTeamErrors = {
      * Validation Exception
      */
     400: {
-        status_code: number;
         detail: string;
         extra?: null | {
             [key: string]: unknown;
         } | Array<unknown>;
+        status_code: number;
     };
 };
 
@@ -625,11 +989,11 @@ export type GetTeamErrors = {
      * Validation Exception
      */
     400: {
-        status_code: number;
         detail: string;
         extra?: null | {
             [key: string]: unknown;
         } | Array<unknown>;
+        status_code: number;
     };
 };
 
@@ -665,11 +1029,11 @@ export type UpdateTeamErrors = {
      * Validation Exception
      */
     400: {
-        status_code: number;
         detail: string;
         extra?: null | {
             [key: string]: unknown;
         } | Array<unknown>;
+        status_code: number;
     };
 };
 
@@ -683,369 +1047,3 @@ export type UpdateTeamResponses = {
 };
 
 export type UpdateTeamResponse = UpdateTeamResponses[keyof UpdateTeamResponses];
-
-export type AssignUserRoleData = {
-    body: UserRoleAdd;
-    path: {
-        /**
-         * Role Slug
-         *
-         * The role to grant.
-         */
-        role_slug: string;
-    };
-    query?: never;
-    url: '/api/roles/{role_slug}/assign';
-};
-
-export type AssignUserRoleErrors = {
-    /**
-     * Validation Exception
-     */
-    400: {
-        status_code: number;
-        detail: string;
-        extra?: null | {
-            [key: string]: unknown;
-        } | Array<unknown>;
-    };
-};
-
-export type AssignUserRoleError = AssignUserRoleErrors[keyof AssignUserRoleErrors];
-
-export type AssignUserRoleResponses = {
-    /**
-     * Document created, URL follows
-     */
-    201: Message;
-};
-
-export type AssignUserRoleResponse = AssignUserRoleResponses[keyof AssignUserRoleResponses];
-
-export type RevokeUserRoleData = {
-    body: UserRoleRevoke;
-    path: {
-        /**
-         * Role Slug
-         *
-         * The role to revoke.
-         */
-        role_slug: string;
-    };
-    query?: never;
-    url: '/api/roles/{role_slug}/revoke';
-};
-
-export type RevokeUserRoleErrors = {
-    /**
-     * Validation Exception
-     */
-    400: {
-        status_code: number;
-        detail: string;
-        extra?: null | {
-            [key: string]: unknown;
-        } | Array<unknown>;
-    };
-};
-
-export type RevokeUserRoleError = RevokeUserRoleErrors[keyof RevokeUserRoleErrors];
-
-export type RevokeUserRoleResponses = {
-    /**
-     * Document created, URL follows
-     */
-    201: Message;
-};
-
-export type RevokeUserRoleResponse = RevokeUserRoleResponses[keyof RevokeUserRoleResponses];
-
-export type AddMemberToTeamData = {
-    body: TeamMemberModify;
-    path: {
-        /**
-         * Team ID
-         *
-         * The team to update.
-         */
-        team_id: string;
-    };
-    query?: never;
-    url: '/api/teams/{team_id}/members/add';
-};
-
-export type AddMemberToTeamErrors = {
-    /**
-     * Validation Exception
-     */
-    400: {
-        status_code: number;
-        detail: string;
-        extra?: null | {
-            [key: string]: unknown;
-        } | Array<unknown>;
-    };
-};
-
-export type AddMemberToTeamError = AddMemberToTeamErrors[keyof AddMemberToTeamErrors];
-
-export type AddMemberToTeamResponses = {
-    /**
-     * Document created, URL follows
-     */
-    201: Team;
-};
-
-export type AddMemberToTeamResponse = AddMemberToTeamResponses[keyof AddMemberToTeamResponses];
-
-export type RemoveMemberFromTeamData = {
-    body: TeamMemberModify;
-    path: {
-        /**
-         * Team ID
-         *
-         * The team to delete.
-         */
-        team_id: string;
-    };
-    query?: never;
-    url: '/api/teams/{team_id}/members/remove';
-};
-
-export type RemoveMemberFromTeamErrors = {
-    /**
-     * Validation Exception
-     */
-    400: {
-        status_code: number;
-        detail: string;
-        extra?: null | {
-            [key: string]: unknown;
-        } | Array<unknown>;
-    };
-};
-
-export type RemoveMemberFromTeamError = RemoveMemberFromTeamErrors[keyof RemoveMemberFromTeamErrors];
-
-export type RemoveMemberFromTeamResponses = {
-    /**
-     * Document created, URL follows
-     */
-    201: Team;
-};
-
-export type RemoveMemberFromTeamResponse = RemoveMemberFromTeamResponses[keyof RemoveMemberFromTeamResponses];
-
-export type ListTagsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        ids?: Array<string> | null;
-        createdBefore?: string | null;
-        createdAfter?: string | null;
-        updatedBefore?: string | null;
-        updatedAfter?: string | null;
-        /**
-         * Field to search
-         */
-        searchString?: string | null;
-        /**
-         * Search should be case sensitive
-         */
-        searchIgnoreCase?: boolean | null;
-        currentPage?: number;
-        pageSize?: number;
-        /**
-         * Order by field
-         */
-        orderBy?: string | null;
-        /**
-         * Field to search
-         */
-        sortOrder?: 'asc' | 'desc' | null;
-    };
-    url: '/api/tags';
-};
-
-export type ListTagsErrors = {
-    /**
-     * Validation Exception
-     */
-    400: {
-        status_code: number;
-        detail: string;
-        extra?: null | {
-            [key: string]: unknown;
-        } | Array<unknown>;
-    };
-};
-
-export type ListTagsError = ListTagsErrors[keyof ListTagsErrors];
-
-export type ListTagsResponses = {
-    /**
-     * Request fulfilled, document follows
-     */
-    200: {
-        items?: Array<ListTagsTagResponseBody>;
-        /**
-         * Maximal number of items to send.
-         */
-        limit?: number;
-        /**
-         * Offset from the beginning of the query.
-         */
-        offset?: number;
-        /**
-         * Total number of items.
-         */
-        total?: number;
-    };
-};
-
-export type ListTagsResponse = ListTagsResponses[keyof ListTagsResponses];
-
-export type CreateTagData = {
-    body: CreateTagTagRequestBody;
-    path?: never;
-    query?: never;
-    url: '/api/tags';
-};
-
-export type CreateTagErrors = {
-    /**
-     * Validation Exception
-     */
-    400: {
-        status_code: number;
-        detail: string;
-        extra?: null | {
-            [key: string]: unknown;
-        } | Array<unknown>;
-    };
-};
-
-export type CreateTagError = CreateTagErrors[keyof CreateTagErrors];
-
-export type CreateTagResponses = {
-    /**
-     * Document created, URL follows
-     */
-    201: CreateTagTagResponseBody;
-};
-
-export type CreateTagResponse = CreateTagResponses[keyof CreateTagResponses];
-
-export type DeleteTagData = {
-    body?: never;
-    path: {
-        /**
-         * Tag ID
-         *
-         * The tag to delete.
-         */
-        tag_id: string;
-    };
-    query?: never;
-    url: '/api/tags/{tag_id}';
-};
-
-export type DeleteTagErrors = {
-    /**
-     * Validation Exception
-     */
-    400: {
-        status_code: number;
-        detail: string;
-        extra?: null | {
-            [key: string]: unknown;
-        } | Array<unknown>;
-    };
-};
-
-export type DeleteTagError = DeleteTagErrors[keyof DeleteTagErrors];
-
-export type DeleteTagResponses = {
-    /**
-     * Request fulfilled, nothing follows
-     */
-    204: void;
-};
-
-export type DeleteTagResponse = DeleteTagResponses[keyof DeleteTagResponses];
-
-export type GetTagData = {
-    body?: never;
-    path: {
-        /**
-         * Tag ID
-         *
-         * The tag to retrieve.
-         */
-        tag_id: string;
-    };
-    query?: never;
-    url: '/api/tags/{tag_id}';
-};
-
-export type GetTagErrors = {
-    /**
-     * Validation Exception
-     */
-    400: {
-        status_code: number;
-        detail: string;
-        extra?: null | {
-            [key: string]: unknown;
-        } | Array<unknown>;
-    };
-};
-
-export type GetTagError = GetTagErrors[keyof GetTagErrors];
-
-export type GetTagResponses = {
-    /**
-     * Request fulfilled, document follows
-     */
-    200: GetTagTagResponseBody;
-};
-
-export type GetTagResponse = GetTagResponses[keyof GetTagResponses];
-
-export type UpdateTagData = {
-    body: UpdateTagTagRequestBody;
-    path: {
-        /**
-         * Tag ID
-         *
-         * The tag to update.
-         */
-        tag_id: string;
-    };
-    query?: never;
-    url: '/api/tags/{tag_id}';
-};
-
-export type UpdateTagErrors = {
-    /**
-     * Validation Exception
-     */
-    400: {
-        status_code: number;
-        detail: string;
-        extra?: null | {
-            [key: string]: unknown;
-        } | Array<unknown>;
-    };
-};
-
-export type UpdateTagError = UpdateTagErrors[keyof UpdateTagErrors];
-
-export type UpdateTagResponses = {
-    /**
-     * Request fulfilled, document follows
-     */
-    200: UpdateTagTagResponseBody;
-};
-
-export type UpdateTagResponse = UpdateTagResponses[keyof UpdateTagResponses];

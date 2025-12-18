@@ -76,52 +76,46 @@ export default function UserLoginForm({ className, ...props }: UserLoginFormProp
 							</Alert>
 						)}
 
-						<div className="grid gap-1">
-							<FormField
-								control={form.control}
-								name="username"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel className="sr-only">Username</FormLabel>
-										<FormControl>
-											<Input placeholder="Enter your username." autoCapitalize="none" autoComplete="username" autoCorrect="off" {...field} disabled={isLoading} />
-										</FormControl>{" "}
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
+						<FormField
+							control={form.control}
+							name="username"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Email</FormLabel>
+									<FormControl>
+										<Input placeholder="name@example.com" autoCapitalize="none" autoComplete="username" autoCorrect="off" {...field} disabled={isLoading} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 
-						<div className="grid gap-1">
-							<FormField
-								control={form.control}
-								name="password"
-								render={({ field }) => (
-									<FormItem className="mt-4">
-										<FormLabel className="sr-only">Password</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Enter your current password."
-												type="password"
-												autoCapitalize="none"
-												autoCorrect="off"
-												autoComplete="current-password"
-												{...field}
-												disabled={isLoading}
-											/>
-										</FormControl>{" "}
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
+						<FormField
+							control={form.control}
+							name="password"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Password</FormLabel>
+									<FormControl>
+										<Input
+											placeholder="Enter your password"
+											type="password"
+											autoCapitalize="none"
+											autoCorrect="off"
+											autoComplete="current-password"
+											{...field}
+											disabled={isLoading}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 
-						<div className="mt-10 grid gap-1">
-							<Button type="submit" className="w-full" disabled={isLoading}>
-								{isLoading && <Icons.spinner className="mr-2 h-5 w-5" />}
-								Sign In
-							</Button>
-						</div>
+						<Button type="submit" className="mt-2 w-full" disabled={isLoading}>
+							{isLoading && <Icons.spinner className="mr-2 h-4 w-4" />}
+							Sign In
+						</Button>
 					</div>
 				</form>
 			</Form>
@@ -137,12 +131,14 @@ export default function UserLoginForm({ className, ...props }: UserLoginFormProp
 					</div>
 					{githubOAuthEnabled && (
 						<Button variant="outline" type="button" disabled={isLoading} onClick={() => router.post(route("github.register"))}>
-							{isLoading ? <Icons.spinner className="mr-2 h-5 w-5" /> : <Icons.gitHub className="mr-2 h-5 w-5" />} Sign in with GitHub
+							{isLoading ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.gitHub className="mr-2 h-4 w-4" />}
+							Continue with GitHub
 						</Button>
 					)}
 					{googleOAuthEnabled && (
 						<Button variant="outline" type="button" disabled={isLoading} onClick={() => router.post(route("google.register"))}>
-							{isLoading ? <Icons.spinner className="mr-2 h-5 w-5" /> : <Icons.google className="mr-2 h-5 w-5" />} Sign in with Google
+							{isLoading ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.google className="mr-2 h-4 w-4" />}
+							Continue with Google
 						</Button>
 					)}
 				</>

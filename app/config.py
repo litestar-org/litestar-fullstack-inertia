@@ -22,7 +22,7 @@ from litestar.middleware.logging import LoggingMiddlewareConfig
 from litestar.middleware.session.server_side import ServerSideSessionConfig
 from litestar.plugins.structlog import StructlogConfig
 from litestar.template import TemplateConfig
-from litestar_vite import InertiaConfig, PathConfig, TypeGenConfig, ViteConfig
+from litestar_vite import InertiaConfig, PathConfig, RuntimeConfig, TypeGenConfig, ViteConfig
 
 from app.domain.teams.schemas import CurrentTeam
 from app.lib.settings import BASE_DIR, get_settings
@@ -53,11 +53,8 @@ alchemy = SQLAlchemyAsyncConfig(
 templates = TemplateConfig(engine=JinjaTemplateEngine(directory=settings.vite.TEMPLATE_DIR))
 vite = ViteConfig(
     dev_mode=settings.vite.DEV_MODE,
-    paths=PathConfig(
-        root=BASE_DIR.parent,
-        bundle_dir=Path("app/domain/web/public"),
-        resource_dir=Path("resources"),
-    ),
+    runtime=RuntimeConfig(executor="bun"),
+    paths=PathConfig(root=BASE_DIR.parent, bundle_dir=Path("app/domain/web/public"), resource_dir=Path("resources")),
     inertia=InertiaConfig(
         redirect_unauthorized_to="/login",
         extra_static_page_props={
@@ -71,9 +68,7 @@ vite = ViteConfig(
         },
         extra_session_page_props={"currentTeam": CurrentTeam},
     ),
-    types=TypeGenConfig(
-        output=BASE_DIR.parent / "resources" / "lib" / "generated",
-    ),
+    types=TypeGenConfig(output=BASE_DIR.parent / "resources" / "lib" / "generated"),
 )
 session = ServerSideSessionConfig(max_age=3600)
 
@@ -102,7 +97,7 @@ log = StructlogConfig(
                 "standard": {
                     "()": structlog.stdlib.ProcessorFormatter,
                     "processors": _structlog_standard_lib_processors,
-                },
+                }
             },
             loggers={
                 "sqlalchemy.engine": {
@@ -115,11 +110,7 @@ log = StructlogConfig(
                     "level": settings.log.SQLALCHEMY_LEVEL,
                     "handlers": ["queue_listener"],
                 },
-                "urllib3": {
-                    "propagate": False,
-                    "level": settings.log.SQLALCHEMY_LEVEL,
-                    "handlers": ["queue_listener"],
-                },
+                "urllib3": {"propagate": False, "level": settings.log.SQLALCHEMY_LEVEL, "handlers": ["queue_listener"]},
                 "_granian": {
                     "propagate": False,
                     "level": settings.log.GRANIAN_ERROR_LEVEL,
@@ -135,30 +126,19 @@ log = StructlogConfig(
                     "level": settings.log.GRANIAN_ACCESS_LEVEL,
                     "handlers": ["queue_listener"],
                 },
-                "httpx": {
-                    "propagate": False,
-                    "level": logging.WARNING,
-                    "handlers": ["queue_listener"],
-                },
-                "httpcore": {
-                    "propagate": False,
-                    "level": logging.WARNING,
-                    "handlers": ["queue_listener"],
-                },
+                "httpx": {"propagate": False, "level": logging.WARNING, "handlers": ["queue_listener"]},
+                "httpcore": {"propagate": False, "level": logging.WARNING, "handlers": ["queue_listener"]},
             },
         ),
     ),
     middleware_logging_config=LoggingMiddlewareConfig(
-        request_log_fields=["method", "path", "path_params", "query"],
-        response_log_fields=["status_code"],
+        request_log_fields=["method", "path", "path_params", "query"], response_log_fields=["status_code"]
     ),
 )
 
 github_oauth2_client = GitHubOAuth2(
-    client_id=settings.app.GITHUB_OAUTH2_CLIENT_ID,
-    client_secret=settings.app.GITHUB_OAUTH2_CLIENT_SECRET,
+    client_id=settings.app.GITHUB_OAUTH2_CLIENT_ID, client_secret=settings.app.GITHUB_OAUTH2_CLIENT_SECRET
 )
 google_oauth2_client = GoogleOAuth2(
-    client_id=settings.app.GOOGLE_OAUTH2_CLIENT_ID,
-    client_secret=settings.app.GOOGLE_OAUTH2_CLIENT_SECRET,
+    client_id=settings.app.GOOGLE_OAUTH2_CLIENT_ID, client_secret=settings.app.GOOGLE_OAUTH2_CLIENT_SECRET
 )

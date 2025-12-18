@@ -37,25 +37,41 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
     default_role = "Application Access"
 
     async def to_model_on_create(self, data: ModelDictT[User]) -> ModelDictT[User]:
-        """Transform data before creating a user."""
+        """Transform data before creating a user.
+
+        Returns:
+            Transformed user data with hashed password and role.
+        """
         data = schema_dump(data)
         data = await self._populate_with_hashed_password(data)
         return await self._populate_with_role(data)
 
     async def to_model_on_update(self, data: ModelDictT[User]) -> ModelDictT[User]:
-        """Transform data before updating a user."""
+        """Transform data before updating a user.
+
+        Returns:
+            Transformed user data with hashed password and role if provided.
+        """
         data = schema_dump(data)
         data = await self._populate_with_hashed_password(data)
         return await self._populate_with_role(data)
 
     async def _populate_with_hashed_password(self, data: ModelDictT[User]) -> ModelDictT[User]:
-        """Hash password if provided."""
+        """Hash password if provided.
+
+        Returns:
+            User data with password replaced by hashed_password.
+        """
         if is_dict(data) and (password := data.pop("password", None)) is not None:
             data["hashed_password"] = await crypt.get_password_hash(password)
         return data
 
     async def _populate_with_role(self, data: ModelDictT[User]) -> ModelDictT[User]:
-        """Assign role if role_id provided."""
+        """Assign role if role_id provided.
+
+        Returns:
+            User data with role assignment if role_id was provided.
+        """
         if is_dict(data) and (role_id := data.pop("role_id", None)) is not None:
             data = await super().to_model(data)
             data.roles.append(UserRole(role_id=role_id, assigned_at=datetime.now(UTC)))
@@ -133,16 +149,29 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
 
     @staticmethod
     async def has_role_id(db_obj: User, role_id: UUID) -> bool:
-        """Return true if user has specified role ID"""
+        """Check if user has specified role ID.
+
+        Returns:
+            True if user has the role, False otherwise.
+        """
         return any(assigned_role.role_id for assigned_role in db_obj.roles if assigned_role.role_id == role_id)
 
     @staticmethod
     async def has_role(db_obj: User, role_name: str) -> bool:
-        """Return true if user has specified role ID"""
+        """Check if user has specified role name.
+
+        Returns:
+            True if user has the role, False otherwise.
+        """
         return any(assigned_role.role_id for assigned_role in db_obj.roles if assigned_role.role_name == role_name)
 
     @staticmethod
     def is_superuser(user: User) -> bool:
+        """Check if user is a superuser.
+
+        Returns:
+            True if user is a superuser, False otherwise.
+        """
         return bool(
             user.is_superuser
             or any(assigned_role.role.name for assigned_role in user.roles if assigned_role.role.name in {"Superuser"}),
@@ -156,14 +185,22 @@ class RoleService(SQLAlchemyAsyncRepositoryService[Role, RoleRepository]):
     match_fields = ["name"]
 
     async def to_model_on_create(self, data: ModelDictT[Role]) -> ModelDictT[Role]:
-        """Auto-generate slug on create if not provided."""
+        """Auto-generate slug on create if not provided.
+
+        Returns:
+            Role data with auto-generated slug if not provided.
+        """
         data = schema_dump(data)
         if is_dict_without_field(data, "slug"):
             data["slug"] = await self.repository.get_available_slug(data["name"])
         return data
 
     async def to_model_on_update(self, data: ModelDictT[Role]) -> ModelDictT[Role]:
-        """Auto-generate slug on update if name changed but no slug provided."""
+        """Auto-generate slug on update if name changed but no slug provided.
+
+        Returns:
+            Role data with auto-generated slug if name changed without slug.
+        """
         data = schema_dump(data)
         if is_dict_without_field(data, "slug") and is_dict_with_field(data, "name"):
             data["slug"] = await self.repository.get_available_slug(data["name"])

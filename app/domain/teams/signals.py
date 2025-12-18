@@ -49,7 +49,7 @@ async def team_invitation_created_handler(invitee_email: str, inviter_name: str,
 
     email_service = EmailService()
     sent = await email_service.send_team_invitation_email(
-        invitee_email=invitee_email, inviter_name=inviter_name, team_name=team_name, token=token
+        invitee_email=invitee_email, inviter_name=inviter_name, team_name=team_name, token=token,
     )
 
     if sent:

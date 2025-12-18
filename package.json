@@ -37,7 +37,7 @@
 		"@biomejs/biome": "^2.3.10",
 		"@headlessui/react": "^2.2.9",
 		"@hey-api/openapi-ts": "^0.88.2",
-		"@inertiajs/react": "^2.3.2",
+		"@inertiajs/react": "^2.3.3",
 		"@tailwindcss/vite": "^4.1.18",
 		"@types/md5": "^2.3.6",
 		"@types/node": "^24.10.4",

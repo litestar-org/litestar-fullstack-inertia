@@ -5,6 +5,11 @@ import msgspec
 
 class BaseStruct(msgspec.Struct):
     def to_dict(self) -> dict[str, Any]:
+        """Convert struct to dictionary.
+
+        Returns:
+            Dictionary representation of struct fields.
+        """
         return {f: getattr(self, f) for f in self.__struct_fields__ if getattr(self, f, None) != msgspec.UNSET}
 
 
