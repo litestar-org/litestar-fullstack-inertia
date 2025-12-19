@@ -114,6 +114,47 @@ export type TeamCreate = {
 };
 
 /**
+ * TeamDetail
+ */
+export type TeamDetail = {
+    createdAt?: string | null;
+    description?: string | null;
+    id: string;
+    name: string;
+    slug: string;
+};
+
+/**
+ * TeamDetailPage
+ */
+export type TeamDetailPage = {
+    members: Array<TeamPageMember>;
+    permissions: TeamPermissions;
+    team: TeamDetail;
+};
+
+/**
+ * TeamListItem
+ */
+export type TeamListItem = {
+    createdAt?: string | null;
+    description?: string | null;
+    id: string;
+    memberCount: number;
+    name: string;
+    slug: string;
+    userRole: string;
+};
+
+/**
+ * TeamListPage
+ */
+export type TeamListPage = {
+    teams: Array<TeamListItem>;
+    total: number;
+};
+
+/**
  * TeamMember
  */
 export type TeamMember = {
@@ -130,6 +171,28 @@ export type TeamMember = {
  */
 export type TeamMemberModify = {
     userName: string;
+};
+
+/**
+ * TeamPageMember
+ */
+export type TeamPageMember = {
+    avatarUrl?: string | null;
+    email: string;
+    id: string;
+    name?: string | null;
+    role: string;
+    userId: string;
+};
+
+/**
+ * TeamPermissions
+ */
+export type TeamPermissions = {
+    canAddTeamMembers: boolean;
+    canDeleteTeam: boolean;
+    canRemoveTeamMembers: boolean;
+    canUpdateTeam: boolean;
 };
 
 /**
@@ -553,14 +616,14 @@ export type AddMemberToTeamData = {
     body: TeamMemberModify;
     path: {
         /**
-         * Team ID
+         * Team Slug
          *
-         * The team to update.
+         * The team slug.
          */
-        team_id: string;
+        team_slug: string;
     };
     query?: never;
-    url: '/api/teams/{team_id}/members/add';
+    url: '/api/teams/{team_slug}/members/add';
 };
 
 export type AddMemberToTeamErrors = {
@@ -591,14 +654,14 @@ export type RemoveMemberFromTeamData = {
     body: TeamMemberModify;
     path: {
         /**
-         * Team ID
+         * Team Slug
          *
-         * The team to delete.
+         * The team slug.
          */
-        team_id: string;
+        team_slug: string;
     };
     query?: never;
-    url: '/api/teams/{team_id}/members/remove';
+    url: '/api/teams/{team_slug}/members/remove';
 };
 
 export type RemoveMemberFromTeamErrors = {
@@ -889,9 +952,7 @@ export type ListTeamsResponses = {
     /**
      * Request fulfilled, document follows
      */
-    200: {
-        [key: string]: unknown;
-    };
+    200: TeamListPage;
 };
 
 export type ListTeamsResponse = ListTeamsResponses[keyof ListTeamsResponses];
@@ -945,14 +1006,14 @@ export type DeleteTeamData = {
     body?: never;
     path: {
         /**
-         * Team ID
+         * Team Slug
          *
-         * The team to delete.
+         * The team slug.
          */
-        team_id: string;
+        team_slug: string;
     };
     query?: never;
-    url: '/teams/{team_id}';
+    url: '/teams/{team_slug}';
 };
 
 export type DeleteTeamErrors = {
@@ -974,14 +1035,14 @@ export type GetTeamData = {
     body?: never;
     path: {
         /**
-         * Team ID
+         * Team Slug
          *
-         * The team to retrieve.
+         * The team slug.
          */
-        team_id: string;
+        team_slug: string;
     };
     query?: never;
-    url: '/teams/{team_id}';
+    url: '/teams/{team_slug}';
 };
 
 export type GetTeamErrors = {
@@ -1003,9 +1064,7 @@ export type GetTeamResponses = {
     /**
      * Request fulfilled, document follows
      */
-    200: {
-        [key: string]: unknown;
-    };
+    200: TeamDetailPage;
 };
 
 export type GetTeamResponse = GetTeamResponses[keyof GetTeamResponses];
@@ -1014,14 +1073,14 @@ export type UpdateTeamData = {
     body: TeamUpdate;
     path: {
         /**
-         * Team ID
+         * Team Slug
          *
-         * The team to update.
+         * The team slug.
          */
-        team_id: string;
+        team_slug: string;
     };
     query?: never;
-    url: '/teams/{team_id}';
+    url: '/teams/{team_slug}';
 };
 
 export type UpdateTeamErrors = {
@@ -1047,3 +1106,41 @@ export type UpdateTeamResponses = {
 };
 
 export type UpdateTeamResponse = UpdateTeamResponses[keyof UpdateTeamResponses];
+
+export type GetTeamSettingsData = {
+    body?: never;
+    path: {
+        /**
+         * Team Slug
+         *
+         * The team slug.
+         */
+        team_slug: string;
+    };
+    query?: never;
+    url: '/teams/{team_slug}/settings';
+};
+
+export type GetTeamSettingsErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type GetTeamSettingsError = GetTeamSettingsErrors[keyof GetTeamSettingsErrors];
+
+export type GetTeamSettingsResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: TeamDetailPage;
+};
+
+export type GetTeamSettingsResponse = GetTeamSettingsResponses[keyof GetTeamSettingsResponses];

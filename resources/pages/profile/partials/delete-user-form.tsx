@@ -1,6 +1,5 @@
-import { useForm } from "@inertiajs/react"
-import { useRef, useState } from "react"
-import { InputError } from "@/components/input-error"
+import { router } from "@inertiajs/react"
+import { useState } from "react"
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -12,46 +11,27 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { route } from "@/lib/generated/routes"
 
 export default function DeleteUserForm() {
-	const [_confirmingUserDeletion, setConfirmingUserDeletion] = useState(false)
-	const passwordInput = useRef<HTMLInputElement>(null)
-	const {
-		data,
-		setData,
-		delete: destroy,
-		processing,
-		reset,
-		errors,
-	} = useForm({
-		password: "",
-	})
+	const [isDeleting, setIsDeleting] = useState(false)
+	const [isOpen, setIsOpen] = useState(false)
 
-	const _confirmUserDeletion = () => {
-		setConfirmingUserDeletion(true)
-	}
-
-	const deleteUser = (e: { preventDefault: () => void }) => {
-		e.preventDefault()
-		destroy(route("profile.destroy"), {
+	function handleDelete() {
+		setIsDeleting(true)
+		router.delete(route("account.remove"), {
 			preserveScroll: true,
-			onSuccess: () => closeModal(),
-			onError: () => passwordInput.current?.focus(),
-			onFinish: () => reset(),
+			onSuccess: () => {
+				setIsOpen(false)
+			},
+			onFinish: () => setIsDeleting(false),
 		})
 	}
 
-	const closeModal = () => {
-		setConfirmingUserDeletion(false)
-		reset()
-	}
-
 	return (
-		<Card>
+		<Card className="border-destructive/50">
 			<CardHeader>
 				<CardTitle>Delete Account</CardTitle>
 				<CardDescription>
@@ -60,32 +40,19 @@ export default function DeleteUserForm() {
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<AlertDialog>
-					<AlertDialogTrigger
-						className={buttonVariants({
-							variant: "destructive",
-						})}
-					>
-						Delete Account
+				<AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+					<AlertDialogTrigger asChild>
+						<Button variant="destructive">Delete Account</Button>
 					</AlertDialogTrigger>
 					<AlertDialogContent>
 						<AlertDialogHeader>
-							<AlertDialogTitle>Delete Account</AlertDialogTitle>
-							<AlertDialogDescription>
-								Are you sure you want to delete your account? Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to
-								confirm you would like to permanently delete your account.
-							</AlertDialogDescription>
+							<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+							<AlertDialogDescription>This action cannot be undone. This will permanently delete your account and remove all of your data from our servers.</AlertDialogDescription>
 						</AlertDialogHeader>
-
-						<div className="mt-4">
-							<Input type="password" placeholder="Password" value={data.password} onChange={(e) => setData("password", e.currentTarget.value)} />
-
-							<InputError message={errors.password} className="mt-2" />
-						</div>
 						<AlertDialogFooter>
-							<AlertDialogCancel>Cancel</AlertDialogCancel>
-							<AlertDialogAction onClick={deleteUser} disabled={processing}>
-								Continue
+							<AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+							<AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+								{isDeleting ? "Deleting..." : "Delete Account"}
 							</AlertDialogAction>
 						</AlertDialogFooter>
 					</AlertDialogContent>

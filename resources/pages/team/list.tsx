@@ -7,25 +7,13 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AppLayout } from "@/layouts/app-layout"
+import type { TeamListPage } from "@/lib/generated/api/types.gen"
 import { route } from "@/lib/generated/routes"
 import { cn } from "@/lib/utils"
 
-interface Team {
-	id: string
-	name: string
-	description: string | null
-	slug: string
-	memberCount: number
-	userRole: "owner" | "admin" | "member"
-	createdAt: string | null
-}
+type Props = TeamListPage
 
-interface Props {
-	teams: Team[]
-	total: number
-}
-
-const roleStyles = {
+const roleStyles: Record<string, string> = {
 	owner: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
 	admin: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
 	member: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
@@ -61,7 +49,7 @@ export default function TeamList({ teams }: Props) {
 				) : (
 					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 						{teams.map((team) => (
-							<Link key={team.id} href={route("teams.show", { team_id: team.id })}>
+							<Link key={team.id} href={route("teams.show", { team_slug: team.slug })}>
 								<Card className="transition-shadow hover:shadow-md">
 									<CardHeader>
 										<div className="flex items-start justify-between">

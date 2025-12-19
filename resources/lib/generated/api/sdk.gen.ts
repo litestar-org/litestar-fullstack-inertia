@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddMemberToTeamData, AddMemberToTeamErrors, AddMemberToTeamResponses, AssignUserRoleData, AssignUserRoleErrors, AssignUserRoleResponses, CreateTagData, CreateTagErrors, CreateTagResponses, CreateTeamData, CreateTeamErrors, CreateTeamPageData, CreateTeamPageResponses, CreateTeamResponses, CreateUserData, CreateUserErrors, CreateUserResponses, DeleteTagData, DeleteTagErrors, DeleteTagResponses, DeleteTeamData, DeleteTeamErrors, DeleteUserData, DeleteUserErrors, DeleteUserResponses, GetTagData, GetTagErrors, GetTagResponses, GetTeamData, GetTeamErrors, GetTeamResponses, GetUserData, GetUserErrors, GetUserResponses, ListTagsData, ListTagsErrors, ListTagsResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, RemoveMemberFromTeamData, RemoveMemberFromTeamErrors, RemoveMemberFromTeamResponses, RevokeUserRoleData, RevokeUserRoleErrors, RevokeUserRoleResponses, UpdateTagData, UpdateTagErrors, UpdateTagResponses, UpdateTeamData, UpdateTeamErrors, UpdateTeamResponses, UpdateUserData, UpdateUserErrors, UpdateUserResponses } from './types.gen';
+import type { AddMemberToTeamData, AddMemberToTeamErrors, AddMemberToTeamResponses, AssignUserRoleData, AssignUserRoleErrors, AssignUserRoleResponses, CreateTagData, CreateTagErrors, CreateTagResponses, CreateTeamData, CreateTeamErrors, CreateTeamPageData, CreateTeamPageResponses, CreateTeamResponses, CreateUserData, CreateUserErrors, CreateUserResponses, DeleteTagData, DeleteTagErrors, DeleteTagResponses, DeleteTeamData, DeleteTeamErrors, DeleteUserData, DeleteUserErrors, DeleteUserResponses, GetTagData, GetTagErrors, GetTagResponses, GetTeamData, GetTeamErrors, GetTeamResponses, GetTeamSettingsData, GetTeamSettingsErrors, GetTeamSettingsResponses, GetUserData, GetUserErrors, GetUserResponses, ListTagsData, ListTagsErrors, ListTagsResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, RemoveMemberFromTeamData, RemoveMemberFromTeamErrors, RemoveMemberFromTeamResponses, RevokeUserRoleData, RevokeUserRoleErrors, RevokeUserRoleResponses, UpdateTagData, UpdateTagErrors, UpdateTagResponses, UpdateTeamData, UpdateTeamErrors, UpdateTeamResponses, UpdateUserData, UpdateUserErrors, UpdateUserResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -165,7 +165,7 @@ export const addMemberToTeam = <ThrowOnError extends boolean = false>(options: O
             name: 'session',
             type: 'apiKey'
         }],
-    url: '/api/teams/{team_id}/members/add',
+    url: '/api/teams/{team_slug}/members/add',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -184,7 +184,7 @@ export const removeMemberFromTeam = <ThrowOnError extends boolean = false>(optio
             name: 'session',
             type: 'apiKey'
         }],
-    url: '/api/teams/{team_id}/members/remove',
+    url: '/api/teams/{team_slug}/members/remove',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -353,7 +353,7 @@ export const deleteTeam = <ThrowOnError extends boolean = false>(options: Option
             name: 'session',
             type: 'apiKey'
         }],
-    url: '/teams/{team_id}',
+    url: '/teams/{team_slug}',
     ...options
 });
 
@@ -371,14 +371,14 @@ export const getTeam = <ThrowOnError extends boolean = false>(options: Options<G
             name: 'session',
             type: 'apiKey'
         }],
-    url: '/teams/{team_id}',
+    url: '/teams/{team_slug}',
     ...options
 });
 
 /**
  * UpdateTeam
  *
- * Update a migration team.
+ * Update a team.
  *
  * Returns:
  * Updated team data.
@@ -389,10 +389,28 @@ export const updateTeam = <ThrowOnError extends boolean = false>(options: Option
             name: 'session',
             type: 'apiKey'
         }],
-    url: '/teams/{team_id}',
+    url: '/teams/{team_slug}',
     ...options,
     headers: {
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * GetTeamSettings
+ *
+ * Get team settings page.
+ *
+ * Returns:
+ * Team details, members list, and user permissions for management.
+ */
+export const getTeamSettings = <ThrowOnError extends boolean = false>(options: Options<GetTeamSettingsData, ThrowOnError>) => (options.client ?? client).get<GetTeamSettingsResponses, GetTeamSettingsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/teams/{team_slug}/settings',
+    ...options
 });

@@ -1,43 +1,66 @@
-import { Transition } from "@headlessui/react"
-import { useForm } from "@inertiajs/react"
-import { useRef } from "react"
-import { InputError } from "@/components/input-error"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { router } from "@inertiajs/react"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
 import { route } from "@/lib/generated/routes"
 
-export default function UpdatePasswordForm({ className: _className }: { className?: string }) {
-	const passwordInput = useRef<HTMLInputElement>(null)
-	const currentPasswordInput = useRef<HTMLInputElement>(null)
-	const { data, setData, patch, errors, reset, processing, recentlySuccessful } = useForm({
-		currentPassword: "",
-		newPassword: "",
-		passwordConfirmation: "",
+const passwordSchema = z
+	.object({
+		currentPassword: z.string().min(1, "Current password is required"),
+		newPassword: z.string().min(8, "Password must be at least 8 characters"),
+		passwordConfirmation: z.string().min(1, "Please confirm your password"),
+	})
+	.refine((data) => data.newPassword === data.passwordConfirmation, {
+		message: "Passwords do not match",
+		path: ["passwordConfirmation"],
 	})
 
-	const submit = (e: { preventDefault: () => void }) => {
-		e.preventDefault()
-		patch(route("password.update"), {
-			preserveScroll: true,
-			onSuccess: () => {
-				toast({ description: "Your password has been updated." })
-				reset()
-			},
-			onError: () => {
-				if (errors.newPassword) {
-					reset("newPassword", "passwordConfirmation")
-					passwordInput.current?.focus()
-				}
+type PasswordFormValues = z.infer<typeof passwordSchema>
 
-				if (errors.currentPassword) {
-					reset("currentPassword")
-					currentPasswordInput.current?.focus()
-				}
+export default function UpdatePasswordForm() {
+	const [isSubmitting, setIsSubmitting] = useState(false)
+
+	const form = useForm<PasswordFormValues>({
+		resolver: zodResolver(passwordSchema),
+		defaultValues: {
+			currentPassword: "",
+			newPassword: "",
+			passwordConfirmation: "",
+		},
+	})
+
+	function onSubmit(values: PasswordFormValues) {
+		setIsSubmitting(true)
+		// Only send fields the backend expects (not passwordConfirmation)
+		router.patch(
+			route("password.update"),
+			{
+				currentPassword: values.currentPassword,
+				newPassword: values.newPassword,
 			},
-		})
+			{
+				preserveScroll: true,
+				onSuccess: () => {
+					toast({ description: "Your password has been updated." })
+					form.reset()
+				},
+				onError: (errors) => {
+					if (errors.currentPassword) {
+						form.setError("currentPassword", { message: errors.currentPassword as string })
+					}
+					if (errors.newPassword) {
+						form.setError("newPassword", { message: errors.newPassword as string })
+					}
+				},
+				onFinish: () => setIsSubmitting(false),
+			},
+		)
 	}
 
 	return (
@@ -46,69 +69,56 @@ export default function UpdatePasswordForm({ className: _className }: { classNam
 				<CardTitle>Update Password</CardTitle>
 				<CardDescription>Ensure your account is using a long, random password to stay secure.</CardDescription>
 			</CardHeader>
-
 			<CardContent>
-				<form onSubmit={submit} className="space-y-6">
-					<div>
-						<Label htmlFor="currentPassword">Current Password</Label>
-
-						<Input
-							id="currentPassword"
-							ref={currentPasswordInput}
-							value={data.currentPassword}
-							className="mt-1"
-							onChange={(e) => setData("currentPassword", e.target.value)}
-							type="password"
-							autoComplete="currentPassword"
-							required
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<FormField
+							control={form.control}
+							name="currentPassword"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Current Password</FormLabel>
+									<FormControl>
+										<Input type="password" autoComplete="current-password" disabled={isSubmitting} {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
 						/>
 
-						<InputError message={errors.currentPassword} className="mt-2" />
-					</div>
-
-					<div>
-						<Label htmlFor="newPassword">New Password</Label>
-
-						<Input
-							id="newPassword"
-							ref={passwordInput}
-							value={data.newPassword}
-							className="mt-1"
-							onChange={(e) => setData("newPassword", e.target.value)}
-							type="password"
-							autoComplete="newPassword"
-							required
+						<FormField
+							control={form.control}
+							name="newPassword"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>New Password</FormLabel>
+									<FormControl>
+										<Input type="password" autoComplete="new-password" disabled={isSubmitting} {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
 						/>
 
-						<InputError message={errors.newPassword} className="mt-2" />
-					</div>
-
-					<div>
-						<Label htmlFor="passwordConfirmation">Confirm Password</Label>
-
-						<Input
-							id="passwordConfirmation"
-							value={data.passwordConfirmation}
-							className="mt-1"
-							onChange={(e) => setData("passwordConfirmation", e.target.value)}
-							type="password"
-							autoComplete="newPassword"
-							required
+						<FormField
+							control={form.control}
+							name="passwordConfirmation"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Confirm Password</FormLabel>
+									<FormControl>
+										<Input type="password" autoComplete="new-password" disabled={isSubmitting} {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
 						/>
 
-						<InputError message={errors.passwordConfirmation} className="mt-2" />
-					</div>
-
-					<div className="flex items-center gap-4">
-						<Button disabled={processing}>Save</Button>
-
-						<Transition show={recentlySuccessful} enterFrom="opacity-0" leaveTo="opacity-0">
-							<div className="transition ease-in-out">
-								<p className="text-muted-foreground text-sm">Saved.</p>
-							</div>
-						</Transition>
-					</div>
-				</form>
+						<Button type="submit" disabled={isSubmitting}>
+							{isSubmitting ? "Saving..." : "Save"}
+						</Button>
+					</form>
+				</Form>
 			</CardContent>
 		</Card>
 	)

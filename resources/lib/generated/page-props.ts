@@ -4,7 +4,7 @@
 // Import user-defined type extensions (edit page-props.user.ts to customize)
 import type { UserExtensions, SharedPropsExtensions } from "./page-props.user"
 
-import type { CurrentTeam, Message, NoProps, PasswordResetToken, Team, TeamMember, TeamTag } from "./api/types.gen"
+import type { CurrentTeam, Message, NoProps, PasswordResetToken, Team, TeamDetail, TeamDetailPage, TeamListItem, TeamListPage, TeamMember, TeamPageMember, TeamPermissions, TeamTag } from "./api/types.gen"
 
 /**
  * Default User interface - minimal baseline for common auth patterns.
@@ -77,8 +77,9 @@ export interface PageProps {
   "profile/edit": Message & FullSharedProps
   "team/create": NoProps & FullSharedProps
   "team/edit": Team & FullSharedProps
-  "team/list": {} & FullSharedProps
-  "team/show": {} & FullSharedProps
+  "team/list": TeamListPage & FullSharedProps
+  "team/settings": TeamDetailPage & FullSharedProps
+  "team/show": TeamDetailPage & FullSharedProps
 }
 
 /** Component name union type */

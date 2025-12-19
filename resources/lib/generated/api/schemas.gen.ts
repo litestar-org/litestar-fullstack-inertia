@@ -61,6 +61,7 @@ export const CreateTagTagResponseBodySchema = {
 export const CurrentTeamSchema = {
     properties: {
         teamId: {
+            format: 'uuid',
             type: 'string'
         },
         teamName: {
@@ -305,6 +306,144 @@ export const TeamCreateSchema = {
     type: 'object'
 } as const;
 
+export const TeamDetailSchema = {
+    properties: {
+        createdAt: {
+            oneOf: [
+                {
+                    format: 'date-time',
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        description: {
+            oneOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        id: {
+            format: 'uuid',
+            type: 'string'
+        },
+        name: {
+            type: 'string'
+        },
+        slug: {
+            type: 'string'
+        }
+    },
+    required: [
+        'id',
+        'name',
+        'slug'
+    ],
+    title: 'TeamDetail',
+    type: 'object'
+} as const;
+
+export const TeamDetailPageSchema = {
+    properties: {
+        members: {
+            items: {
+                $ref: '#/components/schemas/TeamPageMember'
+            },
+            type: 'array'
+        },
+        permissions: {
+            $ref: '#/components/schemas/TeamPermissions'
+        },
+        team: {
+            $ref: '#/components/schemas/TeamDetail'
+        }
+    },
+    required: [
+        'members',
+        'permissions',
+        'team'
+    ],
+    title: 'TeamDetailPage',
+    type: 'object'
+} as const;
+
+export const TeamListItemSchema = {
+    properties: {
+        createdAt: {
+            oneOf: [
+                {
+                    format: 'date-time',
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        description: {
+            oneOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        id: {
+            format: 'uuid',
+            type: 'string'
+        },
+        memberCount: {
+            type: 'integer'
+        },
+        name: {
+            type: 'string'
+        },
+        slug: {
+            type: 'string'
+        },
+        userRole: {
+            type: 'string'
+        }
+    },
+    required: [
+        'id',
+        'memberCount',
+        'name',
+        'slug',
+        'userRole'
+    ],
+    title: 'TeamListItem',
+    type: 'object'
+} as const;
+
+export const TeamListPageSchema = {
+    properties: {
+        teams: {
+            items: {
+                $ref: '#/components/schemas/TeamListItem'
+            },
+            type: 'array'
+        },
+        total: {
+            type: 'integer'
+        }
+    },
+    required: [
+        'teams',
+        'total'
+    ],
+    title: 'TeamListPage',
+    type: 'object'
+} as const;
+
 export const TeamMemberSchema = {
     properties: {
         email: {
@@ -371,6 +510,78 @@ export const TeamMemberModifySchema = {
         'userName'
     ],
     title: 'TeamMemberModify',
+    type: 'object'
+} as const;
+
+export const TeamPageMemberSchema = {
+    properties: {
+        avatarUrl: {
+            oneOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        email: {
+            type: 'string'
+        },
+        id: {
+            format: 'uuid',
+            type: 'string'
+        },
+        name: {
+            oneOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        role: {
+            type: 'string'
+        },
+        userId: {
+            format: 'uuid',
+            type: 'string'
+        }
+    },
+    required: [
+        'email',
+        'id',
+        'role',
+        'userId'
+    ],
+    title: 'TeamPageMember',
+    type: 'object'
+} as const;
+
+export const TeamPermissionsSchema = {
+    properties: {
+        canAddTeamMembers: {
+            type: 'boolean'
+        },
+        canDeleteTeam: {
+            type: 'boolean'
+        },
+        canRemoveTeamMembers: {
+            type: 'boolean'
+        },
+        canUpdateTeam: {
+            type: 'boolean'
+        }
+    },
+    required: [
+        'canAddTeamMembers',
+        'canDeleteTeam',
+        'canRemoveTeamMembers',
+        'canUpdateTeam'
+    ],
+    title: 'TeamPermissions',
     type: 'object'
 } as const;
 

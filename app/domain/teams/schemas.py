@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime  # noqa: TC003
 from uuid import UUID  # noqa: TC003
 
 import msgspec
@@ -52,5 +53,65 @@ class TeamMemberModify(CamelizedBaseStruct):
 class CurrentTeam(CamelizedBaseStruct):
     """Current team stored in session."""
 
-    team_id: str
+    team_id: UUID
     team_name: str
+
+
+# Page response schemas for Inertia pages
+
+
+class TeamListItem(CamelizedBaseStruct):
+    """Team item in list view."""
+
+    id: UUID
+    name: str
+    slug: str
+    member_count: int
+    user_role: str
+    description: str | None = None
+    created_at: datetime | None = None
+
+
+class TeamListPage(CamelizedBaseStruct):
+    """Response for team list page."""
+
+    teams: list[TeamListItem]
+    total: int
+
+
+class TeamPageMember(CamelizedBaseStruct):
+    """Team member for page display (includes avatar)."""
+
+    id: UUID
+    user_id: UUID
+    email: str
+    role: str
+    name: str | None = None
+    avatar_url: str | None = None
+
+
+class TeamPermissions(CamelizedBaseStruct):
+    """User permissions for team management."""
+
+    can_add_team_members: bool
+    can_delete_team: bool
+    can_remove_team_members: bool
+    can_update_team: bool
+
+
+class TeamDetail(CamelizedBaseStruct):
+    """Team details for show/settings page."""
+
+    id: UUID
+    name: str
+    slug: str
+    description: str | None = None
+    created_at: datetime | None = None
+
+
+class TeamDetailPage(CamelizedBaseStruct):
+    """Response for team show/settings page."""
+
+    team: TeamDetail
+    members: list[TeamPageMember]
+    permissions: TeamPermissions

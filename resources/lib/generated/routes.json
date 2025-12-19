@@ -288,12 +288,12 @@
         "PATCH"
       ],
       "parameterTypes": {
-        "team_id": "UUID"
+        "team_slug": "string"
       },
       "parameters": [
-        "team_id"
+        "team_slug"
       ],
-      "uri": "/teams/{team_id}"
+      "uri": "/teams/{team_slug}"
     },
     "teams.list": {
       "component": "team/list",
@@ -322,12 +322,26 @@
         "DELETE"
       ],
       "parameterTypes": {
-        "team_id": "UUID"
+        "team_slug": "string"
       },
       "parameters": [
-        "team_id"
+        "team_slug"
       ],
-      "uri": "/teams/{team_id}"
+      "uri": "/teams/{team_slug}"
+    },
+    "teams.settings": {
+      "component": "team/settings",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "team_slug": "string"
+      },
+      "parameters": [
+        "team_slug"
+      ],
+      "uri": "/teams/{team_slug}/settings"
     },
     "teams.show": {
       "component": "team/show",
@@ -336,12 +350,12 @@
         "GET"
       ],
       "parameterTypes": {
-        "team_id": "UUID"
+        "team_slug": "string"
       },
       "parameters": [
-        "team_id"
+        "team_slug"
       ],
-      "uri": "/teams/{team_id}"
+      "uri": "/teams/{team_slug}"
     },
     "teams:add-member": {
       "method": "post",
@@ -349,12 +363,12 @@
         "POST"
       ],
       "parameterTypes": {
-        "team_id": "UUID"
+        "team_slug": "string"
       },
       "parameters": [
-        "team_id"
+        "team_slug"
       ],
-      "uri": "/api/teams/{team_id}/members/add"
+      "uri": "/api/teams/{team_slug}/members/add"
     },
     "teams:remove-member": {
       "method": "post",
@@ -362,12 +376,12 @@
         "POST"
       ],
       "parameterTypes": {
-        "team_id": "UUID"
+        "team_slug": "string"
       },
       "parameters": [
-        "team_id"
+        "team_slug"
       ],
-      "uri": "/api/teams/{team_id}/members/remove"
+      "uri": "/api/teams/{team_slug}/members/remove"
     },
     "terms-of-service": {
       "component": "legal/terms-of-service",

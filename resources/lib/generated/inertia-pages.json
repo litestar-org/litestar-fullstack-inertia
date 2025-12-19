@@ -114,19 +114,46 @@
       ],
       "handler": "update_team",
       "propsType": "Team",
-      "route": "/teams/{team_id}",
+      "route": "/teams/{team_slug}",
       "schemaRef": "#/components/schemas/Team",
       "tsType": "Team"
     },
     "team/list": {
+      "customTypes": [
+        "TeamListItem",
+        "TeamListPage"
+      ],
       "handler": "list_teams",
-      "propsType": "{}",
-      "route": "/teams"
+      "propsType": "TeamListPage",
+      "route": "/teams",
+      "schemaRef": "#/components/schemas/TeamListPage",
+      "tsType": "TeamListPage"
+    },
+    "team/settings": {
+      "customTypes": [
+        "TeamDetail",
+        "TeamDetailPage",
+        "TeamPageMember",
+        "TeamPermissions"
+      ],
+      "handler": "get_team_settings",
+      "propsType": "TeamDetailPage",
+      "route": "/teams/{team_slug}/settings",
+      "schemaRef": "#/components/schemas/TeamDetailPage",
+      "tsType": "TeamDetailPage"
     },
     "team/show": {
+      "customTypes": [
+        "TeamDetail",
+        "TeamDetailPage",
+        "TeamPageMember",
+        "TeamPermissions"
+      ],
       "handler": "get_team",
-      "propsType": "{}",
-      "route": "/teams/{team_id}"
+      "propsType": "TeamDetailPage",
+      "route": "/teams/{team_slug}",
+      "schemaRef": "#/components/schemas/TeamDetailPage",
+      "tsType": "TeamDetailPage"
     }
   },
   "sharedProps": {

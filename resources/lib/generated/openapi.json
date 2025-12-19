@@ -60,6 +60,7 @@
       "CurrentTeam": {
         "properties": {
           "teamId": {
+            "format": "uuid",
             "type": "string"
           },
           "teamName": {
@@ -294,6 +295,140 @@
         "title": "TeamCreate",
         "type": "object"
       },
+      "TeamDetail": {
+        "properties": {
+          "createdAt": {
+            "oneOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ],
+        "title": "TeamDetail",
+        "type": "object"
+      },
+      "TeamDetailPage": {
+        "properties": {
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/TeamPageMember"
+            },
+            "type": "array"
+          },
+          "permissions": {
+            "$ref": "#/components/schemas/TeamPermissions"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamDetail"
+          }
+        },
+        "required": [
+          "members",
+          "permissions",
+          "team"
+        ],
+        "title": "TeamDetailPage",
+        "type": "object"
+      },
+      "TeamListItem": {
+        "properties": {
+          "createdAt": {
+            "oneOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "memberCount": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "userRole": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "memberCount",
+          "name",
+          "slug",
+          "userRole"
+        ],
+        "title": "TeamListItem",
+        "type": "object"
+      },
+      "TeamListPage": {
+        "properties": {
+          "teams": {
+            "items": {
+              "$ref": "#/components/schemas/TeamListItem"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "teams",
+          "total"
+        ],
+        "title": "TeamListPage",
+        "type": "object"
+      },
       "TeamMember": {
         "properties": {
           "email": {
@@ -359,6 +494,76 @@
           "userName"
         ],
         "title": "TeamMemberModify",
+        "type": "object"
+      },
+      "TeamPageMember": {
+        "properties": {
+          "avatarUrl": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role": {
+            "type": "string"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "id",
+          "role",
+          "userId"
+        ],
+        "title": "TeamPageMember",
+        "type": "object"
+      },
+      "TeamPermissions": {
+        "properties": {
+          "canAddTeamMembers": {
+            "type": "boolean"
+          },
+          "canDeleteTeam": {
+            "type": "boolean"
+          },
+          "canRemoveTeamMembers": {
+            "type": "boolean"
+          },
+          "canUpdateTeam": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "canAddTeamMembers",
+          "canDeleteTeam",
+          "canRemoveTeamMembers",
+          "canUpdateTeam"
+        ],
+        "title": "TeamPermissions",
         "type": "object"
       },
       "TeamRoles": {
@@ -1521,7 +1726,7 @@
         ]
       }
     },
-    "/api/teams/{team_id}/members/add": {
+    "/api/teams/{team_slug}/members/add": {
       "post": {
         "deprecated": false,
         "description": "Add a member to a team.\n\nReturns:\n    Updated team data with new member.\n\nRaises:\n    IntegrityError: If the user is already a member of the team.",
@@ -1529,14 +1734,13 @@
         "parameters": [
           {
             "deprecated": false,
-            "description": "The team to update.",
+            "description": "The team slug.",
             "in": "path",
-            "name": "team_id",
+            "name": "team_slug",
             "required": true,
             "schema": {
-              "description": "The team to update.",
-              "format": "uuid",
-              "title": "Team ID",
+              "description": "The team slug.",
+              "title": "Team Slug",
               "type": "string"
             }
           }
@@ -1608,7 +1812,7 @@
         ]
       }
     },
-    "/api/teams/{team_id}/members/remove": {
+    "/api/teams/{team_slug}/members/remove": {
       "post": {
         "deprecated": false,
         "description": "Removes a member from a team",
@@ -1616,14 +1820,13 @@
         "parameters": [
           {
             "deprecated": false,
-            "description": "The team to delete.",
+            "description": "The team slug.",
             "in": "path",
-            "name": "team_id",
+            "name": "team_slug",
             "required": true,
             "schema": {
-              "description": "The team to delete.",
-              "format": "uuid",
-              "title": "Team ID",
+              "description": "The team slug.",
+              "title": "Team Slug",
               "type": "string"
             }
           }
@@ -2501,7 +2704,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/TeamListPage"
                 }
               }
             },
@@ -2649,7 +2852,7 @@
         ]
       }
     },
-    "/teams/{team_id}": {
+    "/teams/{team_slug}": {
       "delete": {
         "deprecated": false,
         "description": "Delete a team.\n\nReturns:\n    Redirect to teams list page.",
@@ -2657,14 +2860,13 @@
         "parameters": [
           {
             "deprecated": false,
-            "description": "The team to delete.",
+            "description": "The team slug.",
             "in": "path",
-            "name": "team_id",
+            "name": "team_slug",
             "required": true,
             "schema": {
-              "description": "The team to delete.",
-              "format": "uuid",
-              "title": "Team ID",
+              "description": "The team slug.",
+              "title": "Team Slug",
               "type": "string"
             }
           }
@@ -2734,14 +2936,13 @@
         "parameters": [
           {
             "deprecated": false,
-            "description": "The team to retrieve.",
+            "description": "The team slug.",
             "in": "path",
-            "name": "team_id",
+            "name": "team_slug",
             "required": true,
             "schema": {
-              "description": "The team to retrieve.",
-              "format": "uuid",
-              "title": "Team ID",
+              "description": "The team slug.",
+              "title": "Team Slug",
               "type": "string"
             }
           }
@@ -2751,7 +2952,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/TeamDetailPage"
                 }
               }
             },
@@ -2804,19 +3005,18 @@
       },
       "patch": {
         "deprecated": false,
-        "description": "Update a migration team.\n\nReturns:\n    Updated team data.",
+        "description": "Update a team.\n\nReturns:\n    Updated team data.",
         "operationId": "UpdateTeam",
         "parameters": [
           {
             "deprecated": false,
-            "description": "The team to update.",
+            "description": "The team slug.",
             "in": "path",
-            "name": "team_id",
+            "name": "team_slug",
             "required": true,
             "schema": {
-              "description": "The team to update.",
-              "format": "uuid",
-              "title": "Team ID",
+              "description": "The team slug.",
+              "title": "Team Slug",
               "type": "string"
             }
           }
@@ -2883,6 +3083,82 @@
           }
         },
         "summary": "UpdateTeam",
+        "tags": [
+          "Teams"
+        ]
+      }
+    },
+    "/teams/{team_slug}/settings": {
+      "get": {
+        "deprecated": false,
+        "description": "Get team settings page.\n\nReturns:\n    Team details, members list, and user permissions for management.",
+        "operationId": "GetTeamSettings",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The team slug.",
+            "in": "path",
+            "name": "team_slug",
+            "required": true,
+            "schema": {
+              "description": "The team slug.",
+              "title": "Team Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamDetailPage"
+                }
+              }
+            },
+            "description": "Request fulfilled, document follows",
+            "headers": {}
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "GetTeamSettings",
         "tags": [
           "Teams"
         ]

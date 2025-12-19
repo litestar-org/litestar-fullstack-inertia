@@ -1,4 +1,5 @@
 import { useForm } from "@inertiajs/react"
+import type { LucideIcon } from "lucide-react"
 import { Shield, ShieldCheck, Trash2, UserPlus } from "lucide-react"
 import { useState } from "react"
 import { InputError } from "@/components/input-error"
@@ -21,42 +22,24 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
+import type { TeamDetail, TeamPageMember, TeamPermissions } from "@/lib/generated/api/types.gen"
 import { route } from "@/lib/generated/routes"
 import { cn, getGravatarUrl, getInitials } from "@/lib/utils"
 
-interface TeamMember {
-	id: string
-	userId: string
-	name: string | null
-	email: string
-	avatarUrl: string | null
-	role: "owner" | "admin" | "editor" | "member"
-}
-
-interface Team {
-	id: string
-	name: string
-}
-
-interface Permissions {
-	canAddTeamMembers: boolean
-	canRemoveTeamMembers: boolean
-}
-
 interface Props {
-	team: Team
-	members: TeamMember[]
-	permissions: Permissions
+	team: Pick<TeamDetail, "id" | "name" | "slug">
+	members: TeamPageMember[]
+	permissions: Pick<TeamPermissions, "canAddTeamMembers" | "canRemoveTeamMembers">
 }
 
-const roleStyles = {
+const roleStyles: Record<string, string> = {
 	owner: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
 	admin: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
 	editor: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
 	member: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
 }
 
-const roleIcons = {
+const roleIcons: Record<string, LucideIcon | null> = {
 	owner: ShieldCheck,
 	admin: Shield,
 	editor: Shield,
@@ -65,7 +48,7 @@ const roleIcons = {
 
 export default function TeamMemberManager({ team, members, permissions }: Props) {
 	const [showAddMemberDialog, setShowAddMemberDialog] = useState(false)
-	const [memberToRemove, setMemberToRemove] = useState<TeamMember | null>(null)
+	const [memberToRemove, setMemberToRemove] = useState<TeamPageMember | null>(null)
 
 	const addMemberForm = useForm({
 		user_name: "",
@@ -77,7 +60,7 @@ export default function TeamMemberManager({ team, members, permissions }: Props)
 
 	const addMember = (e: React.FormEvent) => {
 		e.preventDefault()
-		addMemberForm.post(route("teams:add-member", { team_id: team.id }), {
+		addMemberForm.post(route("teams:add-member", { team_slug: team.slug }), {
 			preserveScroll: true,
 			onSuccess: () => {
 				addMemberForm.reset()
@@ -90,7 +73,7 @@ export default function TeamMemberManager({ team, members, permissions }: Props)
 	const removeMember = () => {
 		if (!memberToRemove) return
 		removeMemberForm.setData("user_name", memberToRemove.email)
-		removeMemberForm.post(route("teams:remove-member", { team_id: team.id }), {
+		removeMemberForm.post(route("teams:remove-member", { team_slug: team.slug }), {
 			preserveScroll: true,
 			onSuccess: () => {
 				setMemberToRemove(null)

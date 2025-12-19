@@ -5,15 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
+import type { TeamDetail } from "@/lib/generated/api/types.gen"
 import { route } from "@/lib/generated/routes"
 
-interface Team {
-	id: string
-	name: string
-}
-
 interface Props {
-	team: Team
+	team: Pick<TeamDetail, "id" | "name" | "slug">
 }
 
 export default function UpdateTeamNameForm({ team }: Props) {
@@ -23,7 +19,7 @@ export default function UpdateTeamNameForm({ team }: Props) {
 
 	const submit = (e: React.FormEvent) => {
 		e.preventDefault()
-		patch(route("teams.edit", { team_id: team.id }), {
+		patch(route("teams.edit", { team_slug: team.slug }), {
 			preserveScroll: true,
 			onSuccess: () => {
 				toast({ description: "Team name updated." })

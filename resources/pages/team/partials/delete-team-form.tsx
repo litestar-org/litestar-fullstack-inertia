@@ -12,22 +12,18 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import type { TeamDetail } from "@/lib/generated/api/types.gen"
 import { route } from "@/lib/generated/routes"
 
-interface Team {
-	id: string
-	name: string
-}
-
 interface Props {
-	team: Team
+	team: Pick<TeamDetail, "id" | "name" | "slug">
 }
 
 export default function DeleteTeamForm({ team }: Props) {
 	const { delete: destroy, processing } = useForm()
 
 	const deleteTeam = () => {
-		destroy(route("teams.remove", { team_id: team.id }))
+		destroy(route("teams.remove", { team_slug: team.slug }))
 	}
 
 	return (

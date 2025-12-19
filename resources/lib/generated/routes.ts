@@ -49,6 +49,7 @@ export type RouteName =
   | 'teams.edit'
   | 'teams.list'
   | 'teams.remove'
+  | 'teams.settings'
   | 'teams.show'
   | 'teams:add-member'
   | 'teams:remove-member'
@@ -103,20 +104,23 @@ export interface RoutePathParams {
   'teams.add': Record<string, never>;
   'teams.create': Record<string, never>;
   'teams.edit': {
-    team_id: UUID;
+    team_slug: string;
   };
   'teams.list': Record<string, never>;
   'teams.remove': {
-    team_id: UUID;
+    team_slug: string;
+  };
+  'teams.settings': {
+    team_slug: string;
   };
   'teams.show': {
-    team_id: UUID;
+    team_slug: string;
   };
   'teams:add-member': {
-    team_id: UUID;
+    team_slug: string;
   };
   'teams:remove-member': {
-    team_id: UUID;
+    team_slug: string;
   };
   'terms-of-service': Record<string, never>;
   'users:assign-role': {
@@ -215,6 +219,7 @@ export interface RouteQueryParams {
     updatedBefore?: DateTime;
   };
   'teams.remove': Record<string, never>;
+  'teams.settings': Record<string, never>;
   'teams.show': Record<string, never>;
   'teams:add-member': Record<string, never>;
   'teams:remove-member': Record<string, never>;
@@ -487,10 +492,10 @@ export const routeDefinitions = {
     component: 'team/create',
   },
   'teams.edit': {
-    path: '/teams/{team_id}',
+    path: '/teams/{team_slug}',
     methods: ['PATCH'] as const,
     method: 'patch',
-    pathParams: ['team_id'] as const,
+    pathParams: ['team_slug'] as const,
     queryParams: [] as const,
     component: 'team/edit',
   },
@@ -503,32 +508,40 @@ export const routeDefinitions = {
     component: 'team/list',
   },
   'teams.remove': {
-    path: '/teams/{team_id}',
+    path: '/teams/{team_slug}',
     methods: ['DELETE'] as const,
     method: 'delete',
-    pathParams: ['team_id'] as const,
+    pathParams: ['team_slug'] as const,
     queryParams: [] as const,
   },
-  'teams.show': {
-    path: '/teams/{team_id}',
+  'teams.settings': {
+    path: '/teams/{team_slug}/settings',
     methods: ['GET'] as const,
     method: 'get',
-    pathParams: ['team_id'] as const,
+    pathParams: ['team_slug'] as const,
+    queryParams: [] as const,
+    component: 'team/settings',
+  },
+  'teams.show': {
+    path: '/teams/{team_slug}',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: ['team_slug'] as const,
     queryParams: [] as const,
     component: 'team/show',
   },
   'teams:add-member': {
-    path: '/api/teams/{team_id}/members/add',
+    path: '/api/teams/{team_slug}/members/add',
     methods: ['POST'] as const,
     method: 'post',
-    pathParams: ['team_id'] as const,
+    pathParams: ['team_slug'] as const,
     queryParams: [] as const,
   },
   'teams:remove-member': {
-    path: '/api/teams/{team_id}/members/remove',
+    path: '/api/teams/{team_slug}/members/remove',
     methods: ['POST'] as const,
     method: 'post',
-    pathParams: ['team_id'] as const,
+    pathParams: ['team_slug'] as const,
     queryParams: [] as const,
   },
   'terms-of-service': {
