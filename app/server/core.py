@@ -48,6 +48,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         from app.domain.accounts import signals as account_signals
         from app.domain.accounts.controllers import (
             AccessController,
+            EmailVerificationController,
             PasswordResetController,
             ProfileController,
             RegistrationController,
@@ -61,6 +62,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         from app.domain.teams.controllers import TeamController, TeamMemberController
         from app.domain.web.controllers import WebController
         from app.lib import log
+        from app.lib.exceptions import inertia_exception_handler
         from app.lib.settings import get_settings
         from app.server import plugins
 
@@ -80,6 +82,8 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         app_config.middleware.insert(0, log.StructlogMiddleware)
         app_config.after_exception.append(log.after_exception_hook_handler)
         app_config.before_send.append(log.BeforeSendHandler())
+        # TODO: Remove after litestar-vite > 0.15.0rc3 - workaround for flash message on auth redirect
+        app_config.exception_handlers.update({Exception: inertia_exception_handler})
         # security
         app_config.cors_config = config.cors
         app_config.csrf_config = config.csrf
@@ -99,6 +103,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         app_config.route_handlers.extend(
             [
                 AccessController,
+                EmailVerificationController,
                 PasswordResetController,
                 ProfileController,
                 RegistrationController,
@@ -122,6 +127,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         app_config.listeners.extend(
             [
                 account_signals.user_created_event_handler,
+                account_signals.user_verified_event_handler,
                 account_signals.password_reset_requested_handler,
                 account_signals.password_reset_completed_handler,
                 team_signals.team_created_event_handler,

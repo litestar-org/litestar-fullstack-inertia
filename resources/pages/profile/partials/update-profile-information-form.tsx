@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
 import { route } from "@/lib/generated/routes"
+import type { FullSharedProps } from "@/lib/generated/page-props"
 
 interface Props {
 	mustVerifyEmail: boolean
@@ -15,7 +16,7 @@ interface Props {
 }
 
 export default function UpdateProfileInformation({ mustVerifyEmail, status }: Props) {
-	const { auth } = usePage<InertiaProps>().props
+	const { auth } = usePage<FullSharedProps>().props
 	const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
 		name: auth?.user?.name ?? "",
 	})

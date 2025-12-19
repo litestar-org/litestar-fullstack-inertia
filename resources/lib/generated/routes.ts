@@ -60,6 +60,7 @@ export type RouteName =
   | 'users:list'
   | 'users:revoke-role'
   | 'users:update'
+  | 'verify-email'
   | 'vite';
 
 /** Path parameter definitions per route */
@@ -135,6 +136,7 @@ export interface RoutePathParams {
   'users:update': {
     user_id: UUID;
   };
+  'verify-email': Record<string, never>;
   'vite': {
     file_path: any;
   };
@@ -236,6 +238,9 @@ export interface RouteQueryParams {
   };
   'users:revoke-role': Record<string, never>;
   'users:update': Record<string, never>;
+  'verify-email': {
+    token?: string;
+  };
   'vite': Record<string, never>;
 }
 
@@ -582,6 +587,14 @@ export const routeDefinitions = {
     method: 'patch',
     pathParams: ['user_id'] as const,
     queryParams: [] as const,
+  },
+  'verify-email': {
+    path: '/verify-email',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: [] as const,
+    queryParams: ['token'] as const,
+    component: 'auth/verify-email',
   },
   'vite': {
     path: '/static/{file_path}',

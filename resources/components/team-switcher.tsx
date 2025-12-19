@@ -12,13 +12,14 @@ import { route } from "@/lib/generated/routes"
 import { cn, getInitials } from "@/lib/utils"
 import { InputError } from "./input-error"
 import { toast } from "./ui/use-toast"
+import type { FullSharedProps } from "@/lib/generated/page-props"
 
 type PopoverTriggerProps = ComponentPropsWithoutRef<typeof PopoverTrigger>
 
 interface TeamSwitcherProps extends PopoverTriggerProps {}
 
 export function TeamSwitcher({ className }: TeamSwitcherProps) {
-	const { auth, currentTeam } = usePage<InertiaProps>().props
+	const { auth, currentTeam } = usePage<FullSharedProps>().props
 	const [open, setOpen] = useState(false)
 	const [showNewTeamDialog, setShowNewTeamDialog] = useState(false)
 	const { data, setData, post, reset, errors, processing } = useForm({

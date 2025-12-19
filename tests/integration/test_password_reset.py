@@ -86,6 +86,162 @@ async def test_reset_password_page_with_invalid_token(client: "AsyncClient") -> 
     assert response.status_code in (302, 303, 307)
 
 
+async def test_reset_password_page_with_valid_token(
+    client: "AsyncClient",
+    sessionmaker: "async_sessionmaker[AsyncSession]",
+) -> None:
+    """Reset password page with valid token should show the form."""
+    async with sessionmaker() as session:
+        token_service = EmailTokenService(session=session)
+        _, plain_token = await token_service.create_token(
+            email="user@example.com",
+            token_type=TokenType.PASSWORD_RESET,
+            expires_delta=timedelta(hours=1),
+        )
+        await session.commit()
+
+    response = await client.get(
+        "/reset-password/",
+        params={"token": plain_token, "email": "user@example.com"},
+    )
+    # Should return 200 with the reset form (not redirect)
+    assert response.status_code == 200
+
+
+async def test_reset_password_complete_flow(
+    client: "AsyncClient",
+    sessionmaker: "async_sessionmaker[AsyncSession]",
+) -> None:
+    """Full password reset flow: create token, submit new password, verify change."""
+    # Create a password reset token
+    async with sessionmaker() as session:
+        token_service = EmailTokenService(session=session)
+        _, plain_token = await token_service.create_token(
+            email="user@example.com",
+            token_type=TokenType.PASSWORD_RESET,
+            expires_delta=timedelta(hours=1),
+        )
+        await session.commit()
+
+    # Get CSRF token from the reset page
+    response = await client.get(
+        "/reset-password/",
+        params={"token": plain_token, "email": "user@example.com"},
+    )
+    csrf_token: str = response.cookies.get("XSRF-TOKEN") or ""
+
+    headers = {
+        "X-XSRF-TOKEN": csrf_token,
+        "Content-Type": "application/json",
+    }
+
+    # Submit the new password
+    new_password = "NewSecurePassword123!"
+    response = await client.post(
+        "/reset-password/",
+        json={"token": plain_token, "password": new_password},
+        headers=headers,
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    assert "/login" in str(response.url)
+
+    # Verify the password was changed by logging in with the new password
+    response = await client.get("/login/")
+    csrf_token = response.cookies.get("XSRF-TOKEN") or ""
+
+    response = await client.post(
+        "/login/",
+        json={"username": "user@example.com", "password": new_password},
+        headers={"X-XSRF-TOKEN": csrf_token, "Content-Type": "application/json"},
+        follow_redirects=False,
+    )
+    # Login should succeed with a redirect (303 for POST)
+    assert response.status_code == 303
+    # Verify we're not being redirected back to login (which would indicate auth failure)
+    assert "/login" not in response.headers.get("location", "")
+
+
+async def test_reset_password_with_expired_token(
+    client: "AsyncClient",
+    sessionmaker: "async_sessionmaker[AsyncSession]",
+) -> None:
+    """Password reset with expired token should fail."""
+    async with sessionmaker() as session:
+        token_service = EmailTokenService(session=session)
+        _, plain_token = await token_service.create_token(
+            email="user@example.com",
+            token_type=TokenType.PASSWORD_RESET,
+            expires_delta=timedelta(hours=-1),  # Already expired
+        )
+        await session.commit()
+
+    # Get CSRF token
+    response = await client.get("/forgot-password/")
+    csrf_token: str = response.cookies.get("XSRF-TOKEN") or ""
+
+    headers = {
+        "X-XSRF-TOKEN": csrf_token,
+        "Content-Type": "application/json",
+    }
+
+    response = await client.post(
+        "/reset-password/",
+        json={"token": plain_token, "password": "NewPassword123!"},
+        headers=headers,
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    assert "/forgot-password" in str(response.url)
+
+
+async def test_reset_password_token_can_only_be_used_once(
+    client: "AsyncClient",
+    sessionmaker: "async_sessionmaker[AsyncSession]",
+) -> None:
+    """Password reset token should only work once."""
+    async with sessionmaker() as session:
+        token_service = EmailTokenService(session=session)
+        _, plain_token = await token_service.create_token(
+            email="user@example.com",
+            token_type=TokenType.PASSWORD_RESET,
+            expires_delta=timedelta(hours=1),
+        )
+        await session.commit()
+
+    # Get CSRF token
+    response = await client.get(
+        "/reset-password/",
+        params={"token": plain_token, "email": "user@example.com"},
+    )
+    csrf_token: str = response.cookies.get("XSRF-TOKEN") or ""
+
+    headers = {
+        "X-XSRF-TOKEN": csrf_token,
+        "Content-Type": "application/json",
+    }
+
+    # First use should succeed
+    response = await client.post(
+        "/reset-password/",
+        json={"token": plain_token, "password": "FirstPassword123!"},
+        headers=headers,
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    assert "/login" in str(response.url)
+
+    # Second use should fail
+    response = await client.post(
+        "/reset-password/",
+        json={"token": plain_token, "password": "SecondPassword456!"},
+        headers=headers,
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    assert "/forgot-password" in str(response.url)
+
+
 # Email Token Service Tests
 
 

@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { router, usePage } from "@inertiajs/react"
 import { AlertCircle } from "lucide-react"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
@@ -10,9 +10,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import type { FlashMessages } from "@/lib/generated/page-props"
 import { route } from "@/lib/generated/routes"
 import { cn } from "@/lib/utils"
-import type { FlashMessages } from "@/types"
 
 interface UserLoginFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 const formSchema = z.object({
@@ -26,17 +26,33 @@ const formSchema = z.object({
 type FormProps = z.infer<typeof formSchema>
 
 export default function UserLoginForm({ className, ...props }: UserLoginFormProps) {
-	const { content, flash, githubOAuthEnabled, googleOAuthEnabled } = usePage<{
+	// In Inertia v2, flash is at the page level, not in props
+	const page = usePage<{
+		url: string
 		content: {
 			status_code: number
 			message: string
 		}
-		flash: FlashMessages
 		githubOAuthEnabled: boolean
 		googleOAuthEnabled: boolean
-	}>().props
+	}>()
+	const { url, content, githubOAuthEnabled, googleOAuthEnabled } = page.props
+	const flash = page.flash as FlashMessages | undefined
 	const hasOAuthProviders = githubOAuthEnabled || googleOAuthEnabled
 	const [isLoading, setIsLoading] = useState<boolean>(false)
+
+	// Get error from URL query param (fallback when flash couldn't be set due to no session)
+	const urlError = useMemo(() => {
+		try {
+			const urlObj = new URL(url, window.location.origin)
+			return urlObj.searchParams.get("error")
+		} catch {
+			return null
+		}
+	}, [url])
+
+	// Combined error: prefer flash, fall back to URL param
+	const errorMessage = flash?.error?.length ? flash.error : urlError ? [urlError] : null
 	const form = useForm<FormProps>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -68,11 +84,11 @@ export default function UserLoginForm({ className, ...props }: UserLoginFormProp
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(onSubmit)}>
 					<div className="grid gap-2">
-						{flash?.error && (
+						{errorMessage && (
 							<Alert variant="destructive">
 								<AlertCircle className="h-4 w-4" />
 								<AlertTitle>Error</AlertTitle>
-								<AlertDescription>{flash.error.join("\n")}</AlertDescription>
+								<AlertDescription>{errorMessage.join("\n")}</AlertDescription>
 							</Alert>
 						)}
 

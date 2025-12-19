@@ -1,6 +1,7 @@
 import { usePage } from "@inertiajs/react"
 import { useEffect, useRef } from "react"
 import { toast } from "@/components/ui/use-toast"
+import type { FullSharedProps } from "@/lib/generated/page-props"
 
 /**
  * Hook to automatically display flash messages from Inertia page props as toasts.
@@ -10,7 +11,8 @@ import { toast } from "@/components/ui/use-toast"
  * Each category maps to an appropriate toast variant.
  */
 export function useFlashMessages() {
-	const { flash } = usePage<InertiaProps>().props
+	// In Inertia v2, flash is at the page level, not in props
+	const { flash } = usePage<FullSharedProps>()
 	// Track displayed messages to prevent duplicates on re-renders
 	const displayedRef = useRef<Set<string>>(new Set())
 

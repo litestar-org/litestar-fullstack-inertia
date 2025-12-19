@@ -5,9 +5,10 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { route } from "@/lib/generated/routes"
 import { getFirstWord, getGravatarUrl, strLimit } from "@/lib/utils"
+import type { FullSharedProps } from "@/lib/generated/page-props"
 
 const ResponsiveNavbar = () => {
-	const { auth } = usePage<InertiaProps>().props
+	const { auth } = usePage<FullSharedProps>().props
 	return (
 		<nav className="block border-b px-4 py-2 sm:hidden">
 			<div className="flex items-center justify-between py-1">

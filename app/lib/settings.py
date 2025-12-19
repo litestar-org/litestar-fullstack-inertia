@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import binascii
 import os
+import sys
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Any, Final
 
 from advanced_alchemy.utils.text import slugify
 from litestar.utils.module_loader import module_to_os_path
@@ -96,7 +97,7 @@ class ServerSettings:
     RELOAD_DIRS: list[str] = field(default_factory=get_env("LITESTAR_RELOAD_DIRS", [f"{BASE_DIR}"]))
     """Directories to watch for reloading."""
     HTTP_WORKERS: int | None = field(
-        default_factory=lambda: int(os.getenv("WEB_CONCURRENCY")) if os.getenv("WEB_CONCURRENCY") is not None else None,  # type: ignore[arg-type]
+        default_factory=lambda: int(os.getenv("WEB_CONCURRENCY")) if os.getenv("WEB_CONCURRENCY") is not None else None  # type: ignore[arg-type]
     )
     """Number of HTTP Worker processes to be spawned by Uvicorn."""
 
@@ -118,19 +119,10 @@ class LogSettings:
     OBFUSCATE_HEADERS: set[str] = field(default_factory=lambda: {"Authorization", "X-API-KEY", "X-XSRF-TOKEN"})
     """Request header keys to obfuscate."""
     REQUEST_FIELDS: list[RequestExtractorField] = field(
-        default_factory=lambda: [
-            "path",
-            "method",
-            "query",
-            "path_params",
-        ],
+        default_factory=lambda: ["path", "method", "query", "path_params"]
     )
     """Attributes of the [Request][litestar.connection.request.Request] to be logged."""
-    RESPONSE_FIELDS: list[ResponseExtractorField] = field(
-        default_factory=lambda: [
-            "status_code",
-        ],
-    )
+    RESPONSE_FIELDS: list[ResponseExtractorField] = field(default_factory=lambda: ["status_code"])
     """Attributes of the [Response][litestar.response.Response] to be logged."""
     SQLALCHEMY_LEVEL: int = field(default_factory=get_env("SQLALCHEMY_LOG_LEVEL", 20))
     """Level to log SQLAlchemy logs."""
@@ -142,6 +134,102 @@ class LogSettings:
     """Level to log granian access logs."""
     GRANIAN_ERROR_LEVEL: int = field(default_factory=get_env("GRANIAN_ERROR_LOG_LEVEL", 20))
     """Level to log granian error logs."""
+
+    def create_structlog_config(self) -> Any:
+        """Create the complete Litestar StructlogConfig.
+
+        Returns:
+            Configured StructlogConfig for Litestar application.
+        """
+        import logging
+
+        import structlog
+        from litestar.exceptions import NotAuthorizedException, NotFoundException, PermissionDeniedException
+        from litestar.logging.config import LoggingConfig, StructLoggingConfig, default_logger_factory
+        from litestar.middleware.logging import LoggingMiddlewareConfig
+        from litestar.plugins.structlog import StructlogConfig
+
+        from app.lib import log as log_conf
+
+        as_json = not log_conf.is_tty()
+        disable_stack_trace: set[Any] = {
+            404,
+            401,
+            403,
+            NotFoundException,
+            NotAuthorizedException,
+            PermissionDeniedException,
+        }
+
+        return StructlogConfig(
+            enable_middleware_logging=False,
+            structlog_logging_config=StructLoggingConfig(
+                log_exceptions="always",
+                processors=log_conf.structlog_processors(as_json=as_json),
+                logger_factory=default_logger_factory(as_json=as_json),
+                disable_stack_trace=disable_stack_trace,
+                standard_lib_logging_config=LoggingConfig(
+                    log_exceptions="always",
+                    disable_existing_loggers=True,
+                    disable_stack_trace=disable_stack_trace,
+                    root={"level": logging.getLevelName(self.LEVEL), "handlers": ["queue_listener"]},
+                    formatters={
+                        "standard": {
+                            "()": structlog.stdlib.ProcessorFormatter,
+                            "processors": log_conf.stdlib_logger_processors(as_json=as_json),
+                        }
+                    },
+                    loggers={
+                        "sqlalchemy.engine": {
+                            "propagate": False,
+                            "level": self.SQLALCHEMY_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "sqlalchemy.engine.Engine": {
+                            "propagate": False,
+                            "level": self.SQLALCHEMY_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "sqlalchemy.pool": {
+                            "propagate": False,
+                            "level": self.SQLALCHEMY_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "urllib3": {"propagate": False, "level": self.SQLALCHEMY_LEVEL, "handlers": ["queue_listener"]},
+                        "_granian": {
+                            "propagate": False,
+                            "level": self.GRANIAN_ERROR_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "granian.server": {
+                            "propagate": False,
+                            "level": self.GRANIAN_ERROR_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "granian.access": {
+                            "propagate": False,
+                            "level": self.GRANIAN_ACCESS_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "uvicorn.error": {
+                            "propagate": False,
+                            "level": self.UVICORN_ERROR_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "uvicorn.access": {
+                            "propagate": False,
+                            "level": self.UVICORN_ACCESS_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "httpx": {"propagate": False, "level": logging.WARNING, "handlers": ["queue_listener"]},
+                        "httpcore": {"propagate": False, "level": logging.WARNING, "handlers": ["queue_listener"]},
+                    },
+                ),
+            ),
+            middleware_logging_config=LoggingMiddlewareConfig(
+                request_log_fields=self.REQUEST_FIELDS, response_log_fields=self.RESPONSE_FIELDS
+            ),
+        )
 
 
 @dataclass
@@ -172,12 +260,10 @@ class EmailSettings:
     """SMTP connection timeout in seconds."""
 
     # Token expiration settings
-    VERIFICATION_TOKEN_EXPIRES_HOURS: int = field(
-        default_factory=get_env("EMAIL_VERIFICATION_TOKEN_EXPIRES_HOURS", 24),
-    )
+    VERIFICATION_TOKEN_EXPIRES_HOURS: int = field(default_factory=get_env("EMAIL_VERIFICATION_TOKEN_EXPIRES_HOURS", 24))
     """Hours until email verification token expires."""
     PASSWORD_RESET_TOKEN_EXPIRES_MINUTES: int = field(
-        default_factory=get_env("EMAIL_PASSWORD_RESET_TOKEN_EXPIRES_MINUTES", 60),
+        default_factory=get_env("EMAIL_PASSWORD_RESET_TOKEN_EXPIRES_MINUTES", 60)
     )
     """Minutes until password reset token expires."""
     INVITATION_TOKEN_EXPIRES_DAYS: int = field(default_factory=get_env("EMAIL_INVITATION_TOKEN_EXPIRES_DAYS", 7))
@@ -193,7 +279,7 @@ class AppSettings:
     DEBUG: bool = field(default_factory=get_env("LITESTAR_DEBUG", False))
     """Run `Litestar` with `debug=True`."""
     SECRET_KEY: str = field(
-        default_factory=lambda: os.getenv("SECRET_KEY", binascii.hexlify(os.urandom(32)).decode(encoding="utf-8")),
+        default_factory=lambda: os.getenv("SECRET_KEY", binascii.hexlify(os.urandom(32)).decode(encoding="utf-8"))
     )
     """Application secret key."""
     NAME: str = field(default_factory=get_env("APP_NAME", "app"))
@@ -259,16 +345,26 @@ class Settings:
     @classmethod
     @lru_cache(maxsize=1, typed=True)
     def from_env(cls, dotenv_filename: str = ".env") -> Settings:
+        import structlog
+        from dotenv import load_dotenv
         from litestar.cli._utils import console
 
+        logger = structlog.get_logger()
         env_file = Path(f"{os.curdir}/{dotenv_filename}")
-        if env_file.is_file():
-            from dotenv import load_dotenv
-
+        env_file_exists = env_file.is_file()
+        original_env = os.environ.copy()
+        if env_file_exists:
             console.print(f"[yellow]Loading environment configuration from {dotenv_filename}[/]")
-
-            load_dotenv(env_file, override=True)
-        return Settings()
+            load_dotenv(env_file, override=False)
+        try:
+            settings = Settings()
+        except Exception as e:  # noqa: BLE001
+            logger.fatal("Could not load settings. %s", e)
+            sys.exit(1)
+        finally:
+            os.environ.clear()
+            os.environ.update(original_env)
+        return settings
 
 
 def get_settings(dotenv_filename: str = ".env") -> Settings:

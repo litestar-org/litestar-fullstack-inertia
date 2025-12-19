@@ -8,9 +8,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import ResponsiveNavbar from "@/layouts/partials/responsive-navbar"
 import { isCurrentRoute, route } from "@/lib/generated/routes"
 import { cn, getGravatarUrl, getInitials } from "@/lib/utils"
+import type { FullSharedProps } from "@/lib/generated/page-props"
 
 export default function Navbar() {
-	const { auth } = usePage<InertiaProps>().props
+	const { auth } = usePage<FullSharedProps>().props
 
 	return (
 		<>

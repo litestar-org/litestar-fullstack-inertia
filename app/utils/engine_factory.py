@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any
 
 from litestar.serialization import decode_json, encode_json
@@ -9,6 +10,24 @@ from sqlalchemy.pool import NullPool
 
 if TYPE_CHECKING:
     from app.lib.settings import DatabaseSettings
+
+
+def _clear_sqlalchemy_default_handlers() -> None:
+    """Clear default StreamHandlers that SQLAlchemy adds to its loggers.
+
+    SQLAlchemy adds a StreamHandler(sys.stdout) when echo=True on first log.
+    We want to use only our structlog queue handlers, so we remove any
+    plain StreamHandlers. This preserves our QueueHandler from structlog config.
+    """
+    for logger_name in ("sqlalchemy.engine.Engine", "sqlalchemy.engine", "sqlalchemy.pool"):
+        logger = logging.getLogger(logger_name)
+        # Remove only basic StreamHandlers, not QueueHandlers or other custom handlers
+        handlers_to_remove = [
+            h for h in logger.handlers
+            if type(h) is logging.StreamHandler  # noqa: E721 - exact type match, not subclass
+        ]
+        for handler in handlers_to_remove:
+            logger.removeHandler(handler)
 
 
 def create_sqlalchemy_engine(settings: "DatabaseSettings") -> "AsyncEngine":
@@ -122,5 +141,8 @@ def create_sqlalchemy_engine(settings: "DatabaseSettings") -> "AsyncEngine":
             pool_use_lifo=True,  # use lifo to reduce the number of idle connections
             poolclass=NullPool if settings.POOL_DISABLED else None,
         )
+
+    # Clear any handlers SQLAlchemy added (when echo=True) so only structlog handlers are used
+    _clear_sqlalchemy_default_handlers()
 
     return engine

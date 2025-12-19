@@ -128,7 +128,7 @@ async def current_user_from_session(
 session_auth = SessionAuth[UserModel, ServerSideSessionBackend](
     session_backend_config=session_config,
     retrieve_user_handler=current_user_from_session,
-    exclude=["^/schema", "^/health", "^/login", "^/register", "^/forgot-password", "^/reset-password", "^/o/"],
+    exclude=["^/schema", "^/health", "^/login", "^/register", "^/forgot-password", "^/reset-password", "^/verify-email", "^/o/"],
 )
 github_oauth_callback = OAuth2AuthorizeCallback(github_oauth2_client, route_name="github.complete")
 google_oauth_callback = OAuth2AuthorizeCallback(google_oauth2_client, route_name="google.complete")

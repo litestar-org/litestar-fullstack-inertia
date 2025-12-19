@@ -469,6 +469,17 @@
       ],
       "uri": "/api/users/{user_id}"
     },
+    "verify-email": {
+      "component": "auth/verify-email",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "token": "string | undefined"
+      },
+      "uri": "/verify-email"
+    },
     "vite": {
       "method": "get",
       "methods": [

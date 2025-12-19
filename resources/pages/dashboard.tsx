@@ -3,9 +3,10 @@ import { Container } from "@/components/container"
 import { Header } from "@/components/header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AppLayout } from "@/layouts/app-layout"
+import type { FullSharedProps } from "@/lib/generated/page-props"
 
 export default function Dashboard() {
-	const { auth } = usePage<InertiaProps>().props
+	const { auth } = usePage<FullSharedProps>().props
 	return (
 		<>
 			<Head title="Dashboard" />

@@ -225,7 +225,7 @@ requires-dist = [
     { name = "httpx-oauth", specifier = ">=0.15.0" },
     { name = "litestar", extras = ["jinja", "structlog", "pydantic"], specifier = ">=2.8.3" },
     { name = "litestar-granian", extras = ["uvloop"] },
-    { name = "litestar-vite", editable = "../litestar-vite" },
+    { name = "litestar-vite", specifier = ">=0.15.0rc1" },
     { name = "pwdlib", extras = ["argon2"], specifier = ">=0.2.0" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "sniffio" },
@@ -1577,102 +1577,16 @@ dependencies = [
 [[package]]
 name = "litestar-vite"
 version = "0.15.0rc3"
-source = { editable = "../litestar-vite" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "litestar" },
     { name = "typing-extensions" },
     { name = "websockets" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "h2", marker = "extra == 'http2'", specifier = ">=4.0.0" },
-    { name = "httpx", specifier = ">=0.24.1" },
-    { name = "jinja2", marker = "extra == 'jinja'" },
-    { name = "litestar", specifier = ">=2.7.0" },
-    { name = "nodeenv", marker = "extra == 'nodeenv'" },
-    { name = "typing-extensions" },
-    { name = "websockets", specifier = ">=12.0" },
-]
-provides-extras = ["jinja", "nodeenv", "http2"]
-
-[package.metadata.requires-dev]
-build = [{ name = "bump-my-version" }]
-dev = [
-    { name = "auto-pytabs", extras = ["sphinx"], specifier = ">=0.4.0" },
-    { name = "bump-my-version" },
-    { name = "coverage" },
-    { name = "fsspec" },
-    { name = "httpx", specifier = ">=0.24.1" },
-    { name = "jsx-lexer" },
-    { name = "litestar", extras = ["standard", "cryptography", "jwt", "jinja"] },
-    { name = "litestar-granian", extras = ["uvloop"] },
-    { name = "litestar-sphinx-theme", git = "https://github.com/litestar-org/litestar-sphinx-theme.git?rev=v3" },
-    { name = "mypy", specifier = ">=1.5.1" },
-    { name = "pre-commit", specifier = ">=3.4.0" },
-    { name = "pygments" },
-    { name = "pyright" },
-    { name = "pytest", specifier = ">=7.4.1" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "pytest-mock", specifier = ">=3.11.1" },
-    { name = "pytest-sugar" },
-    { name = "pytest-timeout", specifier = ">=2.0.0" },
-    { name = "pytest-xdist", specifier = ">=3.6.1" },
-    { name = "ruff", specifier = ">=0.0.287" },
-    { name = "slotscheck" },
-    { name = "sniffio" },
-    { name = "sphinx", specifier = ">=7.1.2" },
-    { name = "sphinx-autobuild", specifier = ">=2021.3.14" },
-    { name = "sphinx-click", specifier = ">=4.4.0" },
-    { name = "sphinx-copybutton", specifier = ">=0.5.2" },
-    { name = "sphinx-design", specifier = ">=0.5.0" },
-    { name = "sphinx-paramlinks", specifier = ">=0.6.0" },
-    { name = "sphinx-togglebutton", specifier = ">=0.3.2" },
-    { name = "sphinx-toolbox", specifier = ">=3.5.0" },
-    { name = "sphinxcontrib-mermaid", specifier = ">=0.9.2" },
-    { name = "types-docutils" },
-    { name = "vue-lexer" },
-]
-docs = [
-    { name = "auto-pytabs", extras = ["sphinx"], specifier = ">=0.4.0" },
-    { name = "jsx-lexer" },
-    { name = "litestar-sphinx-theme", git = "https://github.com/litestar-org/litestar-sphinx-theme.git?rev=v3" },
-    { name = "pygments" },
-    { name = "sphinx", specifier = ">=7.1.2" },
-    { name = "sphinx-autobuild", specifier = ">=2021.3.14" },
-    { name = "sphinx-click", specifier = ">=4.4.0" },
-    { name = "sphinx-copybutton", specifier = ">=0.5.2" },
-    { name = "sphinx-design", specifier = ">=0.5.0" },
-    { name = "sphinx-paramlinks", specifier = ">=0.6.0" },
-    { name = "sphinx-togglebutton", specifier = ">=0.3.2" },
-    { name = "sphinx-toolbox", specifier = ">=3.5.0" },
-    { name = "sphinxcontrib-mermaid", specifier = ">=0.9.2" },
-    { name = "vue-lexer" },
-]
-linting = [
-    { name = "mypy", specifier = ">=1.5.1" },
-    { name = "pre-commit", specifier = ">=3.4.0" },
-    { name = "pyright" },
-    { name = "ruff", specifier = ">=0.0.287" },
-    { name = "slotscheck" },
-    { name = "types-docutils" },
-]
-test = [
-    { name = "coverage" },
-    { name = "fsspec" },
-    { name = "httpx", specifier = ">=0.24.1" },
-    { name = "litestar", extras = ["standard", "cryptography", "jwt", "jinja"] },
-    { name = "litestar-granian", extras = ["uvloop"] },
-    { name = "pytest", specifier = ">=7.4.1" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "pytest-mock", specifier = ">=3.11.1" },
-    { name = "pytest-sugar" },
-    { name = "pytest-timeout", specifier = ">=2.0.0" },
-    { name = "pytest-xdist", specifier = ">=3.6.1" },
-    { name = "sniffio" },
+sdist = { url = "https://files.pythonhosted.org/packages/89/d2/d4e44c5d29dc2c2c6a0a31f9a509d45baa1aa17e5ae11503fb2fef9e60b5/litestar_vite-0.15.0rc3.tar.gz", hash = "sha256:6791d431d9b87632175a4124f5ef21a509138a4c09aa92b788d8070c7ca3dc74", size = 324928, upload-time = "2025-12-19T18:38:27.911Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9b/50/c33da308a551d1c4221d796430f04021203f96d41faf39c0c507a3dc129e/litestar_vite-0.15.0rc3-py3-none-any.whl", hash = "sha256:78f5e7089f795d730b01e69f0d85a5cc864a07f2d18229dd5aed191db1bf75fe", size = 207505, upload-time = "2025-12-19T18:38:26.166Z" },
 ]
 
 [[package]]

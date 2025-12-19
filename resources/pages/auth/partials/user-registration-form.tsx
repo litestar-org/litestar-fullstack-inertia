@@ -10,9 +10,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import type { FlashMessages } from "@/lib/generated/page-props"
 import { route } from "@/lib/generated/routes"
 import { cn } from "@/lib/utils"
-import type { FlashMessages } from "@/types"
 
 interface UserRegistrationFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 const formSchema = z.object({
@@ -26,15 +26,17 @@ const formSchema = z.object({
 type FormProps = z.infer<typeof formSchema>
 
 export default function UserRegistrationForm({ className, ...props }: UserRegistrationFormProps) {
-	const { content, flash, githubOAuthEnabled, googleOAuthEnabled } = usePage<{
+	// In Inertia v2, flash is at the page level, not in props
+	const page = usePage<{
 		content: {
 			status_code: number
 			message: string
 		}
-		flash: FlashMessages
 		githubOAuthEnabled: boolean
 		googleOAuthEnabled: boolean
-	}>().props
+	}>()
+	const { content, githubOAuthEnabled, googleOAuthEnabled } = page.props
+	const flash = page.flash as FlashMessages | undefined
 	const hasOAuthProviders = githubOAuthEnabled || googleOAuthEnabled
 	const [isLoading, setIsLoading] = useState<boolean>(false)
 	const form = useForm<FormProps>({

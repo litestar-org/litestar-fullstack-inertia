@@ -89,8 +89,6 @@ test = [
 app = "app.__init__:run_cli"
 fullstack = "app.__init__:run_cli"
 
-[tool.uv.sources]
-litestar-vite = { path = "../litestar-vite", editable = true }
 
 [build-system]
 build-backend = "hatchling.build"

@@ -46,6 +46,11 @@
       "route": "/reset-password",
       "tsType": "PasswordResetToken"
     },
+    "auth/verify-email": {
+      "handler": "verify_email",
+      "propsType": "any",
+      "route": "/verify-email"
+    },
     "dashboard": {
       "customTypes": [
         "NoProps"

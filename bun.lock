@@ -33,7 +33,7 @@
         "@biomejs/biome": "^2.3.10",
         "@headlessui/react": "^2.2.9",
         "@hey-api/openapi-ts": "^0.88.2",
-        "@inertiajs/react": "^2.3.3",
+        "@inertiajs/react": "^2.3.4",
         "@tailwindcss/vite": "^4.1.18",
         "@types/md5": "^2.3.6",
         "@types/node": "^24.10.4",
@@ -183,9 +183,9 @@
 
     "@hookform/resolvers": ["@hookform/resolvers@5.2.2", "", { "dependencies": { "@standard-schema/utils": "^0.3.0" }, "peerDependencies": { "react-hook-form": "^7.55.0" } }, "sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA=="],
 
-    "@inertiajs/core": ["@inertiajs/core@2.3.3", "", { "dependencies": { "@types/lodash-es": "^4.17.12", "axios": "^1.13.2", "laravel-precognition": "^1.0.0", "lodash-es": "^4.17.21", "qs": "^6.14.0" } }, "sha512-EOWWMlSdcHs7OVTBgpFhhxmM1Yin44qMZaCK/AKPKxJtTCECm8VaURXRYAo8L5/1MczWpgepWDPqvguUC4u/uQ=="],
+    "@inertiajs/core": ["@inertiajs/core@2.3.4", "", { "dependencies": { "@types/lodash-es": "^4.17.12", "axios": "^1.13.2", "laravel-precognition": "^1.0.0", "lodash-es": "^4.17.21", "qs": "^6.14.0" } }, "sha512-wSkSLL/8+oZigUZIxyd0mizHKxu/C0V7hUyNz+siFeaVSeLkOUU51OxihqLr9Y9gtN9gFGSmhihNjdXkOedDTw=="],
 
-    "@inertiajs/react": ["@inertiajs/react@2.3.3", "", { "dependencies": { "@inertiajs/core": "2.3.3", "@types/lodash-es": "^4.17.12", "laravel-precognition": "^1.0.0", "lodash-es": "^4.17.21" }, "peerDependencies": { "react": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-vxlnXDLa1+aOiTEYRP7NfNUKkDsHMiT8z52XWSPmk88c3Ml0SqJ2R1Id6ks5j5YsYcLrSZMsxzVzO7+JUCkGUg=="],
+    "@inertiajs/react": ["@inertiajs/react@2.3.4", "", { "dependencies": { "@inertiajs/core": "2.3.4", "@types/lodash-es": "^4.17.12", "laravel-precognition": "^1.0.0", "lodash-es": "^4.17.21" }, "peerDependencies": { "react": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-nQPYuUodqRjCdWmKYkthzUFFcDJM32WzG5vzvmELO/6ovwv2VO4x2m5eDvFBJ8KGsUEv7eHD8jdo1tnGAQx1Ng=="],
 
     "@isaacs/cliui": ["@isaacs/cliui@8.0.2", "", { "dependencies": { "string-width": "^5.1.2", "string-width-cjs": "npm:string-width@^4.2.0", "strip-ansi": "^7.0.1", "strip-ansi-cjs": "npm:strip-ansi@^6.0.1", "wrap-ansi": "^8.1.0", "wrap-ansi-cjs": "npm:wrap-ansi@^7.0.0" } }, "sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA=="],
 
