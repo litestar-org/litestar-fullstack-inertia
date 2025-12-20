@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import secrets
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 from uuid import UUID  # noqa: TC003
 
+import pyotp
 from advanced_alchemy.service import (
     ModelDictT,
     SQLAlchemyAsyncRepositoryService,
@@ -15,6 +17,8 @@ from advanced_alchemy.service import (
     schema_dump,
 )
 from litestar.exceptions import NotAuthorizedException, PermissionDeniedException
+from pwdlib import PasswordHash
+from sqlalchemy.orm import undefer_group
 
 from app.db.models import EmailToken, Role, TokenType, User, UserOauthAccount, UserRole
 from app.domain.accounts.repositories import (
@@ -28,6 +32,42 @@ from app.lib import crypt
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
+
+_password_hash = PasswordHash.recommended()
+
+
+def verify_totp_code(secret: str, code: str) -> bool:
+    """Verify a TOTP code against the secret."""
+    totp = pyotp.TOTP(secret)
+    return totp.verify(code)
+
+
+def verify_backup_code(code: str, hashed_codes: list[str]) -> int | None:
+    """Verify a backup code and return its index if valid.
+
+    Returns:
+        Index of the used code, or None if invalid.
+    """
+    for i, hashed_code in enumerate(hashed_codes):
+        if _password_hash.verify(code.upper(), hashed_code):
+            return i
+    return None
+
+
+@dataclass
+class MfaVerifyResult:
+    """Result of MFA verification attempt."""
+
+    user: User
+    """The user being verified."""
+    verified: bool
+    """Whether the MFA code was valid."""
+    mfa_disabled: bool = False
+    """True if MFA was found to be disabled (user can proceed without verification)."""
+    used_backup_code: bool = False
+    """True if a backup code was used instead of TOTP."""
+    remaining_backup_codes: int = 0
+    """Number of backup codes remaining after this verification."""
 
 
 class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
@@ -88,9 +128,9 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
             NotAuthorizedException: Raised when the user doesn't exist, isn't verified, or is not active.
 
         Returns:
-            User: The user object
+            User: The user object with credentials loaded.
         """
-        db_obj = await self.get_one_or_none(email=username)
+        db_obj = await self.get_one_or_none(email=username, load=[undefer_group("security_sensitive")])
         if db_obj is None:
             msg = "User not found or password invalid"
             raise NotAuthorizedException(detail=msg)
@@ -112,22 +152,27 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
 
         Args:
             data: Dict containing current_password and new_password.
-            db_obj: User database object.
+            db_obj: User database object (credentials will be loaded if needed).
 
         Raises:
             PermissionDeniedException: If current password is invalid or user inactive.
         """
-        if db_obj.hashed_password is None:
+        # Re-fetch user with credentials since db_obj may have deferred columns
+        user_with_creds = await self.get_one_or_none(id=db_obj.id, load=[undefer_group("security_sensitive")])
+        if user_with_creds is None:
             msg = "User not found or password invalid."
             raise PermissionDeniedException(detail=msg)
-        if not await crypt.verify_password(data["current_password"], db_obj.hashed_password):
+        if user_with_creds.hashed_password is None:
             msg = "User not found or password invalid."
             raise PermissionDeniedException(detail=msg)
-        if not db_obj.is_active:
+        if not await crypt.verify_password(data["current_password"], user_with_creds.hashed_password):
+            msg = "User not found or password invalid."
+            raise PermissionDeniedException(detail=msg)
+        if not user_with_creds.is_active:
             msg = "User account is not active"
             raise PermissionDeniedException(detail=msg)
-        db_obj.hashed_password = await crypt.get_password_hash(data["new_password"])
-        await self.repository.update(db_obj)
+        user_with_creds.hashed_password = await crypt.get_password_hash(data["new_password"])
+        await self.repository.update(user_with_creds)
 
     async def reset_password(self, new_password: str, db_obj: User) -> None:
         """Reset user password without current password verification.
@@ -146,6 +191,64 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
             raise PermissionDeniedException(detail=msg)
         db_obj.hashed_password = await crypt.get_password_hash(new_password)
         await self.repository.update(db_obj)
+
+    async def verify_mfa(
+        self,
+        email: str,
+        code: str | None = None,
+        recovery_code: str | None = None,
+    ) -> MfaVerifyResult:
+        """Verify MFA code or recovery code for a user.
+
+        Loads user credentials, verifies TOTP or backup code, and consumes
+        the backup code if used.
+
+        Args:
+            email: User's email address.
+            code: TOTP code from authenticator app.
+            recovery_code: Backup recovery code.
+
+        Raises:
+            PermissionDeniedException: If user not found.
+
+        Returns:
+            MfaVerifyResult with verification status and details.
+        """
+        user = await self.get_one_or_none(
+            email=email,
+            load=[undefer_group("security_sensitive")],
+        )
+        if not user:
+            msg = "User not found"
+            raise PermissionDeniedException(detail=msg)
+
+        # Check if MFA is actually enabled
+        if not user.totp_secret or not user.is_two_factor_enabled:
+            return MfaVerifyResult(user=user, verified=True, mfa_disabled=True)
+
+        # Try TOTP code first
+        if code and verify_totp_code(user.totp_secret, code):
+            return MfaVerifyResult(user=user, verified=True)
+
+        # Try recovery code
+        if recovery_code and user.backup_codes:
+            code_index = verify_backup_code(recovery_code, user.backup_codes)
+            if code_index is not None:
+                # Consume the backup code
+                updated_codes = user.backup_codes.copy()
+                updated_codes.pop(code_index)
+                await self.update(
+                    item_id=user.id,
+                    data={"backup_codes": updated_codes or None},
+                )
+                return MfaVerifyResult(
+                    user=user,
+                    verified=True,
+                    used_backup_code=True,
+                    remaining_backup_codes=len(updated_codes),
+                )
+
+        return MfaVerifyResult(user=user, verified=False)
 
     @staticmethod
     async def has_role_id(db_obj: User, role_id: UUID) -> bool:
@@ -174,7 +277,7 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
         """
         return bool(
             user.is_superuser
-            or any(assigned_role.role.name for assigned_role in user.roles if assigned_role.role.name in {"Superuser"}),
+            or any(assigned_role.role.name for assigned_role in user.roles if assigned_role.role.name == "Superuser"),
         )
 
 
@@ -252,6 +355,17 @@ class EmailTokenService(SQLAlchemyAsyncRepositoryService[EmailToken, EmailTokenR
         """
         return secrets.token_urlsafe(32)
 
+    async def to_model_on_create(self, data: ModelDictT[EmailToken]) -> ModelDictT[EmailToken]:
+        """Auto-hash token if plain token is provided.
+
+        Returns:
+            Token data with hashed token.
+        """
+        data = schema_dump(data)
+        if is_dict_with_field(data, "token") and is_dict_without_field(data, "token_hash"):
+            data["token_hash"] = self._hash_token(data.pop("token"))
+        return data
+
     async def create_token(
         self,
         email: str,
@@ -272,7 +386,7 @@ class EmailTokenService(SQLAlchemyAsyncRepositoryService[EmailToken, EmailTokenR
             {
                 "email": email,
                 "token_type": token_type,
-                "token_hash": self._hash_token(token),
+                "token": token,  # to_model_on_create hashes this
                 "expires_at": datetime.now(UTC) + expires_delta,
                 "user_id": user_id,
                 "ip_address": ip_address,

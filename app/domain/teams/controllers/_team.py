@@ -13,7 +13,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload, selectinload
 
 from app.db.models import Team as TeamModel
-from app.db.models import TeamInvitation as TeamInvitationModel
 from app.db.models import TeamMember, TeamRoles
 from app.db.models import User as UserModel
 from app.db.models.team_member import TeamMember as TeamMemberModel
@@ -32,7 +31,7 @@ from app.domain.teams.schemas import (
     TeamPermissions,
     TeamUpdate,
 )
-from app.domain.teams.services import TeamInvitationService, TeamService
+from app.domain.teams.services import TeamService
 from app.lib.schema import NoProps
 
 if TYPE_CHECKING:
@@ -209,11 +208,12 @@ class TeamController(Controller):
         guards=[requires_team_admin],
         path="/teams/{team_slug:str}/settings/",
         dependencies={
-            "team_invitations_service": create_service_provider(
-                TeamInvitationService,
+            "teams_service": create_service_provider(
+                TeamService,
                 load=[
-                    joinedload(TeamInvitationModel.team),
-                    joinedload(TeamInvitationModel.invited_by),
+                    selectinload(TeamModel.tags),
+                    selectinload(TeamModel.members).options(joinedload(TeamMember.user, innerjoin=True)),
+                    selectinload(TeamModel.pending_invitations),
                 ],
             ),
         },
@@ -222,7 +222,6 @@ class TeamController(Controller):
         self,
         request: Request,
         teams_service: TeamService,
-        team_invitations_service: TeamInvitationService,
         current_user: UserModel,
         team_slug: Annotated[str, Parameter(title="Team Slug", description="The team slug.")],
     ) -> TeamDetailPage:
@@ -237,8 +236,6 @@ class TeamController(Controller):
         membership = next((m for m in db_obj.members if m.user_id == current_user.id), None)
         is_owner = bool(membership and membership.is_owner)
         is_admin = is_owner or bool(membership and membership.role == TeamRoles.ADMIN)
-
-        invitations = await team_invitations_service.get_pending_for_team(db_obj.id)
 
         return TeamDetailPage(
             team=TeamDetail(
@@ -268,7 +265,7 @@ class TeamController(Controller):
                     expires_at=inv.expires_at,
                     is_expired=inv.is_expired,
                 )
-                for inv in invitations
+                for inv in db_obj.pending_invitations
             ],
             permissions=TeamPermissions(
                 can_add_team_members=is_admin,

@@ -34,6 +34,12 @@ export type RouteName =
   | 'login'
   | 'login.check'
   | 'logout'
+  | 'mfa-challenge'
+  | 'mfa-challenge.verify'
+  | 'mfa.confirm'
+  | 'mfa.disable'
+  | 'mfa.enable'
+  | 'mfa.regenerate-codes'
   | 'openapi.json'
   | 'password.update'
   | 'privacy-policy'
@@ -98,6 +104,12 @@ export interface RoutePathParams {
   'login': Record<string, never>;
   'login.check': Record<string, never>;
   'logout': Record<string, never>;
+  'mfa-challenge': Record<string, never>;
+  'mfa-challenge.verify': Record<string, never>;
+  'mfa.confirm': Record<string, never>;
+  'mfa.disable': Record<string, never>;
+  'mfa.enable': Record<string, never>;
+  'mfa.regenerate-codes': Record<string, never>;
   'openapi.json': Record<string, never>;
   'password.update': Record<string, never>;
   'privacy-policy': Record<string, never>;
@@ -204,6 +216,12 @@ export interface RouteQueryParams {
   'login': Record<string, never>;
   'login.check': Record<string, never>;
   'logout': Record<string, never>;
+  'mfa-challenge': Record<string, never>;
+  'mfa-challenge.verify': Record<string, never>;
+  'mfa.confirm': Record<string, never>;
+  'mfa.disable': Record<string, never>;
+  'mfa.enable': Record<string, never>;
+  'mfa.regenerate-codes': Record<string, never>;
   'openapi.json': Record<string, never>;
   'password.update': Record<string, never>;
   'privacy-policy': Record<string, never>;
@@ -429,6 +447,50 @@ export const routeDefinitions = {
   },
   'logout': {
     path: '/logout',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: [] as const,
+    queryParams: [] as const,
+  },
+  'mfa-challenge': {
+    path: '/mfa-challenge',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: [] as const,
+    queryParams: [] as const,
+    component: 'auth/mfa-challenge',
+  },
+  'mfa-challenge.verify': {
+    path: '/mfa-challenge',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: [] as const,
+    queryParams: [] as const,
+    component: 'auth/mfa-challenge',
+  },
+  'mfa.confirm': {
+    path: '/mfa/confirm',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: [] as const,
+    queryParams: [] as const,
+  },
+  'mfa.disable': {
+    path: '/mfa/disable',
+    methods: ['DELETE'] as const,
+    method: 'delete',
+    pathParams: [] as const,
+    queryParams: [] as const,
+  },
+  'mfa.enable': {
+    path: '/mfa/enable',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: [] as const,
+    queryParams: [] as const,
+  },
+  'mfa.regenerate-codes': {
+    path: '/mfa/regenerate-codes',
     methods: ['POST'] as const,
     method: 'post',
     pathParams: [] as const,

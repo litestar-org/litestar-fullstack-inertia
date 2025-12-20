@@ -28,6 +28,15 @@
       "route": "/login",
       "tsType": "NoProps"
     },
+    "auth/mfa-challenge": {
+      "customTypes": [
+        "NoProps"
+      ],
+      "handler": "show_challenge",
+      "propsType": "NoProps",
+      "route": "/mfa-challenge",
+      "tsType": "NoProps"
+    },
     "auth/register": {
       "customTypes": [
         "NoProps"

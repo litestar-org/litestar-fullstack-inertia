@@ -6,6 +6,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 import pytest
+from sqlalchemy.orm import undefer_group
 
 from app.db.models import TokenType
 from app.domain.accounts.services import EmailTokenService, UserService
@@ -32,16 +33,9 @@ async def test_forgot_password_submit_existing_email(client: "AsyncClient") -> N
     response = await client.get("/forgot-password/")
     csrf_token: str = response.cookies.get("XSRF-TOKEN") or ""
 
-    headers = {
-        "X-XSRF-TOKEN": csrf_token,
-        "Content-Type": "application/json",
-    }
+    headers = {"X-XSRF-TOKEN": csrf_token, "Content-Type": "application/json"}
 
-    response = await client.post(
-        "/forgot-password/",
-        json={"email": "user@example.com"},
-        headers=headers,
-    )
+    response = await client.post("/forgot-password/", json={"email": "user@example.com"}, headers=headers)
     # Should succeed (we don't reveal if email exists)
     assert response.status_code == 200
 
@@ -54,16 +48,9 @@ async def test_forgot_password_submit_nonexistent_email(client: "AsyncClient") -
     response = await client.get("/forgot-password/")
     csrf_token: str = response.cookies.get("XSRF-TOKEN") or ""
 
-    headers = {
-        "X-XSRF-TOKEN": csrf_token,
-        "Content-Type": "application/json",
-    }
+    headers = {"X-XSRF-TOKEN": csrf_token, "Content-Type": "application/json"}
 
-    response = await client.post(
-        "/forgot-password/",
-        json={"email": "nonexistent@example.com"},
-        headers=headers,
-    )
+    response = await client.post("/forgot-password/", json={"email": "nonexistent@example.com"}, headers=headers)
     # Should still succeed to prevent enumeration
     assert response.status_code == 200
 
@@ -78,62 +65,45 @@ async def test_reset_password_page_without_token(client: "AsyncClient") -> None:
 async def test_reset_password_page_with_invalid_token(client: "AsyncClient") -> None:
     """Reset password page with invalid token should redirect."""
     response = await client.get(
-        "/reset-password/",
-        params={"token": "invalid-token", "email": "user@example.com"},
-        follow_redirects=False,
+        "/reset-password/", params={"token": "invalid-token", "email": "user@example.com"}, follow_redirects=False,
     )
     # Should redirect since token is invalid (307 is Inertia's redirect status)
     assert response.status_code in (302, 303, 307)
 
 
 async def test_reset_password_page_with_valid_token(
-    client: "AsyncClient",
-    sessionmaker: "async_sessionmaker[AsyncSession]",
+    client: "AsyncClient", sessionmaker: "async_sessionmaker[AsyncSession]",
 ) -> None:
     """Reset password page with valid token should show the form."""
     async with sessionmaker() as session:
         token_service = EmailTokenService(session=session)
         _, plain_token = await token_service.create_token(
-            email="user@example.com",
-            token_type=TokenType.PASSWORD_RESET,
-            expires_delta=timedelta(hours=1),
+            email="user@example.com", token_type=TokenType.PASSWORD_RESET, expires_delta=timedelta(hours=1),
         )
         await session.commit()
 
-    response = await client.get(
-        "/reset-password/",
-        params={"token": plain_token, "email": "user@example.com"},
-    )
+    response = await client.get("/reset-password/", params={"token": plain_token, "email": "user@example.com"})
     # Should return 200 with the reset form (not redirect)
     assert response.status_code == 200
 
 
 async def test_reset_password_complete_flow(
-    client: "AsyncClient",
-    sessionmaker: "async_sessionmaker[AsyncSession]",
+    client: "AsyncClient", sessionmaker: "async_sessionmaker[AsyncSession]",
 ) -> None:
     """Full password reset flow: create token, submit new password, verify change."""
     # Create a password reset token
     async with sessionmaker() as session:
         token_service = EmailTokenService(session=session)
         _, plain_token = await token_service.create_token(
-            email="user@example.com",
-            token_type=TokenType.PASSWORD_RESET,
-            expires_delta=timedelta(hours=1),
+            email="user@example.com", token_type=TokenType.PASSWORD_RESET, expires_delta=timedelta(hours=1),
         )
         await session.commit()
 
     # Get CSRF token from the reset page
-    response = await client.get(
-        "/reset-password/",
-        params={"token": plain_token, "email": "user@example.com"},
-    )
+    response = await client.get("/reset-password/", params={"token": plain_token, "email": "user@example.com"})
     csrf_token: str = response.cookies.get("XSRF-TOKEN") or ""
 
-    headers = {
-        "X-XSRF-TOKEN": csrf_token,
-        "Content-Type": "application/json",
-    }
+    headers = {"X-XSRF-TOKEN": csrf_token, "Content-Type": "application/json"}
 
     # Submit the new password
     new_password = "NewSecurePassword123!"
@@ -163,8 +133,7 @@ async def test_reset_password_complete_flow(
 
 
 async def test_reset_password_with_expired_token(
-    client: "AsyncClient",
-    sessionmaker: "async_sessionmaker[AsyncSession]",
+    client: "AsyncClient", sessionmaker: "async_sessionmaker[AsyncSession]",
 ) -> None:
     """Password reset with expired token should fail."""
     async with sessionmaker() as session:
@@ -180,10 +149,7 @@ async def test_reset_password_with_expired_token(
     response = await client.get("/forgot-password/")
     csrf_token: str = response.cookies.get("XSRF-TOKEN") or ""
 
-    headers = {
-        "X-XSRF-TOKEN": csrf_token,
-        "Content-Type": "application/json",
-    }
+    headers = {"X-XSRF-TOKEN": csrf_token, "Content-Type": "application/json"}
 
     response = await client.post(
         "/reset-password/",
@@ -196,30 +162,21 @@ async def test_reset_password_with_expired_token(
 
 
 async def test_reset_password_token_can_only_be_used_once(
-    client: "AsyncClient",
-    sessionmaker: "async_sessionmaker[AsyncSession]",
+    client: "AsyncClient", sessionmaker: "async_sessionmaker[AsyncSession]",
 ) -> None:
     """Password reset token should only work once."""
     async with sessionmaker() as session:
         token_service = EmailTokenService(session=session)
         _, plain_token = await token_service.create_token(
-            email="user@example.com",
-            token_type=TokenType.PASSWORD_RESET,
-            expires_delta=timedelta(hours=1),
+            email="user@example.com", token_type=TokenType.PASSWORD_RESET, expires_delta=timedelta(hours=1),
         )
         await session.commit()
 
     # Get CSRF token
-    response = await client.get(
-        "/reset-password/",
-        params={"token": plain_token, "email": "user@example.com"},
-    )
+    response = await client.get("/reset-password/", params={"token": plain_token, "email": "user@example.com"})
     csrf_token: str = response.cookies.get("XSRF-TOKEN") or ""
 
-    headers = {
-        "X-XSRF-TOKEN": csrf_token,
-        "Content-Type": "application/json",
-    }
+    headers = {"X-XSRF-TOKEN": csrf_token, "Content-Type": "application/json"}
 
     # First use should succeed
     response = await client.post(
@@ -245,18 +202,14 @@ async def test_reset_password_token_can_only_be_used_once(
 # Email Token Service Tests
 
 
-async def test_email_token_create_and_validate(
-    sessionmaker: "async_sessionmaker[AsyncSession]",
-) -> None:
+async def test_email_token_create_and_validate(sessionmaker: "async_sessionmaker[AsyncSession]") -> None:
     """Token can be created and validated."""
     async with sessionmaker() as session:
         service = EmailTokenService(session=session)
 
         # Create token
         token_record, plain_token = await service.create_token(
-            email="user@example.com",
-            token_type=TokenType.PASSWORD_RESET,
-            expires_delta=timedelta(hours=1),
+            email="user@example.com", token_type=TokenType.PASSWORD_RESET, expires_delta=timedelta(hours=1),
         )
 
         assert token_record is not None
@@ -266,92 +219,64 @@ async def test_email_token_create_and_validate(
         assert token_record.is_valid is True
 
         # Validate token
-        validated = await service.validate_token(
-            plain_token=plain_token,
-            token_type=TokenType.PASSWORD_RESET,
-        )
+        validated = await service.validate_token(plain_token=plain_token, token_type=TokenType.PASSWORD_RESET)
 
         assert validated is not None
         assert validated.id == token_record.id
 
 
-async def test_email_token_validate_wrong_type(
-    sessionmaker: "async_sessionmaker[AsyncSession]",
-) -> None:
+async def test_email_token_validate_wrong_type(sessionmaker: "async_sessionmaker[AsyncSession]") -> None:
     """Token validation fails with wrong token type."""
     async with sessionmaker() as session:
         service = EmailTokenService(session=session)
 
         # Create password reset token
         _, plain_token = await service.create_token(
-            email="user@example.com",
-            token_type=TokenType.PASSWORD_RESET,
-            expires_delta=timedelta(hours=1),
+            email="user@example.com", token_type=TokenType.PASSWORD_RESET, expires_delta=timedelta(hours=1),
         )
 
         # Try to validate as email verification token
-        validated = await service.validate_token(
-            plain_token=plain_token,
-            token_type=TokenType.EMAIL_VERIFICATION,
-        )
+        validated = await service.validate_token(plain_token=plain_token, token_type=TokenType.EMAIL_VERIFICATION)
 
         assert validated is None
 
 
-async def test_email_token_validate_wrong_email(
-    sessionmaker: "async_sessionmaker[AsyncSession]",
-) -> None:
+async def test_email_token_validate_wrong_email(sessionmaker: "async_sessionmaker[AsyncSession]") -> None:
     """Token validation fails with wrong email."""
     async with sessionmaker() as session:
         service = EmailTokenService(session=session)
 
         _, plain_token = await service.create_token(
-            email="user@example.com",
-            token_type=TokenType.PASSWORD_RESET,
-            expires_delta=timedelta(hours=1),
+            email="user@example.com", token_type=TokenType.PASSWORD_RESET, expires_delta=timedelta(hours=1),
         )
 
         validated = await service.validate_token(
-            plain_token=plain_token,
-            token_type=TokenType.PASSWORD_RESET,
-            email="other@example.com",
+            plain_token=plain_token, token_type=TokenType.PASSWORD_RESET, email="other@example.com",
         )
 
         assert validated is None
 
 
-async def test_email_token_consume(
-    sessionmaker: "async_sessionmaker[AsyncSession]",
-) -> None:
+async def test_email_token_consume(sessionmaker: "async_sessionmaker[AsyncSession]") -> None:
     """Token can be consumed only once."""
     async with sessionmaker() as session:
         service = EmailTokenService(session=session)
 
         _, plain_token = await service.create_token(
-            email="user@example.com",
-            token_type=TokenType.PASSWORD_RESET,
-            expires_delta=timedelta(hours=1),
+            email="user@example.com", token_type=TokenType.PASSWORD_RESET, expires_delta=timedelta(hours=1),
         )
 
         # First consume should succeed
-        consumed = await service.consume_token(
-            plain_token=plain_token,
-            token_type=TokenType.PASSWORD_RESET,
-        )
+        consumed = await service.consume_token(plain_token=plain_token, token_type=TokenType.PASSWORD_RESET)
         assert consumed is not None
         assert consumed.used_at is not None
 
         # Second consume should fail
-        consumed_again = await service.consume_token(
-            plain_token=plain_token,
-            token_type=TokenType.PASSWORD_RESET,
-        )
+        consumed_again = await service.consume_token(plain_token=plain_token, token_type=TokenType.PASSWORD_RESET)
         assert consumed_again is None
 
 
-async def test_email_token_expired(
-    sessionmaker: "async_sessionmaker[AsyncSession]",
-) -> None:
+async def test_email_token_expired(sessionmaker: "async_sessionmaker[AsyncSession]") -> None:
     """Expired token cannot be validated."""
     async with sessionmaker() as session:
         service = EmailTokenService(session=session)
@@ -366,37 +291,25 @@ async def test_email_token_expired(
         # Token should exist but not be valid
         assert token_record is not None
 
-        validated = await service.validate_token(
-            plain_token=plain_token,
-            token_type=TokenType.PASSWORD_RESET,
-        )
+        validated = await service.validate_token(plain_token=plain_token, token_type=TokenType.PASSWORD_RESET)
         assert validated is None
 
 
-async def test_email_token_invalidate_existing(
-    sessionmaker: "async_sessionmaker[AsyncSession]",
-) -> None:
+async def test_email_token_invalidate_existing(sessionmaker: "async_sessionmaker[AsyncSession]") -> None:
     """Can invalidate all existing tokens of a type for an email."""
     async with sessionmaker() as session:
         service = EmailTokenService(session=session)
 
         # Create multiple tokens
         _, token1 = await service.create_token(
-            email="user@example.com",
-            token_type=TokenType.PASSWORD_RESET,
-            expires_delta=timedelta(hours=1),
+            email="user@example.com", token_type=TokenType.PASSWORD_RESET, expires_delta=timedelta(hours=1),
         )
         _, token2 = await service.create_token(
-            email="user@example.com",
-            token_type=TokenType.PASSWORD_RESET,
-            expires_delta=timedelta(hours=1),
+            email="user@example.com", token_type=TokenType.PASSWORD_RESET, expires_delta=timedelta(hours=1),
         )
 
         # Invalidate all
-        count = await service.invalidate_existing_tokens(
-            email="user@example.com",
-            token_type=TokenType.PASSWORD_RESET,
-        )
+        count = await service.invalidate_existing_tokens(email="user@example.com", token_type=TokenType.PASSWORD_RESET)
         assert count == 2
 
         # Both tokens should now be invalid
@@ -404,9 +317,7 @@ async def test_email_token_invalidate_existing(
         assert await service.validate_token(token2, TokenType.PASSWORD_RESET) is None
 
 
-async def test_email_token_with_metadata(
-    sessionmaker: "async_sessionmaker[AsyncSession]",
-) -> None:
+async def test_email_token_with_metadata(sessionmaker: "async_sessionmaker[AsyncSession]") -> None:
     """Token can store additional metadata."""
     async with sessionmaker() as session:
         service = EmailTokenService(session=session)
@@ -428,30 +339,28 @@ async def test_email_token_with_metadata(
 # User Service Password Reset Tests
 
 
-async def test_user_service_reset_password(
-    sessionmaker: "async_sessionmaker[AsyncSession]",
-) -> None:
+async def test_user_service_reset_password(sessionmaker: "async_sessionmaker[AsyncSession]") -> None:
     """User password can be reset without knowing current password."""
     async with sessionmaker() as session:
         users_service = UserService(session=session)
 
-        # Get a user
-        user = await users_service.get_one_or_none(email="user@example.com")
+        # Get a user with credentials loaded (hashed_password is deferred)
+        user = await users_service.get_one_or_none(email="user@example.com", load=[undefer_group("security_sensitive")])
         assert user is not None
         old_hash = user.hashed_password
 
         # Reset password
         await users_service.reset_password("NewPassword123!", db_obj=user)
 
-        # Verify password changed
-        user_refreshed = await users_service.get_one_or_none(email="user@example.com")
+        # Verify password changed (load credentials for comparison)
+        user_refreshed = await users_service.get_one_or_none(
+            email="user@example.com", load=[undefer_group("security_sensitive")],
+        )
         assert user_refreshed is not None
         assert user_refreshed.hashed_password != old_hash
 
 
-async def test_user_service_reset_password_inactive_user(
-    sessionmaker: "async_sessionmaker[AsyncSession]",
-) -> None:
+async def test_user_service_reset_password_inactive_user(sessionmaker: "async_sessionmaker[AsyncSession]") -> None:
     """Cannot reset password for inactive user."""
     from litestar.exceptions import PermissionDeniedException
 

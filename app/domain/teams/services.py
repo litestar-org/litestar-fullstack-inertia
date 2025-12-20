@@ -90,7 +90,8 @@ class TeamService(SQLAlchemyAsyncRepositoryService[Team, TeamRepository]):
 
         if operation == "create":
             data.members.append(
-                TeamMember(user=owner, role=TeamRoles.ADMIN, is_owner=True) if owner
+                TeamMember(user=owner, role=TeamRoles.ADMIN, is_owner=True)
+                if owner
                 else TeamMember(user_id=owner_id, role=TeamRoles.ADMIN, is_owner=True),
             )
 
@@ -100,7 +101,8 @@ class TeamService(SQLAlchemyAsyncRepositoryService[Team, TeamRepository]):
                 data.tags.remove(tag)
             data.tags.extend([
                 await Tag.as_unique_async(self.repository.session, name=name, slug=slugify(name))
-                for name in input_tags if name not in existing
+                for name in input_tags
+                if name not in existing
             ])
 
         return data
@@ -129,6 +131,15 @@ class TeamInvitationService(SQLAlchemyAsyncRepositoryService[TeamInvitation, Tea
 
     repository_type = TeamInvitationRepository
 
+    @staticmethod
+    def _hash_token(token: str) -> str:
+        """Hash a token using SHA-256.
+
+        Returns:
+            Hexadecimal digest of the hashed token.
+        """
+        return hashlib.sha256(token.encode()).hexdigest()
+
     def _not_expired_filter(self) -> ColumnElement[bool]:
         """SQLAlchemy filter for non-expired invitations.
 
@@ -136,6 +147,21 @@ class TeamInvitationService(SQLAlchemyAsyncRepositoryService[TeamInvitation, Tea
             Column expression filtering for invitations with no expiry or future expiry.
         """
         return or_(TeamInvitation.expires_at.is_(None), TeamInvitation.expires_at > datetime.now(UTC))
+
+    async def to_model_on_create(self, data: ModelDictT[TeamInvitation]) -> ModelDictT[TeamInvitation]:
+        """Set defaults for new invitations.
+
+        Handles token hashing (if plain token provided) and default expiry.
+
+        Returns:
+            Invitation data with hashed token and expiry set.
+        """
+        data = schema_dump(data)
+        if is_dict_with_field(data, "token") and is_dict_without_field(data, "token_hash"):
+            data["token_hash"] = self._hash_token(data.pop("token"))
+        if is_dict_without_field(data, "expires_at"):
+            data["expires_at"] = datetime.now(UTC) + timedelta(days=get_settings().email.INVITATION_TOKEN_EXPIRES_DAYS)
+        return data
 
     async def create_invitation(
         self, team: Team, email: str, role: TeamRoles, invited_by: User,
@@ -152,8 +178,7 @@ class TeamInvitationService(SQLAlchemyAsyncRepositoryService[TeamInvitation, Tea
             "role": role,
             "invited_by_id": invited_by.id,
             "invited_by_email": invited_by.email,
-            "token_hash": hashlib.sha256(token.encode()).hexdigest(),
-            "expires_at": datetime.now(UTC) + timedelta(days=get_settings().email.INVITATION_TOKEN_EXPIRES_DAYS),
+            "token": token,  # to_model_on_create hashes this
         })
         return invitation, token
 
@@ -163,7 +188,7 @@ class TeamInvitationService(SQLAlchemyAsyncRepositoryService[TeamInvitation, Tea
         Returns:
             TeamInvitation if found, None otherwise.
         """
-        return await self.get_one_or_none(token_hash=hashlib.sha256(token.encode()).hexdigest())
+        return await self.get_one_or_none(token_hash=self._hash_token(token))
 
     async def get_pending_for_team(self, team_id: UUID) -> list[TeamInvitation]:
         """Get all pending (not accepted, not expired) invitations for a team.
@@ -171,11 +196,11 @@ class TeamInvitationService(SQLAlchemyAsyncRepositoryService[TeamInvitation, Tea
         Returns:
             List of pending invitations for the team.
         """
-        return list(await self.list(
-            self._not_expired_filter(),
-            TeamInvitation.team_id == team_id,
-            TeamInvitation.is_accepted.is_(False),
-        ))
+        return list(
+            await self.list(
+                self._not_expired_filter(), TeamInvitation.team_id == team_id, TeamInvitation.is_accepted.is_(False),
+            ),
+        )
 
     async def get_pending_for_email(self, email: str) -> list[TeamInvitation]:
         """Get all pending invitations for an email address.
@@ -183,11 +208,11 @@ class TeamInvitationService(SQLAlchemyAsyncRepositoryService[TeamInvitation, Tea
         Returns:
             List of pending invitations for the email.
         """
-        return list(await self.list(
-            self._not_expired_filter(),
-            TeamInvitation.email == email,
-            TeamInvitation.is_accepted.is_(False),
-        ))
+        return list(
+            await self.list(
+                self._not_expired_filter(), TeamInvitation.email == email, TeamInvitation.is_accepted.is_(False),
+            ),
+        )
 
     async def accept_invitation(
         self, invitation: TeamInvitation, user: User, team_member_service: "TeamMemberService",

@@ -40,6 +40,9 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
 
         Args:
             app_config: The :class:`AppConfig <.config.app.AppConfig>` instance.
+
+        Returns:
+            The modified :class:`AppConfig <.config.app.AppConfig>` instance.
         """
 
         from app import config
@@ -49,6 +52,8 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         from app.domain.accounts.controllers import (
             AccessController,
             EmailVerificationController,
+            MfaChallengeController,
+            MfaController,
             PasswordResetController,
             ProfileController,
             RegistrationController,
@@ -96,50 +101,38 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         # templates
         app_config.template_config = config.templates
         # plugins
-        app_config.plugins.extend(
-            [
-                plugins.structlog,
-                plugins.granian,
-                plugins.alchemy,
-                plugins.vite,
-            ],
-        )
+        app_config.plugins.extend([plugins.structlog, plugins.granian, plugins.alchemy, plugins.vite])
 
         # routes
-        app_config.route_handlers.extend(
-            [
-                AccessController,
-                EmailVerificationController,
-                PasswordResetController,
-                ProfileController,
-                RegistrationController,
-                UserController,
-                TeamController,
-                UserRoleController,
-                TeamInvitationController,
-                TeamMemberController,
-                InvitationAcceptController,
-                UserInvitationsController,
-                TagController,
-                WebController,
-            ],
-        )
+        app_config.route_handlers.extend([
+            AccessController,
+            EmailVerificationController,
+            MfaChallengeController,
+            MfaController,
+            PasswordResetController,
+            ProfileController,
+            RegistrationController,
+            UserController,
+            TeamController,
+            UserRoleController,
+            TeamInvitationController,
+            TeamMemberController,
+            InvitationAcceptController,
+            UserInvitationsController,
+            TagController,
+            WebController,
+        ])
         # signatures
-        app_config.signature_namespace.update({
-            "UserModel": UserModel,
-            "UUID": UUID,
-        })
+        app_config.signature_namespace.update({"UserModel": UserModel, "UUID": UUID})
         # dependencies
         app_config.dependencies.update({"current_user": Provide(provide_user)})
         # listeners
-        app_config.listeners.extend(
-            [
-                account_signals.user_created_event_handler,
-                account_signals.user_verified_event_handler,
-                account_signals.password_reset_requested_handler,
-                account_signals.password_reset_completed_handler,
-                team_signals.team_created_event_handler,
-                team_signals.team_invitation_created_handler,
-            ],
-        )
+        app_config.listeners.extend([
+            account_signals.user_created_event_handler,
+            account_signals.user_verified_event_handler,
+            account_signals.password_reset_requested_handler,
+            account_signals.password_reset_completed_handler,
+            team_signals.team_created_event_handler,
+            team_signals.team_invitation_created_handler,
+        ])
         return app_config

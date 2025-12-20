@@ -1,5 +1,7 @@
 import { Head, useForm } from "@inertiajs/react"
 import { useEffect } from "react"
+import { AuthHeroPanel } from "@/components/auth-hero-panel"
+import { Icons } from "@/components/icons"
 import { InputError } from "@/components/input-error"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,9 +20,8 @@ export default function ConfirmPassword() {
 		}
 	}, [reset])
 
-	const submit = (e: { preventDefault: () => void }) => {
+	const submit = (e: React.FormEvent) => {
 		e.preventDefault()
-
 		post(route("password.confirm"))
 	}
 
@@ -28,33 +29,42 @@ export default function ConfirmPassword() {
 		<>
 			<Head title="Confirm Password" />
 
-			<div className="mb-4 text-muted-foreground text-sm">This is a secure area of the application. Please confirm your password before continuing.</div>
+			<AuthHeroPanel title="Litestar Fullstack" description="Security verification required. Your account is protected." />
 
-			<form onSubmit={submit}>
-				<div className="mt-4">
-					<Label htmlFor="password">Password</Label>
+			<div className="flex flex-col justify-center px-4 py-8 sm:px-6 lg:px-8">
+				<div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-87.5">
+					<div className="flex flex-col space-y-2 text-center">
+						<h1 className="flex items-center justify-center gap-2 font-semibold text-2xl tracking-tight">
+							<Icons.lock className="h-5 w-5" />
+							Confirm Password
+						</h1>
+						<p className="text-muted-foreground text-sm">This is a secure area. Please confirm your password before continuing.</p>
+					</div>
 
-					<Input
-						id="password"
-						type="password"
-						name="password"
-						value={data.password}
-						className="mt-1 block w-full"
-						autoFocus
-						onChange={(e) => setData("password", e.target.value)}
-					/>
+					<form onSubmit={submit} className="space-y-4">
+						<div>
+							<Label htmlFor="password">Password</Label>
+							<Input
+								id="password"
+								type="password"
+								name="password"
+								value={data.password}
+								className="mt-1"
+								autoFocus
+								autoComplete="current-password"
+								onChange={(e) => setData("password", e.target.value)}
+							/>
+							<InputError message={errors.password} className="mt-2" />
+						</div>
 
-					<InputError message={errors.password} className="mt-2" />
+						<Button type="submit" className="w-full" disabled={processing}>
+							Confirm
+						</Button>
+					</form>
 				</div>
-
-				<div className="mt-4 flex items-center justify-end">
-					<Button className="ml-4" disabled={processing}>
-						Confirm
-					</Button>
-				</div>
-			</form>
+			</div>
 		</>
 	)
 }
 
-ConfirmPassword.layout = (page: any) => <GuestLayout>{page}</GuestLayout>
+ConfirmPassword.layout = (page: React.ReactNode) => <GuestLayout>{page}</GuestLayout>

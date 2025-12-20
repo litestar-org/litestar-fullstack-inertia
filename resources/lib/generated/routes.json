@@ -173,6 +173,50 @@
       ],
       "uri": "/logout"
     },
+    "mfa-challenge": {
+      "component": "auth/mfa-challenge",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/mfa-challenge"
+    },
+    "mfa-challenge.verify": {
+      "component": "auth/mfa-challenge",
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/mfa-challenge"
+    },
+    "mfa.confirm": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/mfa/confirm"
+    },
+    "mfa.disable": {
+      "method": "delete",
+      "methods": [
+        "DELETE"
+      ],
+      "uri": "/mfa/disable"
+    },
+    "mfa.enable": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/mfa/enable"
+    },
+    "mfa.regenerate-codes": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/mfa/regenerate-codes"
+    },
     "openapi.json": {
       "method": "get",
       "methods": [

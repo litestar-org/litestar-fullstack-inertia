@@ -8,12 +8,10 @@ export function AppLayout({ children }: PropsWithChildren) {
 	useFlashMessages() // Auto-display flash messages as toasts
 
 	return (
-		<div className="h-screen bg-muted/20">
+		<div className="flex min-h-screen flex-col bg-muted/20">
 			<Toaster />
 			<Navbar />
-			<main>
-				<div className="mb-auto">{children}</div>
-			</main>
+			<main className="flex-1">{children}</main>
 			<Footer />
 		</div>
 	)

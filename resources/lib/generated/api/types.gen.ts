@@ -315,6 +315,7 @@ export type User = {
     id: string;
     isActive?: boolean;
     isSuperuser?: boolean;
+    isTwoFactorEnabled?: boolean;
     isVerified?: boolean;
     name?: string | null;
     oauthAccounts?: Array<OauthAccount>;

@@ -950,6 +950,10 @@ export const UserSchema = {
             default: false,
             type: 'boolean'
         },
+        isTwoFactorEnabled: {
+            default: false,
+            type: 'boolean'
+        },
         isVerified: {
             default: false,
             type: 'boolean'

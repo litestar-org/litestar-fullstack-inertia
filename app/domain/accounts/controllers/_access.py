@@ -44,10 +44,22 @@ class AccessController(Controller):
         """Authenticate a user.
 
         Returns:
-            Redirect to dashboard on successful authentication, or to invitation page if pending.
+            Redirect to dashboard on successful authentication,
+            to MFA challenge if enabled, or to invitation page if pending.
         """
         user = await users_service.authenticate(data.username, data.password)
         invitation_token = request.session.get("invitation_token")
+
+        # Check if user has MFA enabled
+        if user.is_two_factor_enabled and user.totp_secret:
+            # Store pending MFA session
+            request.set_session({"mfa_user_id": user.email})
+            if invitation_token:
+                request.session["invitation_token"] = invitation_token
+            request.logger.info("Redirecting to MFA challenge")
+            return InertiaRedirect(request, request.url_for("mfa-challenge"))
+
+        # No MFA, complete login immediately
         request.set_session({"user_id": user.email})
         if invitation_token:
             request.session["invitation_token"] = invitation_token

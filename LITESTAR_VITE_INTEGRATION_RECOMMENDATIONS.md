@@ -359,14 +359,14 @@ Your configuration is mostly good. Suggestions:
 ```json
 {
   "types": {
-    "enabled": true, 
+    "enabled": true,
     "generateRoutes": true,
     "generatePageProps": true,
     "generateSdk": true
   }
 }
 ```
- 
+
 
 ### ViteConfig Review
 

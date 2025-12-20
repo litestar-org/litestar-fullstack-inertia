@@ -13,6 +13,11 @@ __all__ = (
     "AccountRegister",
     "EmailSent",
     "ForgotPasswordRequest",
+    "MfaBackupCodes",
+    "MfaChallenge",
+    "MfaConfirm",
+    "MfaDisable",
+    "MfaSetup",
     "PasswordReset",
     "PasswordResetToken",
     "PasswordUpdate",
@@ -74,6 +79,7 @@ class User(CamelizedBaseStruct):
     is_active: bool = False
     is_verified: bool = False
     has_password: bool = False
+    is_two_factor_enabled: bool = False
     teams: list[UserTeam] = []
     roles: list[UserRole] = []
     oauth_accounts: list[OauthAccount] = []
@@ -158,3 +164,35 @@ class PasswordResetToken(CamelizedBaseStruct):
 
     token: str
     email: str
+
+
+class MfaSetup(CamelizedBaseStruct):
+    """Response with QR code and secret for MFA setup."""
+
+    secret: str
+    qr_code: str  # Base64 encoded PNG
+
+
+class MfaConfirm(CamelizedBaseStruct):
+    """Request to confirm MFA setup with a TOTP code."""
+
+    code: str
+
+
+class MfaChallenge(CamelizedBaseStruct):
+    """Request to verify MFA during login."""
+
+    code: str | None = None
+    recovery_code: str | None = None
+
+
+class MfaDisable(CamelizedBaseStruct):
+    """Request to disable MFA with password confirmation."""
+
+    password: str
+
+
+class MfaBackupCodes(CamelizedBaseStruct):
+    """Response with backup codes for MFA recovery."""
+
+    codes: list[str]

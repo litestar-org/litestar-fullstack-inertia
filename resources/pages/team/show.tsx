@@ -8,10 +8,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { AppLayout } from "@/layouts/app-layout"
 import type { TeamDetailPage } from "@/lib/generated/api/types.gen"
 import { route } from "@/lib/generated/routes"
 import { cn, getGravatarUrl, getInitials } from "@/lib/utils"
+import TeamMemberManager from "@/pages/team/partials/team-member-manager"
 
 type Props = TeamDetailPage
 
@@ -79,11 +81,22 @@ export default function TeamShow({ team, members, permissions }: Props) {
 										<CardDescription>People who are part of this team.</CardDescription>
 									</div>
 									{canManageTeam && (
-										<Link href={route("teams.settings", { team_slug: team.slug })}>
-											<Button variant="outline" size="sm">
-												Manage Members
-											</Button>
-										</Link>
+										<Sheet>
+											<SheetTrigger asChild>
+												<Button variant="outline" size="sm">
+													Manage Members
+												</Button>
+											</SheetTrigger>
+											<SheetContent className="sm:max-w-xl overflow-y-auto">
+												<SheetHeader>
+													<SheetTitle>Manage Team Members</SheetTitle>
+													<SheetDescription>Add or remove members from {team.name}.</SheetDescription>
+												</SheetHeader>
+												<div className="mt-6">
+													<TeamMemberManager team={team} members={members} permissions={permissions} />
+												</div>
+											</SheetContent>
+										</Sheet>
 									)}
 								</div>
 							</CardHeader>

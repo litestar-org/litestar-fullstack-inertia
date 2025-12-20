@@ -67,6 +67,7 @@ export interface PageProps {
   "about": NoProps & FullSharedProps
   "auth/forgot-password": NoProps & FullSharedProps
   "auth/login": NoProps & FullSharedProps
+  "auth/mfa-challenge": NoProps & FullSharedProps
   "auth/register": NoProps & FullSharedProps
   "auth/reset-password": PasswordResetToken & FullSharedProps
   "auth/verify-email": any & FullSharedProps

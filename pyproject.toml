@@ -26,7 +26,8 @@ dependencies = [
   "httptools",
   "pwdlib[argon2]>=0.2.0",
   "httpx-oauth>=0.15.0",
-  "sniffio",
+  "pyotp>=2.9.0",
+  "qrcode[pil]>=7.4",
 ]
 description = "Opinionated template for a Litestar application."
 keywords = ["litestar", "sqlalchemy", "alembic", "fullstack", "api", "asgi", "vite", "inertia"]
