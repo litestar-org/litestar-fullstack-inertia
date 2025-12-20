@@ -359,16 +359,14 @@ Your configuration is mostly good. Suggestions:
 ```json
 {
   "types": {
-    "enabled": true,
-    "generateZod": true,  // Consider enabling for form validation
+    "enabled": true, 
     "generateRoutes": true,
     "generatePageProps": true,
     "generateSdk": true
   }
 }
 ```
-
-**Recommendation:** Enable `generateZod: true` to get Zod schemas for form validation that match your backend types.
+ 
 
 ### ViteConfig Review
 

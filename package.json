@@ -46,7 +46,7 @@
 		"@types/react-dom": "^19.2.3",
 		"@vitejs/plugin-react": "^5.1.2",
 		"axios": "^1.13.2",
-		"litestar-vite-plugin": "file:../litestar-vite",
+		"litestar-vite-plugin": "next",
 		"react": "^19.2.3",
 		"react-dom": "^19.2.3",
 		"tailwindcss": "^4.1.18",

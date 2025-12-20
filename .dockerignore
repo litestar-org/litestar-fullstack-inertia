@@ -1,0 +1,87 @@
+# =============================================================================
+# Docker Ignore File
+# =============================================================================
+# Excludes unnecessary files from Docker build context for:
+# - Faster builds (smaller context size)
+# - Security (prevents leaking secrets)
+# - Cleaner images (no test/dev artifacts)
+# =============================================================================
+
+# Virtual environments (CRITICAL - prevents copying local .venv)
+.venv/
+venv/
+.python-version
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+
+# Node modules (will be installed fresh in container)
+node_modules/
+
+# Environment files (secrets - CRITICAL)
+.env
+.env.*
+!.env.example
+!.env.docker.example
+
+# Documentation (not needed in runtime)
+docs/
+*.md
+!README.md
+
+# Tests (not needed in production images)
+tests/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.hypothesis/
+
+# Specs and planning (not needed in images)
+specs/
+
+# Type checking cache
+.mypy_cache/
+.pyright/
+
+# Pre-commit
+.pre-commit-config.yaml
+
+# CI/CD
+.github/
+
+# Docker files (prevent recursion, context handled separately)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Misc
+.DS_Store
+Thumbs.db
+*.log
+*.bak

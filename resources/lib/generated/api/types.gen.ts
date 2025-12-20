@@ -54,9 +54,9 @@ export type GetTagTagResponseBody = {
 export type InvitationAcceptPage = {
     errorMessage?: string | null;
     invitation: TeamInvitationDetail;
-    isValid?: boolean;
     isAuthenticated?: boolean;
     isCorrectUser?: boolean;
+    isValid?: boolean;
     loginUrl?: string | null;
     registerUrl?: string | null;
 };
@@ -142,9 +142,9 @@ export type TeamDetail = {
  */
 export type TeamDetailPage = {
     members: Array<TeamPageMember>;
+    pendingInvitations?: Array<TeamInvitationItem>;
     permissions: TeamPermissions;
     team: TeamDetail;
-    pendingInvitations?: Array<TeamInvitationItem>;
 };
 
 /**

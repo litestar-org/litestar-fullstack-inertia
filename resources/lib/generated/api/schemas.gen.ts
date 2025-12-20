@@ -134,9 +134,37 @@ export const InvitationAcceptPageSchema = {
         invitation: {
             $ref: '#/components/schemas/TeamInvitationDetail'
         },
+        isAuthenticated: {
+            default: true,
+            type: 'boolean'
+        },
+        isCorrectUser: {
+            default: true,
+            type: 'boolean'
+        },
         isValid: {
             default: true,
             type: 'boolean'
+        },
+        loginUrl: {
+            oneOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        registerUrl: {
+            oneOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ]
         }
     },
     required: [
@@ -381,6 +409,12 @@ export const TeamDetailPageSchema = {
         members: {
             items: {
                 $ref: '#/components/schemas/TeamPageMember'
+            },
+            type: 'array'
+        },
+        pendingInvitations: {
+            items: {
+                $ref: '#/components/schemas/TeamInvitationItem'
             },
             type: 'array'
         },

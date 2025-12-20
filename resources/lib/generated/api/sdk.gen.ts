@@ -304,6 +304,9 @@ export const getUserInvitations = <ThrowOnError extends boolean = false>(options
  *
  * Show invitation accept/decline page.
  *
+ * Works for both authenticated and unauthenticated users.
+ * Unauthenticated users see the invitation details and can log in or sign up.
+ *
  * Returns:
  * Invitation details and validity status.
  */
@@ -533,7 +536,7 @@ export const cancelTeamInvitation = <ThrowOnError extends boolean = false>(optio
  * Get team settings page.
  *
  * Returns:
- * Team details, members list, and user permissions for management.
+ * Team details, members list, pending invitations, and user permissions for management.
  */
 export const getTeamSettings = <ThrowOnError extends boolean = false>(options: Options<GetTeamSettingsData, ThrowOnError>) => (options.client ?? client).get<GetTeamSettingsResponses, GetTeamSettingsErrors, ThrowOnError>({
     security: [{

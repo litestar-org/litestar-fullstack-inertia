@@ -19,6 +19,7 @@ import platform
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 from typing import Literal
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -65,6 +66,26 @@ def run_command(cmd: list[str], description: str) -> None:
         sys.exit(result.returncode)
 
 
+def copy_index_html() -> None:
+    """Copy index.html from resources to bundle directory.
+
+    This ensures the index.html template is available in the bundle directory
+    for production deployments where the wheel is installed.
+    """
+    # Determine paths relative to the script location
+    script_dir = Path(__file__).parent
+    project_root = script_dir.parent
+
+    source = project_root / "resources" / "index.html"
+    dest = project_root / "app" / "domain" / "web" / "public" / "index.html"
+
+    if source.exists():
+        shutil.copy2(source, dest)
+        logger.info("Copied index.html to %s", dest)
+    else:
+        logger.warning("Source index.html not found at %s", source)
+
+
 def build_assets(executor: Executor, *, install: bool = False, build: bool = True) -> None:
     """Build frontend assets using the specified executor.
 
@@ -84,6 +105,8 @@ def build_assets(executor: Executor, *, install: bool = False, build: bool = Tru
 
     if build:
         run_command(commands["build"], f"Building assets with {executor}")
+        # Copy index.html to bundle directory for production wheel builds
+        copy_index_html()
 
     logger.info("Build completed successfully")
 
