@@ -33,7 +33,7 @@ provide_users_service = create_service_provider(
         selectinload(UserModel.roles).options(joinedload(UserRole.role, innerjoin=True)),
         selectinload(UserModel.oauth_accounts),
         selectinload(UserModel.teams).options(
-            joinedload(TeamMember.team, innerjoin=True).options(load_only(Team.name)),
+            joinedload(TeamMember.team, innerjoin=True).options(load_only(Team.name, Team.slug)),
         ),
     ],
     error_messages={

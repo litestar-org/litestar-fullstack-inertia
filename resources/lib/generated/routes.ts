@@ -26,6 +26,10 @@ export type RouteName =
   | 'google.complete'
   | 'google.register'
   | 'home'
+  | 'invitation.accept'
+  | 'invitation.accept.page'
+  | 'invitation.decline'
+  | 'invitations.list'
   | 'landing'
   | 'login'
   | 'login.check'
@@ -47,6 +51,9 @@ export type RouteName =
   | 'teams.add'
   | 'teams.create'
   | 'teams.edit'
+  | 'teams.invitation.cancel'
+  | 'teams.invitations'
+  | 'teams.invite'
   | 'teams.list'
   | 'teams.remove'
   | 'teams.settings'
@@ -77,6 +84,16 @@ export interface RoutePathParams {
   'google.complete': Record<string, never>;
   'google.register': Record<string, never>;
   'home': Record<string, never>;
+  'invitation.accept': {
+    token: string;
+  };
+  'invitation.accept.page': {
+    token: string;
+  };
+  'invitation.decline': {
+    token: string;
+  };
+  'invitations.list': Record<string, never>;
   'landing': Record<string, never>;
   'login': Record<string, never>;
   'login.check': Record<string, never>;
@@ -104,6 +121,16 @@ export interface RoutePathParams {
   'teams.add': Record<string, never>;
   'teams.create': Record<string, never>;
   'teams.edit': {
+    team_slug: string;
+  };
+  'teams.invitation.cancel': {
+    invitation_id: UUID;
+    team_slug: string;
+  };
+  'teams.invitations': {
+    team_slug: string;
+  };
+  'teams.invite': {
     team_slug: string;
   };
   'teams.list': Record<string, never>;
@@ -169,6 +196,10 @@ export interface RouteQueryParams {
   };
   'google.register': Record<string, never>;
   'home': Record<string, never>;
+  'invitation.accept': Record<string, never>;
+  'invitation.accept.page': Record<string, never>;
+  'invitation.decline': Record<string, never>;
+  'invitations.list': Record<string, never>;
   'landing': Record<string, never>;
   'login': Record<string, never>;
   'login.check': Record<string, never>;
@@ -205,6 +236,9 @@ export interface RouteQueryParams {
   'teams.add': Record<string, never>;
   'teams.create': Record<string, never>;
   'teams.edit': Record<string, never>;
+  'teams.invitation.cancel': Record<string, never>;
+  'teams.invitations': Record<string, never>;
+  'teams.invite': Record<string, never>;
   'teams.list': {
     createdAfter?: DateTime;
     createdBefore?: DateTime;
@@ -338,6 +372,36 @@ export const routeDefinitions = {
     method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
+  },
+  'invitation.accept': {
+    path: '/invitations/{token}/accept',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: ['token'] as const,
+    queryParams: [] as const,
+  },
+  'invitation.accept.page': {
+    path: '/invitations/{token}',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: ['token'] as const,
+    queryParams: [] as const,
+    component: 'invitation/accept',
+  },
+  'invitation.decline': {
+    path: '/invitations/{token}/decline',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: ['token'] as const,
+    queryParams: [] as const,
+  },
+  'invitations.list': {
+    path: '/invitations',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: [] as const,
+    queryParams: [] as const,
+    component: 'invitation/list',
   },
   'landing': {
     path: '/landing',
@@ -498,6 +562,28 @@ export const routeDefinitions = {
     pathParams: ['team_slug'] as const,
     queryParams: [] as const,
     component: 'team/edit',
+  },
+  'teams.invitation.cancel': {
+    path: '/teams/{team_slug}/invitations/{invitation_id}',
+    methods: ['DELETE'] as const,
+    method: 'delete',
+    pathParams: ['invitation_id', 'team_slug'] as const,
+    queryParams: [] as const,
+  },
+  'teams.invitations': {
+    path: '/teams/{team_slug}/invitations',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: ['team_slug'] as const,
+    queryParams: [] as const,
+    component: 'team/invitations',
+  },
+  'teams.invite': {
+    path: '/teams/{team_slug}/invitations',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: ['team_slug'] as const,
+    queryParams: [] as const,
   },
   'teams.list': {
     path: '/teams',

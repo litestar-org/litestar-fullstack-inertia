@@ -6,9 +6,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import ResponsiveNavbar from "@/layouts/partials/responsive-navbar"
+import type { FullSharedProps } from "@/lib/generated/page-props"
 import { isCurrentRoute, route } from "@/lib/generated/routes"
 import { cn, getGravatarUrl, getInitials } from "@/lib/utils"
-import type { FullSharedProps } from "@/lib/generated/page-props"
 
 export default function Navbar() {
 	const { auth } = usePage<FullSharedProps>().props

@@ -1,26 +1,23 @@
-"""Team Controllers."""
+"""Team controller."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated
 from uuid import UUID
 
-from advanced_alchemy.exceptions import IntegrityError
 from advanced_alchemy.extensions.litestar.providers import create_service_dependencies, create_service_provider
 from litestar import Controller, Request, delete, get, patch, post
-from litestar.di import Provide
 from litestar.params import Dependency, Parameter
 from litestar_vite.inertia import InertiaRedirect, flash
 from sqlalchemy import select
-from sqlalchemy.orm import joinedload, noload, selectinload
+from sqlalchemy.orm import joinedload, selectinload
 
 from app.db.models import Team as TeamModel
+from app.db.models import TeamInvitation as TeamInvitationModel
 from app.db.models import TeamMember, TeamRoles
 from app.db.models import User as UserModel
 from app.db.models.team_member import TeamMember as TeamMemberModel
-from app.domain.accounts.dependencies import provide_users_service
 from app.domain.accounts.guards import requires_active_user
-from app.domain.accounts.services import UserService
 from app.domain.teams.guards import requires_team_admin, requires_team_membership, requires_team_ownership
 from app.domain.teams.schemas import (
     CurrentTeam,
@@ -28,18 +25,20 @@ from app.domain.teams.schemas import (
     TeamCreate,
     TeamDetail,
     TeamDetailPage,
+    TeamInvitationItem,
     TeamListItem,
     TeamListPage,
-    TeamMemberModify,
     TeamPageMember,
     TeamPermissions,
     TeamUpdate,
 )
-from app.domain.teams.services import TeamInvitationService, TeamMemberService, TeamService
+from app.domain.teams.services import TeamInvitationService, TeamService
 from app.lib.schema import NoProps
 
 if TYPE_CHECKING:
     from advanced_alchemy.filters import FilterTypes
+
+__all__ = ("TeamController",)
 
 
 class TeamController(Controller):
@@ -209,18 +208,28 @@ class TeamController(Controller):
         operation_id="GetTeamSettings",
         guards=[requires_team_admin],
         path="/teams/{team_slug:str}/settings/",
+        dependencies={
+            "team_invitations_service": create_service_provider(
+                TeamInvitationService,
+                load=[
+                    joinedload(TeamInvitationModel.team),
+                    joinedload(TeamInvitationModel.invited_by),
+                ],
+            ),
+        },
     )
     async def get_team_settings(
         self,
         request: Request,
         teams_service: TeamService,
+        team_invitations_service: TeamInvitationService,
         current_user: UserModel,
         team_slug: Annotated[str, Parameter(title="Team Slug", description="The team slug.")],
     ) -> TeamDetailPage:
         """Get team settings page.
 
         Returns:
-            Team details, members list, and user permissions for management.
+            Team details, members list, pending invitations, and user permissions for management.
         """
         db_obj = await teams_service.get_one(slug=team_slug)
         request.session.update({"currentTeam": CurrentTeam(team_id=db_obj.id, team_name=db_obj.name)})
@@ -228,6 +237,8 @@ class TeamController(Controller):
         membership = next((m for m in db_obj.members if m.user_id == current_user.id), None)
         is_owner = bool(membership and membership.is_owner)
         is_admin = is_owner or bool(membership and membership.role == TeamRoles.ADMIN)
+
+        invitations = await team_invitations_service.get_pending_for_team(db_obj.id)
 
         return TeamDetailPage(
             team=TeamDetail(
@@ -246,6 +257,18 @@ class TeamController(Controller):
                     avatar_url=m.user.avatar_url,
                 )
                 for m in db_obj.members
+            ],
+            pending_invitations=[
+                TeamInvitationItem(
+                    id=inv.id,
+                    email=inv.email,
+                    role=str(inv.role),
+                    invited_by_email=inv.invited_by_email,
+                    created_at=inv.created_at,
+                    expires_at=inv.expires_at,
+                    is_expired=inv.is_expired,
+                )
+                for inv in invitations
             ],
             permissions=TeamPermissions(
                 can_add_team_members=is_admin,
@@ -287,7 +310,7 @@ class TeamController(Controller):
         operation_id="DeleteTeam",
         guards=[requires_team_ownership],
         path="/teams/{team_slug:str}/",
-        status_code=303,  # This is the correct inertia redirect code
+        status_code=303,
     )
     async def delete_team(
         self,
@@ -305,110 +328,3 @@ class TeamController(Controller):
         db_obj = await teams_service.delete(db_obj.id)
         flash(request, f'Removed team "{db_obj.name}".', category="info")
         return InertiaRedirect(request, request.url_for("teams.list"))
-
-
-class TeamMemberController(Controller):
-    """Team Members."""
-
-    tags = ["Team Members"]
-    dependencies = {
-        "teams_service": create_service_provider(
-            TeamService,
-            load=[
-                selectinload(TeamModel.tags),
-                selectinload(TeamModel.members).options(
-                    joinedload(TeamMember.user, innerjoin=True),
-                ),
-            ],
-        ),
-        "team_members_service": create_service_provider(
-            TeamMemberService,
-            load=[
-                noload("*"),
-                joinedload(TeamMember.team, innerjoin=True).options(noload("*")),
-                joinedload(TeamMember.user, innerjoin=True).options(noload("*")),
-            ],
-        ),
-        "users_service": Provide(provide_users_service),
-    }
-    signature_namespace = {
-        "TeamService": TeamService,
-        "UserService": UserService,
-        "TeamMemberService": TeamMemberService,
-    }
-
-    @post(
-        operation_id="AddMemberToTeam",
-        name="teams:add-member",
-        path="/api/teams/{team_slug:str}/members/add",
-    )
-    async def add_member_to_team(
-        self,
-        teams_service: TeamService,
-        users_service: UserService,
-        data: TeamMemberModify,
-        team_slug: Annotated[str, Parameter(title="Team Slug", description="The team slug.")],
-    ) -> Team:
-        """Add a member to a team.
-
-        Returns:
-            Updated team data with new member.
-
-        Raises:
-            IntegrityError: If the user is already a member of the team.
-        """
-        team_obj = await teams_service.get_one(slug=team_slug)
-        user_obj = await users_service.get_one(email=data.user_name)
-        is_member = any(membership.team.id == team_obj.id for membership in user_obj.teams)
-        if is_member:
-            msg = "User is already a member of the team."
-            raise IntegrityError(msg)
-        team_obj.members.append(TeamMember(user_id=user_obj.id, role=TeamRoles.MEMBER))
-        team_obj = await teams_service.update(item_id=team_obj.id, data=team_obj)
-        return teams_service.to_schema(schema_type=Team, data=team_obj)
-
-    @post(
-        operation_id="RemoveMemberFromTeam",
-        name="teams:remove-member",
-        summary="Remove Team Member",
-        description="Removes a member from a team",
-        path="/api/teams/{team_slug:str}/members/remove",
-    )
-    async def remove_member_from_team(
-        self,
-        teams_service: TeamService,
-        team_members_service: TeamMemberService,
-        users_service: UserService,
-        data: TeamMemberModify,
-        team_slug: Annotated[str, Parameter(title="Team Slug", description="The team slug.")],
-    ) -> Team:
-        """Remove a member from a team.
-
-        Returns:
-            Updated team data without the removed member.
-
-        Raises:
-            IntegrityError: If the user is not a member of this team.
-        """
-        team_obj = await teams_service.get_one(slug=team_slug)
-        user_obj = await users_service.get_one(email=data.user_name)
-        removed_member = False
-        for membership in user_obj.teams:
-            if membership.user_id == user_obj.id:
-                removed_member = True
-                _ = await team_members_service.delete(membership.id)
-        if not removed_member:
-            msg = "User is not a member of this team."
-            raise IntegrityError(msg)
-        team_obj = await teams_service.get_one(slug=team_slug)
-        return teams_service.to_schema(schema_type=Team, data=team_obj)
-
-
-class TeamInvitationController(Controller):
-    """Team Invitations."""
-
-    tags = ["Teams"]
-    dependencies = create_service_dependencies(
-        TeamInvitationService,
-        key="team_invitations_service",
-    )

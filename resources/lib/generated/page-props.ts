@@ -4,7 +4,7 @@
 // Import user-defined type extensions (edit page-props.user.ts to customize)
 import type { UserExtensions, SharedPropsExtensions } from "./page-props.user"
 
-import type { CurrentTeam, Message, NoProps, PasswordResetToken, Team, TeamDetail, TeamDetailPage, TeamListItem, TeamListPage, TeamMember, TeamPageMember, TeamPermissions, TeamTag } from "./api/types.gen"
+import type { CurrentTeam, InvitationAcceptPage, Message, NoProps, PasswordResetToken, Team, TeamDetail, TeamDetailPage, TeamInvitationDetail, TeamInvitationItem, TeamInvitationsPage, TeamListItem, TeamListPage, TeamMember, TeamPageMember, TeamPermissions, TeamTag, UserPendingInvitation, UserPendingInvitationsPage } from "./api/types.gen"
 
 /**
  * Default User interface - minimal baseline for common auth patterns.
@@ -71,12 +71,15 @@ export interface PageProps {
   "auth/reset-password": PasswordResetToken & FullSharedProps
   "auth/verify-email": any & FullSharedProps
   "dashboard": NoProps & FullSharedProps
+  "invitation/accept": InvitationAcceptPage & FullSharedProps
+  "invitation/list": UserPendingInvitationsPage & FullSharedProps
   "landing": NoProps & FullSharedProps
   "legal/privacy-policy": NoProps & FullSharedProps
   "legal/terms-of-service": NoProps & FullSharedProps
   "profile/edit": Message & FullSharedProps
   "team/create": NoProps & FullSharedProps
   "team/edit": Team & FullSharedProps
+  "team/invitations": TeamInvitationsPage & FullSharedProps
   "team/list": TeamListPage & FullSharedProps
   "team/settings": TeamDetailPage & FullSharedProps
   "team/show": TeamDetailPage & FullSharedProps

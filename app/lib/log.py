@@ -289,7 +289,7 @@ class BeforeSendHandler:
         """
         data: dict[str, Any] = {}
         extracted_data = self.response_extractor(
-            messages=(scope["state"][HTTP_RESPONSE_START], scope["state"][HTTP_RESPONSE_BODY])
+            messages=(scope["state"][HTTP_RESPONSE_START], scope["state"][HTTP_RESPONSE_BODY]),
         )
         missing = object()
         connection_state = ScopeState.from_scope(scope)
@@ -328,7 +328,7 @@ def structlog_processors(as_json: bool) -> list[Processor]:
             structlog.processors.add_log_level,
             structlog.processors.TimeStamper(fmt="iso"),
             structlog.dev.ConsoleRenderer(
-                colors=True, exception_formatter=RichTracebackFormatter(max_frames=1, show_locals=False, width=80)
+                colors=True, exception_formatter=RichTracebackFormatter(max_frames=1, show_locals=False, width=80),
             ),
         ]
     except ImportError:
@@ -364,7 +364,7 @@ def stdlib_logger_processors(as_json: bool) -> list[Processor]:
             EventFilter(["message"]),
             structlog.stdlib.ProcessorFormatter.remove_processors_meta,
             structlog.dev.ConsoleRenderer(
-                colors=True, exception_formatter=RichTracebackFormatter(max_frames=1, show_locals=False, width=80)
+                colors=True, exception_formatter=RichTracebackFormatter(max_frames=1, show_locals=False, width=80),
             ),
         ]
     except ImportError:

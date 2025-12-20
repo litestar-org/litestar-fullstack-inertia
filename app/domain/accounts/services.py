@@ -264,115 +264,64 @@ class EmailTokenService(SQLAlchemyAsyncRepositoryService[EmailToken, EmailTokenR
     ) -> tuple[EmailToken, str]:
         """Create a new email token.
 
-        Args:
-            email: Email address to associate with token.
-            token_type: Type of token (verification, password reset, etc).
-            expires_delta: Duration until token expires.
-            user_id: Optional user ID to associate with token.
-            ip_address: Optional IP address of request origin.
-            user_agent: Optional user agent string.
-            metadata: Optional additional metadata.
-
         Returns:
-            Tuple of (database record, plain token). Plain token should
-            be sent to user via email.
+            Tuple of (database record, plain token). Plain token should be sent to user via email.
         """
-        plain_token = self._generate_token()
-        token_hash = self._hash_token(plain_token)
-        expires_at = datetime.now(UTC) + expires_delta
-
-        token_record = await self.create(
+        token = self._generate_token()
+        return await self.create(
             {
                 "email": email,
                 "token_type": token_type,
-                "token_hash": token_hash,
-                "expires_at": expires_at,
+                "token_hash": self._hash_token(token),
+                "expires_at": datetime.now(UTC) + expires_delta,
                 "user_id": user_id,
                 "ip_address": ip_address,
                 "user_agent": user_agent,
                 "metadata_": metadata or {},
             },
             auto_commit=True,
-        )
-
-        return token_record, plain_token
+        ), token
 
     async def validate_token(
         self, plain_token: str, token_type: TokenType, email: str | None = None,
     ) -> EmailToken | None:
         """Validate a token without consuming it.
 
-        Args:
-            plain_token: The plain text token to validate.
-            token_type: Expected token type.
-            email: Optional email to verify against token.
-
         Returns:
             EmailToken record if valid, None otherwise.
         """
-        token_hash = self._hash_token(plain_token)
-
-        token_record = await self.get_one_or_none(token_hash=token_hash, token_type=token_type)
-
-        if token_record is None:
+        token = await self.get_one_or_none(token_hash=self._hash_token(plain_token), token_type=token_type)
+        if token is None or not token.is_valid or (email and token.email != email):
             return None
-
-        if not token_record.is_valid:
-            return None
-
-        if email and token_record.email != email:
-            return None
-
-        return token_record
+        return token
 
     async def consume_token(
         self, plain_token: str, token_type: TokenType, email: str | None = None,
     ) -> EmailToken | None:
-        """Validate and consume a token.
-
-        Token cannot be used again after consumption.
-
-        Args:
-            plain_token: The plain text token to consume.
-            token_type: Expected token type.
-            email: Optional email to verify against token.
+        """Validate and consume a token. Token cannot be used again after consumption.
 
         Returns:
             EmailToken record if valid and consumed, None otherwise.
         """
-        token_record = await self.validate_token(plain_token, token_type, email)
-
-        if token_record is None:
+        if (token := await self.validate_token(plain_token, token_type, email)) is None:
             return None
-
-        token_record.mark_used()
-        await self.update(token_record, auto_commit=True)
-
-        return token_record
+        token.mark_used()
+        await self.update(token, auto_commit=True)
+        return token
 
     async def invalidate_existing_tokens(self, email: str, token_type: TokenType) -> int:
-        """Invalidate all existing tokens of a type for an email.
-
-        Args:
-            email: Email address to invalidate tokens for.
-            token_type: Type of tokens to invalidate.
+        """Invalidate all existing valid tokens of a type for an email.
 
         Returns:
             Number of tokens invalidated.
         """
-        tokens = await self.list(email=email, token_type=token_type, used_at=None)
-
-        count = 0
+        tokens = [t for t in await self.list(email=email, token_type=token_type, used_at=None) if t.is_valid]
         for token in tokens:
-            if token.is_valid:
-                token.mark_used()
-                await self.update(token, auto_commit=False)
-                count += 1
-
-        if count > 0:
+            token.mark_used()
+            await self.update(token, auto_commit=False)
+        if tokens:
             await self.repository.session.commit()
-
-        return count
+        return len(tokens)
 
 
 async def provide_email_token_service(db_session: AsyncSession) -> EmailTokenService:

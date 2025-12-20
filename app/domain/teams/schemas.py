@@ -115,3 +115,76 @@ class TeamDetailPage(CamelizedBaseStruct):
     team: TeamDetail
     members: list[TeamPageMember]
     permissions: TeamPermissions
+    pending_invitations: list[TeamInvitationItem] = []
+
+
+# Team Invitation schemas
+
+
+class TeamInvitationCreate(CamelizedBaseStruct):
+    """Create a new team invitation."""
+
+    email: str
+    role: TeamRoles = TeamRoles.MEMBER
+
+
+class TeamInvitationItem(CamelizedBaseStruct):
+    """Team invitation for list display."""
+
+    id: UUID
+    email: str
+    role: str
+    invited_by_email: str
+    created_at: datetime
+    expires_at: datetime | None = None
+    is_expired: bool = False
+
+
+class TeamInvitationDetail(CamelizedBaseStruct):
+    """Team invitation details for accept/decline page."""
+
+    id: UUID
+    team_name: str
+    team_slug: str
+    inviter_name: str
+    inviter_email: str
+    role: str
+    expires_at: datetime | None = None
+    is_expired: bool = False
+
+
+class TeamInvitationsPage(CamelizedBaseStruct):
+    """Response for team invitations management page."""
+
+    team: TeamDetail
+    invitations: list[TeamInvitationItem]
+    permissions: TeamPermissions
+
+
+class InvitationAcceptPage(CamelizedBaseStruct):
+    """Response for invitation accept/decline page."""
+
+    invitation: TeamInvitationDetail
+    is_valid: bool = True
+    error_message: str | None = None
+    is_authenticated: bool = True
+    is_correct_user: bool = True
+    login_url: str | None = None
+    register_url: str | None = None
+
+
+class UserPendingInvitation(CamelizedBaseStruct):
+    """Pending invitation for user's dashboard."""
+
+    id: UUID
+    team_name: str
+    team_slug: str
+    inviter_name: str
+    role: str
+    created_at: datetime
+
+
+class UserPendingInvitationsPage(CamelizedBaseStruct):
+    """Response for user's pending invitations page."""
+
+    invitations: list[UserPendingInvitation]

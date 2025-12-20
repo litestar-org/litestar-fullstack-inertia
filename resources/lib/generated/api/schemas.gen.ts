@@ -119,6 +119,33 @@ export const GetTagTagResponseBodySchema = {
     type: 'object'
 } as const;
 
+export const InvitationAcceptPageSchema = {
+    properties: {
+        errorMessage: {
+            oneOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        invitation: {
+            $ref: '#/components/schemas/TeamInvitationDetail'
+        },
+        isValid: {
+            default: true,
+            type: 'boolean'
+        }
+    },
+    required: [
+        'invitation'
+    ],
+    title: 'InvitationAcceptPage',
+    type: 'object'
+} as const;
+
 export const ListTagsTagResponseBodySchema = {
     properties: {
         description: {
@@ -370,6 +397,141 @@ export const TeamDetailPageSchema = {
         'team'
     ],
     title: 'TeamDetailPage',
+    type: 'object'
+} as const;
+
+export const TeamInvitationCreateSchema = {
+    properties: {
+        email: {
+            type: 'string'
+        },
+        role: {
+            $ref: '#/components/schemas/TeamRoles'
+        }
+    },
+    required: [
+        'email'
+    ],
+    title: 'TeamInvitationCreate',
+    type: 'object'
+} as const;
+
+export const TeamInvitationDetailSchema = {
+    properties: {
+        expiresAt: {
+            oneOf: [
+                {
+                    format: 'date-time',
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        id: {
+            format: 'uuid',
+            type: 'string'
+        },
+        inviterEmail: {
+            type: 'string'
+        },
+        inviterName: {
+            type: 'string'
+        },
+        isExpired: {
+            default: false,
+            type: 'boolean'
+        },
+        role: {
+            type: 'string'
+        },
+        teamName: {
+            type: 'string'
+        },
+        teamSlug: {
+            type: 'string'
+        }
+    },
+    required: [
+        'id',
+        'inviterEmail',
+        'inviterName',
+        'role',
+        'teamName',
+        'teamSlug'
+    ],
+    title: 'TeamInvitationDetail',
+    type: 'object'
+} as const;
+
+export const TeamInvitationItemSchema = {
+    properties: {
+        createdAt: {
+            format: 'date-time',
+            type: 'string'
+        },
+        email: {
+            type: 'string'
+        },
+        expiresAt: {
+            oneOf: [
+                {
+                    format: 'date-time',
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        id: {
+            format: 'uuid',
+            type: 'string'
+        },
+        invitedByEmail: {
+            type: 'string'
+        },
+        isExpired: {
+            default: false,
+            type: 'boolean'
+        },
+        role: {
+            type: 'string'
+        }
+    },
+    required: [
+        'createdAt',
+        'email',
+        'id',
+        'invitedByEmail',
+        'role'
+    ],
+    title: 'TeamInvitationItem',
+    type: 'object'
+} as const;
+
+export const TeamInvitationsPageSchema = {
+    properties: {
+        invitations: {
+            items: {
+                $ref: '#/components/schemas/TeamInvitationItem'
+            },
+            type: 'array'
+        },
+        permissions: {
+            $ref: '#/components/schemas/TeamPermissions'
+        },
+        team: {
+            $ref: '#/components/schemas/TeamDetail'
+        }
+    },
+    required: [
+        'invitations',
+        'permissions',
+        'team'
+    ],
+    title: 'TeamInvitationsPage',
     type: 'object'
 } as const;
 
@@ -831,6 +993,57 @@ export const UserCreateSchema = {
         'password'
     ],
     title: 'UserCreate',
+    type: 'object'
+} as const;
+
+export const UserPendingInvitationSchema = {
+    properties: {
+        createdAt: {
+            format: 'date-time',
+            type: 'string'
+        },
+        id: {
+            format: 'uuid',
+            type: 'string'
+        },
+        inviterName: {
+            type: 'string'
+        },
+        role: {
+            type: 'string'
+        },
+        teamName: {
+            type: 'string'
+        },
+        teamSlug: {
+            type: 'string'
+        }
+    },
+    required: [
+        'createdAt',
+        'id',
+        'inviterName',
+        'role',
+        'teamName',
+        'teamSlug'
+    ],
+    title: 'UserPendingInvitation',
+    type: 'object'
+} as const;
+
+export const UserPendingInvitationsPageSchema = {
+    properties: {
+        invitations: {
+            items: {
+                $ref: '#/components/schemas/UserPendingInvitation'
+            },
+            type: 'array'
+        }
+    },
+    required: [
+        'invitations'
+    ],
+    title: 'UserPendingInvitationsPage',
     type: 'object'
 } as const;
 

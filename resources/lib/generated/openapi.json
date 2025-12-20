@@ -115,6 +115,32 @@
         "title": "GetTagTagResponseBody",
         "type": "object"
       },
+      "InvitationAcceptPage": {
+        "properties": {
+          "errorMessage": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "invitation": {
+            "$ref": "#/components/schemas/TeamInvitationDetail"
+          },
+          "isValid": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "invitation"
+        ],
+        "title": "InvitationAcceptPage",
+        "type": "object"
+      },
       "ListTagsTagResponseBody": {
         "properties": {
           "description": {
@@ -358,6 +384,137 @@
           "team"
         ],
         "title": "TeamDetailPage",
+        "type": "object"
+      },
+      "TeamInvitationCreate": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/TeamRoles"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "TeamInvitationCreate",
+        "type": "object"
+      },
+      "TeamInvitationDetail": {
+        "properties": {
+          "expiresAt": {
+            "oneOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "inviterEmail": {
+            "type": "string"
+          },
+          "inviterName": {
+            "type": "string"
+          },
+          "isExpired": {
+            "default": false,
+            "type": "boolean"
+          },
+          "role": {
+            "type": "string"
+          },
+          "teamName": {
+            "type": "string"
+          },
+          "teamSlug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "inviterEmail",
+          "inviterName",
+          "role",
+          "teamName",
+          "teamSlug"
+        ],
+        "title": "TeamInvitationDetail",
+        "type": "object"
+      },
+      "TeamInvitationItem": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "oneOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "invitedByEmail": {
+            "type": "string"
+          },
+          "isExpired": {
+            "default": false,
+            "type": "boolean"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "email",
+          "id",
+          "invitedByEmail",
+          "role"
+        ],
+        "title": "TeamInvitationItem",
+        "type": "object"
+      },
+      "TeamInvitationsPage": {
+        "properties": {
+          "invitations": {
+            "items": {
+              "$ref": "#/components/schemas/TeamInvitationItem"
+            },
+            "type": "array"
+          },
+          "permissions": {
+            "$ref": "#/components/schemas/TeamPermissions"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamDetail"
+          }
+        },
+        "required": [
+          "invitations",
+          "permissions",
+          "team"
+        ],
+        "title": "TeamInvitationsPage",
         "type": "object"
       },
       "TeamListItem": {
@@ -806,6 +963,55 @@
           "password"
         ],
         "title": "UserCreate",
+        "type": "object"
+      },
+      "UserPendingInvitation": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "inviterName": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "teamName": {
+            "type": "string"
+          },
+          "teamSlug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "inviterName",
+          "role",
+          "teamName",
+          "teamSlug"
+        ],
+        "title": "UserPendingInvitation",
+        "type": "object"
+      },
+      "UserPendingInvitationsPage": {
+        "properties": {
+          "invitations": {
+            "items": {
+              "$ref": "#/components/schemas/UserPendingInvitation"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "invitations"
+        ],
+        "title": "UserPendingInvitationsPage",
         "type": "object"
       },
       "UserRole": {
@@ -2487,6 +2693,262 @@
         ]
       }
     },
+    "/invitations": {
+      "get": {
+        "deprecated": false,
+        "description": "Get all pending invitations for the current user.\n\nReturns:\n    List of pending invitations.",
+        "operationId": "GetUserInvitations",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPendingInvitationsPage"
+                }
+              }
+            },
+            "description": "Request fulfilled, document follows",
+            "headers": {}
+          }
+        },
+        "summary": "GetUserInvitations",
+        "tags": [
+          "Teams"
+        ]
+      }
+    },
+    "/invitations/{token}": {
+      "get": {
+        "deprecated": false,
+        "description": "Show invitation accept/decline page.\n\nReturns:\n    Invitation details and validity status.",
+        "operationId": "GetInvitationAcceptPage",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The invitation token.",
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "description": "The invitation token.",
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationAcceptPage"
+                }
+              }
+            },
+            "description": "Request fulfilled, document follows",
+            "headers": {}
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "GetInvitationPage",
+        "tags": [
+          "Teams"
+        ]
+      }
+    },
+    "/invitations/{token}/accept": {
+      "post": {
+        "deprecated": false,
+        "description": "Accept a team invitation.\n\nReturns:\n    Redirect to the team page.",
+        "operationId": "AcceptInvitation",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The invitation token.",
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "description": "The invitation token.",
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Document created, URL follows",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "AcceptInvitation",
+        "tags": [
+          "Teams"
+        ]
+      }
+    },
+    "/invitations/{token}/decline": {
+      "post": {
+        "deprecated": false,
+        "description": "Decline a team invitation.\n\nReturns:\n    Redirect to dashboard.",
+        "operationId": "DeclineInvitation",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The invitation token.",
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "description": "The invitation token.",
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Document created, URL follows",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "DeclineInvitation",
+        "tags": [
+          "Teams"
+        ]
+      }
+    },
     "/teams": {
       "get": {
         "deprecated": false,
@@ -3083,6 +3545,259 @@
           }
         },
         "summary": "UpdateTeam",
+        "tags": [
+          "Teams"
+        ]
+      }
+    },
+    "/teams/{team_slug}/invitations": {
+      "get": {
+        "deprecated": false,
+        "description": "Get pending invitations for a team.\n\nReturns:\n    Team details and list of pending invitations.",
+        "operationId": "GetTeamInvitations",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The team slug.",
+            "in": "path",
+            "name": "team_slug",
+            "required": true,
+            "schema": {
+              "description": "The team slug.",
+              "title": "Team Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamInvitationsPage"
+                }
+              }
+            },
+            "description": "Request fulfilled, document follows",
+            "headers": {}
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "GetTeamInvitations",
+        "tags": [
+          "Teams"
+        ]
+      },
+      "post": {
+        "deprecated": false,
+        "description": "Create a new team invitation.\n\nReturns:\n    Redirect to invitations page.",
+        "operationId": "CreateTeamInvitation",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The team slug.",
+            "in": "path",
+            "name": "team_slug",
+            "required": true,
+            "schema": {
+              "description": "The team slug.",
+              "title": "Team Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamInvitationCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Document created, URL follows",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "CreateInvitation",
+        "tags": [
+          "Teams"
+        ]
+      }
+    },
+    "/teams/{team_slug}/invitations/{invitation_id}": {
+      "delete": {
+        "deprecated": false,
+        "description": "Cancel a pending invitation.\n\nReturns:\n    Redirect to invitations page.",
+        "operationId": "CancelTeamInvitation",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The team slug.",
+            "in": "path",
+            "name": "team_slug",
+            "required": true,
+            "schema": {
+              "description": "The team slug.",
+              "title": "Team Slug",
+              "type": "string"
+            }
+          },
+          {
+            "deprecated": false,
+            "description": "The invitation ID.",
+            "in": "path",
+            "name": "invitation_id",
+            "required": true,
+            "schema": {
+              "description": "The invitation ID.",
+              "format": "uuid",
+              "title": "Invitation ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "Object moved -- see Method and URL list",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "CancelInvitation",
         "tags": [
           "Teams"
         ]

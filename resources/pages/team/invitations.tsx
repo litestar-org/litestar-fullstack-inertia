@@ -26,15 +26,12 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "@/components/ui/use-toast"
 import { AppLayout } from "@/layouts/app-layout"
-import type { TeamDetailPage, TeamInvitationItem } from "@/lib/generated/api/types.gen"
+import type { TeamInvitationItem, TeamInvitationsPage } from "@/lib/generated/api/types.gen"
 import { route } from "@/lib/generated/routes"
-import DeleteTeamForm from "@/pages/team/partials/delete-team-form"
-import TeamMemberManager from "@/pages/team/partials/team-member-manager"
-import UpdateTeamNameForm from "@/pages/team/partials/update-team-name-form"
 
-type Props = TeamDetailPage
+type Props = TeamInvitationsPage
 
-export default function TeamSettings({ team, members, permissions, pendingInvitations = [] }: Props) {
+export default function TeamInvitations({ team, invitations, permissions }: Props) {
 	const [showInviteDialog, setShowInviteDialog] = useState(false)
 	const [invitationToCancel, setInvitationToCancel] = useState<TeamInvitationItem | null>(null)
 
@@ -70,32 +67,25 @@ export default function TeamSettings({ team, members, permissions, pendingInvita
 
 	return (
 		<>
-			<Head title={`${team.name} Settings`} />
-			<Header title="Team Settings">
-				<Link href={route("teams.show", { team_slug: team.slug })}>
+			<Head title={`${team.name} - Invitations`} />
+			<Header title="Team Invitations">
+				<Link href={route("teams.settings", { team_slug: team.slug })}>
 					<Button variant="outline" size="sm">
 						<ArrowLeft className="mr-2 h-4 w-4" />
-						Back to Team
+						Back to Settings
 					</Button>
 				</Link>
 			</Header>
 			<Container>
 				<div className="max-w-3xl space-y-6">
-					{permissions.canUpdateTeam && <UpdateTeamNameForm team={team} />}
-
-					<TeamMemberManager team={team} members={members} permissions={permissions} />
-
-					{/* Pending Invitations Section */}
-					{permissions.canAddTeamMembers && (
-						<Card>
-							<CardHeader>
-								<div className="flex items-center justify-between">
-									<div>
-										<CardTitle>Pending Invitations</CardTitle>
-										<CardDescription>
-											{pendingInvitations.length === 0 ? "No pending invitations" : `${pendingInvitations.length} pending invitation${pendingInvitations.length !== 1 ? "s" : ""}`}
-										</CardDescription>
-									</div>
+					<Card>
+						<CardHeader>
+							<div className="flex items-center justify-between">
+								<div>
+									<CardTitle>Pending Invitations</CardTitle>
+									<CardDescription>Manage pending invitations to {team.name}.</CardDescription>
+								</div>
+								{permissions.canAddTeamMembers && (
 									<Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
 										<DialogTrigger asChild>
 											<Button size="sm">
@@ -149,85 +139,76 @@ export default function TeamSettings({ team, members, permissions, pendingInvita
 											</form>
 										</DialogContent>
 									</Dialog>
+								)}
+							</div>
+						</CardHeader>
+						<CardContent>
+							{invitations.length === 0 ? (
+								<div className="flex flex-col items-center justify-center py-8 text-center">
+									<Mail className="h-12 w-12 text-muted-foreground" />
+									<h3 className="mt-4 font-semibold text-lg">No pending invitations</h3>
+									<p className="mt-2 text-muted-foreground text-sm">Invite team members to start collaborating.</p>
 								</div>
-							</CardHeader>
-							<CardContent>
-								{pendingInvitations.length === 0 ? (
-									<div className="flex flex-col items-center justify-center py-6 text-center">
-										<Mail className="h-10 w-10 text-muted-foreground" />
-										<p className="mt-3 text-muted-foreground text-sm">No pending invitations. Invite team members to start collaborating.</p>
-									</div>
-								) : (
-									<div className="space-y-3">
-										{pendingInvitations.map((invitation) => (
-											<div key={invitation.id} className="flex items-center justify-between rounded-lg border p-3">
-												<div className="flex items-center gap-3">
-													<div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
-														<Mail className="h-4 w-4 text-muted-foreground" />
+							) : (
+								<div className="space-y-4">
+									{invitations.map((invitation) => (
+										<div key={invitation.id} className="flex items-center justify-between rounded-lg border p-4">
+											<div className="flex items-center gap-4">
+												<div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+													<Mail className="h-5 w-5 text-muted-foreground" />
+												</div>
+												<div>
+													<div className="flex items-center gap-2">
+														<span className="font-medium">{invitation.email}</span>
+														<Badge variant="secondary" className="capitalize">
+															{invitation.role}
+														</Badge>
+														{invitation.isExpired && <Badge variant="destructive">Expired</Badge>}
 													</div>
-													<div>
-														<div className="flex items-center gap-2">
-															<span className="font-medium text-sm">{invitation.email}</span>
-															<Badge variant="secondary" className="text-xs capitalize">
-																{invitation.role}
-															</Badge>
-															{invitation.isExpired && (
-																<Badge variant="destructive" className="text-xs">
-																	Expired
-																</Badge>
-															)}
-														</div>
-														<div className="flex items-center gap-1 text-muted-foreground text-xs">
-															<Clock className="h-3 w-3" />
-															<span>Sent {formatDistanceToNow(new Date(invitation.createdAt), { addSuffix: true })}</span>
-														</div>
+													<div className="flex items-center gap-2 text-muted-foreground text-sm">
+														<Clock className="h-3 w-3" />
+														<span>Sent {formatDistanceToNow(new Date(invitation.createdAt), { addSuffix: true })}</span>
+														<span>by {invitation.invitedByEmail}</span>
 													</div>
 												</div>
-												{permissions.canRemoveTeamMembers && (
-													<AlertDialog open={invitationToCancel?.id === invitation.id} onOpenChange={(open) => !open && setInvitationToCancel(null)}>
-														<AlertDialogTrigger asChild>
-															<Button
-																variant="ghost"
-																size="icon"
-																className="h-8 w-8 text-muted-foreground hover:text-destructive"
-																onClick={() => setInvitationToCancel(invitation)}
-															>
-																<Trash2 className="h-4 w-4" />
-															</Button>
-														</AlertDialogTrigger>
-														<AlertDialogContent>
-															<AlertDialogHeader>
-																<AlertDialogTitle>Cancel Invitation</AlertDialogTitle>
-																<AlertDialogDescription>
-																	Are you sure you want to cancel the invitation to {invitation.email}? They will no longer be able to join the team with this link.
-																</AlertDialogDescription>
-															</AlertDialogHeader>
-															<AlertDialogFooter>
-																<AlertDialogCancel>Keep Invitation</AlertDialogCancel>
-																<AlertDialogAction
-																	onClick={cancelInvitation}
-																	disabled={cancelForm.processing}
-																	className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-																>
-																	Cancel Invitation
-																</AlertDialogAction>
-															</AlertDialogFooter>
-														</AlertDialogContent>
-													</AlertDialog>
-												)}
 											</div>
-										))}
-									</div>
-								)}
-							</CardContent>
-						</Card>
-					)}
-
-					{permissions.canDeleteTeam && <DeleteTeamForm team={team} />}
+											{permissions.canRemoveTeamMembers && (
+												<AlertDialog open={invitationToCancel?.id === invitation.id} onOpenChange={(open) => !open && setInvitationToCancel(null)}>
+													<AlertDialogTrigger asChild>
+														<Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={() => setInvitationToCancel(invitation)}>
+															<Trash2 className="h-4 w-4" />
+														</Button>
+													</AlertDialogTrigger>
+													<AlertDialogContent>
+														<AlertDialogHeader>
+															<AlertDialogTitle>Cancel Invitation</AlertDialogTitle>
+															<AlertDialogDescription>
+																Are you sure you want to cancel the invitation to {invitation.email}? They will no longer be able to join the team with this link.
+															</AlertDialogDescription>
+														</AlertDialogHeader>
+														<AlertDialogFooter>
+															<AlertDialogCancel>Keep Invitation</AlertDialogCancel>
+															<AlertDialogAction
+																onClick={cancelInvitation}
+																disabled={cancelForm.processing}
+																className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+															>
+																Cancel Invitation
+															</AlertDialogAction>
+														</AlertDialogFooter>
+													</AlertDialogContent>
+												</AlertDialog>
+											)}
+										</div>
+									))}
+								</div>
+							)}
+						</CardContent>
+					</Card>
 				</div>
 			</Container>
 		</>
 	)
 }
 
-TeamSettings.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>
+TeamInvitations.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>

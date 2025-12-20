@@ -24,7 +24,7 @@ def _clear_sqlalchemy_default_handlers() -> None:
         # Remove only basic StreamHandlers, not QueueHandlers or other custom handlers
         handlers_to_remove = [
             h for h in logger.handlers
-            if type(h) is logging.StreamHandler  # noqa: E721 - exact type match, not subclass
+            if type(h) is logging.StreamHandler
         ]
         for handler in handlers_to_remove:
             logger.removeHandler(handler)

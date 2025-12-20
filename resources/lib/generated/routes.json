@@ -94,6 +94,54 @@
       ],
       "uri": "/"
     },
+    "invitation.accept": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "token": "string"
+      },
+      "parameters": [
+        "token"
+      ],
+      "uri": "/invitations/{token}/accept"
+    },
+    "invitation.accept.page": {
+      "component": "invitation/accept",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "token": "string"
+      },
+      "parameters": [
+        "token"
+      ],
+      "uri": "/invitations/{token}"
+    },
+    "invitation.decline": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "token": "string"
+      },
+      "parameters": [
+        "token"
+      ],
+      "uri": "/invitations/{token}/decline"
+    },
+    "invitations.list": {
+      "component": "invitation/list",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/invitations"
+    },
     "landing": {
       "component": "landing",
       "method": "get",
@@ -294,6 +342,48 @@
         "team_slug"
       ],
       "uri": "/teams/{team_slug}"
+    },
+    "teams.invitation.cancel": {
+      "method": "delete",
+      "methods": [
+        "DELETE"
+      ],
+      "parameterTypes": {
+        "invitation_id": "UUID",
+        "team_slug": "string"
+      },
+      "parameters": [
+        "invitation_id",
+        "team_slug"
+      ],
+      "uri": "/teams/{team_slug}/invitations/{invitation_id}"
+    },
+    "teams.invitations": {
+      "component": "team/invitations",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "team_slug": "string"
+      },
+      "parameters": [
+        "team_slug"
+      ],
+      "uri": "/teams/{team_slug}/invitations"
+    },
+    "teams.invite": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "team_slug": "string"
+      },
+      "parameters": [
+        "team_slug"
+      ],
+      "uri": "/teams/{team_slug}/invitations"
     },
     "teams.list": {
       "component": "team/list",

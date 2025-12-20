@@ -59,7 +59,13 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         from app.domain.accounts.guards import session_auth
         from app.domain.tags.controllers import TagController
         from app.domain.teams import signals as team_signals
-        from app.domain.teams.controllers import TeamController, TeamMemberController
+        from app.domain.teams.controllers import (
+            InvitationAcceptController,
+            TeamController,
+            TeamInvitationController,
+            TeamMemberController,
+            UserInvitationsController,
+        )
         from app.domain.web.controllers import WebController
         from app.lib import log
         from app.lib.exceptions import inertia_exception_handler
@@ -110,8 +116,10 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
                 UserController,
                 TeamController,
                 UserRoleController,
-                #  TeamInvitationController,
+                TeamInvitationController,
                 TeamMemberController,
+                InvitationAcceptController,
+                UserInvitationsController,
                 TagController,
                 WebController,
             ],
@@ -131,6 +139,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
                 account_signals.password_reset_requested_handler,
                 account_signals.password_reset_completed_handler,
                 team_signals.team_created_event_handler,
+                team_signals.team_invitation_created_handler,
             ],
         )
         return app_config

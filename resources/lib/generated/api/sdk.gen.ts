@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddMemberToTeamData, AddMemberToTeamErrors, AddMemberToTeamResponses, AssignUserRoleData, AssignUserRoleErrors, AssignUserRoleResponses, CreateTagData, CreateTagErrors, CreateTagResponses, CreateTeamData, CreateTeamErrors, CreateTeamPageData, CreateTeamPageResponses, CreateTeamResponses, CreateUserData, CreateUserErrors, CreateUserResponses, DeleteTagData, DeleteTagErrors, DeleteTagResponses, DeleteTeamData, DeleteTeamErrors, DeleteUserData, DeleteUserErrors, DeleteUserResponses, GetTagData, GetTagErrors, GetTagResponses, GetTeamData, GetTeamErrors, GetTeamResponses, GetTeamSettingsData, GetTeamSettingsErrors, GetTeamSettingsResponses, GetUserData, GetUserErrors, GetUserResponses, ListTagsData, ListTagsErrors, ListTagsResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, RemoveMemberFromTeamData, RemoveMemberFromTeamErrors, RemoveMemberFromTeamResponses, RevokeUserRoleData, RevokeUserRoleErrors, RevokeUserRoleResponses, UpdateTagData, UpdateTagErrors, UpdateTagResponses, UpdateTeamData, UpdateTeamErrors, UpdateTeamResponses, UpdateUserData, UpdateUserErrors, UpdateUserResponses } from './types.gen';
+import type { AcceptInvitationData, AcceptInvitationErrors, AcceptInvitationResponses, AddMemberToTeamData, AddMemberToTeamErrors, AddMemberToTeamResponses, AssignUserRoleData, AssignUserRoleErrors, AssignUserRoleResponses, CancelTeamInvitationData, CancelTeamInvitationErrors, CreateTagData, CreateTagErrors, CreateTagResponses, CreateTeamData, CreateTeamErrors, CreateTeamInvitationData, CreateTeamInvitationErrors, CreateTeamInvitationResponses, CreateTeamPageData, CreateTeamPageResponses, CreateTeamResponses, CreateUserData, CreateUserErrors, CreateUserResponses, DeclineInvitationData, DeclineInvitationErrors, DeclineInvitationResponses, DeleteTagData, DeleteTagErrors, DeleteTagResponses, DeleteTeamData, DeleteTeamErrors, DeleteUserData, DeleteUserErrors, DeleteUserResponses, GetInvitationAcceptPageData, GetInvitationAcceptPageErrors, GetInvitationAcceptPageResponses, GetTagData, GetTagErrors, GetTagResponses, GetTeamData, GetTeamErrors, GetTeamInvitationsData, GetTeamInvitationsErrors, GetTeamInvitationsResponses, GetTeamResponses, GetTeamSettingsData, GetTeamSettingsErrors, GetTeamSettingsResponses, GetUserData, GetUserErrors, GetUserInvitationsData, GetUserInvitationsResponses, GetUserResponses, ListTagsData, ListTagsErrors, ListTagsResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, RemoveMemberFromTeamData, RemoveMemberFromTeamErrors, RemoveMemberFromTeamResponses, RevokeUserRoleData, RevokeUserRoleErrors, RevokeUserRoleResponses, UpdateTagData, UpdateTagErrors, UpdateTagResponses, UpdateTeamData, UpdateTeamErrors, UpdateTeamResponses, UpdateUserData, UpdateUserErrors, UpdateUserResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -282,6 +282,78 @@ export const updateUser = <ThrowOnError extends boolean = false>(options: Option
 });
 
 /**
+ * GetUserInvitations
+ *
+ * Get all pending invitations for the current user.
+ *
+ * Returns:
+ * List of pending invitations.
+ */
+export const getUserInvitations = <ThrowOnError extends boolean = false>(options?: Options<GetUserInvitationsData, ThrowOnError>) => (options?.client ?? client).get<GetUserInvitationsResponses, unknown, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/invitations',
+    ...options
+});
+
+/**
+ * GetInvitationPage
+ *
+ * Show invitation accept/decline page.
+ *
+ * Returns:
+ * Invitation details and validity status.
+ */
+export const getInvitationAcceptPage = <ThrowOnError extends boolean = false>(options: Options<GetInvitationAcceptPageData, ThrowOnError>) => (options.client ?? client).get<GetInvitationAcceptPageResponses, GetInvitationAcceptPageErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/invitations/{token}',
+    ...options
+});
+
+/**
+ * AcceptInvitation
+ *
+ * Accept a team invitation.
+ *
+ * Returns:
+ * Redirect to the team page.
+ */
+export const acceptInvitation = <ThrowOnError extends boolean = false>(options: Options<AcceptInvitationData, ThrowOnError>) => (options.client ?? client).post<AcceptInvitationResponses, AcceptInvitationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/invitations/{token}/accept',
+    ...options
+});
+
+/**
+ * DeclineInvitation
+ *
+ * Decline a team invitation.
+ *
+ * Returns:
+ * Redirect to dashboard.
+ */
+export const declineInvitation = <ThrowOnError extends boolean = false>(options: Options<DeclineInvitationData, ThrowOnError>) => (options.client ?? client).post<DeclineInvitationResponses, DeclineInvitationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/invitations/{token}/decline',
+    ...options
+});
+
+/**
  * ListTeams
  *
  * List teams that your account can access.
@@ -395,6 +467,64 @@ export const updateTeam = <ThrowOnError extends boolean = false>(options: Option
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * GetTeamInvitations
+ *
+ * Get pending invitations for a team.
+ *
+ * Returns:
+ * Team details and list of pending invitations.
+ */
+export const getTeamInvitations = <ThrowOnError extends boolean = false>(options: Options<GetTeamInvitationsData, ThrowOnError>) => (options.client ?? client).get<GetTeamInvitationsResponses, GetTeamInvitationsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/teams/{team_slug}/invitations',
+    ...options
+});
+
+/**
+ * CreateInvitation
+ *
+ * Create a new team invitation.
+ *
+ * Returns:
+ * Redirect to invitations page.
+ */
+export const createTeamInvitation = <ThrowOnError extends boolean = false>(options: Options<CreateTeamInvitationData, ThrowOnError>) => (options.client ?? client).post<CreateTeamInvitationResponses, CreateTeamInvitationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/teams/{team_slug}/invitations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * CancelInvitation
+ *
+ * Cancel a pending invitation.
+ *
+ * Returns:
+ * Redirect to invitations page.
+ */
+export const cancelTeamInvitation = <ThrowOnError extends boolean = false>(options: Options<CancelTeamInvitationData, ThrowOnError>) => (options.client ?? client).delete<unknown, CancelTeamInvitationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/teams/{team_slug}/invitations/{invitation_id}',
+    ...options
 });
 
 /**

@@ -60,6 +60,28 @@
       "route": "/dashboard",
       "tsType": "NoProps"
     },
+    "invitation/accept": {
+      "customTypes": [
+        "InvitationAcceptPage",
+        "TeamInvitationDetail"
+      ],
+      "handler": "get_invitation_page",
+      "propsType": "InvitationAcceptPage",
+      "route": "/invitations/{token}",
+      "schemaRef": "#/components/schemas/InvitationAcceptPage",
+      "tsType": "InvitationAcceptPage"
+    },
+    "invitation/list": {
+      "customTypes": [
+        "UserPendingInvitation",
+        "UserPendingInvitationsPage"
+      ],
+      "handler": "get_user_invitations",
+      "propsType": "UserPendingInvitationsPage",
+      "route": "/invitations",
+      "schemaRef": "#/components/schemas/UserPendingInvitationsPage",
+      "tsType": "UserPendingInvitationsPage"
+    },
     "landing": {
       "customTypes": [
         "NoProps"
@@ -117,6 +139,19 @@
       "route": "/teams/{team_slug}",
       "schemaRef": "#/components/schemas/Team",
       "tsType": "Team"
+    },
+    "team/invitations": {
+      "customTypes": [
+        "TeamDetail",
+        "TeamInvitationItem",
+        "TeamInvitationsPage",
+        "TeamPermissions"
+      ],
+      "handler": "get_team_invitations",
+      "propsType": "TeamInvitationsPage",
+      "route": "/teams/{team_slug}/invitations",
+      "schemaRef": "#/components/schemas/TeamInvitationsPage",
+      "tsType": "TeamInvitationsPage"
     },
     "team/list": {
       "customTypes": [

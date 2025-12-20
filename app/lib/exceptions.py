@@ -6,7 +6,6 @@ from urllib.parse import quote, urlparse, urlunparse
 from litestar.exceptions import HTTPException, NotAuthorizedException
 from litestar.response import Response
 from litestar.status_codes import HTTP_401_UNAUTHORIZED
-
 from litestar_vite.inertia import flash
 from litestar_vite.inertia.exception_handler import create_inertia_exception_response as _original_handler
 from litestar_vite.inertia.plugin import InertiaPlugin

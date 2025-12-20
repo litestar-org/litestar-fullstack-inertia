@@ -97,7 +97,7 @@ class ServerSettings:
     RELOAD_DIRS: list[str] = field(default_factory=get_env("LITESTAR_RELOAD_DIRS", [f"{BASE_DIR}"]))
     """Directories to watch for reloading."""
     HTTP_WORKERS: int | None = field(
-        default_factory=lambda: int(os.getenv("WEB_CONCURRENCY")) if os.getenv("WEB_CONCURRENCY") is not None else None  # type: ignore[arg-type]
+        default_factory=lambda: int(os.getenv("WEB_CONCURRENCY")) if os.getenv("WEB_CONCURRENCY") is not None else None,  # type: ignore[arg-type]
     )
     """Number of HTTP Worker processes to be spawned by Uvicorn."""
 
@@ -119,7 +119,7 @@ class LogSettings:
     OBFUSCATE_HEADERS: set[str] = field(default_factory=lambda: {"Authorization", "X-API-KEY", "X-XSRF-TOKEN"})
     """Request header keys to obfuscate."""
     REQUEST_FIELDS: list[RequestExtractorField] = field(
-        default_factory=lambda: ["path", "method", "query", "path_params"]
+        default_factory=lambda: ["path", "method", "query", "path_params"],
     )
     """Attributes of the [Request][litestar.connection.request.Request] to be logged."""
     RESPONSE_FIELDS: list[ResponseExtractorField] = field(default_factory=lambda: ["status_code"])
@@ -177,7 +177,7 @@ class LogSettings:
                         "standard": {
                             "()": structlog.stdlib.ProcessorFormatter,
                             "processors": log_conf.stdlib_logger_processors(as_json=as_json),
-                        }
+                        },
                     },
                     loggers={
                         "sqlalchemy.engine": {
@@ -227,7 +227,7 @@ class LogSettings:
                 ),
             ),
             middleware_logging_config=LoggingMiddlewareConfig(
-                request_log_fields=self.REQUEST_FIELDS, response_log_fields=self.RESPONSE_FIELDS
+                request_log_fields=self.REQUEST_FIELDS, response_log_fields=self.RESPONSE_FIELDS,
             ),
         )
 
@@ -263,7 +263,7 @@ class EmailSettings:
     VERIFICATION_TOKEN_EXPIRES_HOURS: int = field(default_factory=get_env("EMAIL_VERIFICATION_TOKEN_EXPIRES_HOURS", 24))
     """Hours until email verification token expires."""
     PASSWORD_RESET_TOKEN_EXPIRES_MINUTES: int = field(
-        default_factory=get_env("EMAIL_PASSWORD_RESET_TOKEN_EXPIRES_MINUTES", 60)
+        default_factory=get_env("EMAIL_PASSWORD_RESET_TOKEN_EXPIRES_MINUTES", 60),
     )
     """Minutes until password reset token expires."""
     INVITATION_TOKEN_EXPIRES_DAYS: int = field(default_factory=get_env("EMAIL_INVITATION_TOKEN_EXPIRES_DAYS", 7))
@@ -279,7 +279,7 @@ class AppSettings:
     DEBUG: bool = field(default_factory=get_env("LITESTAR_DEBUG", False))
     """Run `Litestar` with `debug=True`."""
     SECRET_KEY: str = field(
-        default_factory=lambda: os.getenv("SECRET_KEY", binascii.hexlify(os.urandom(32)).decode(encoding="utf-8"))
+        default_factory=lambda: os.getenv("SECRET_KEY", binascii.hexlify(os.urandom(32)).decode(encoding="utf-8")),
     )
     """Application secret key."""
     NAME: str = field(default_factory=get_env("APP_NAME", "app"))

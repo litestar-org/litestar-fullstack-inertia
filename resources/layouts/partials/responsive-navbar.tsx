@@ -3,9 +3,9 @@ import { ChevronDownIcon, CircleUserIcon, LogOutIcon, UserRoundCogIcon } from "l
 import { Logo } from "@/components/logo"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import type { FullSharedProps } from "@/lib/generated/page-props"
 import { route } from "@/lib/generated/routes"
 import { getFirstWord, getGravatarUrl, strLimit } from "@/lib/utils"
-import type { FullSharedProps } from "@/lib/generated/page-props"
 
 const ResponsiveNavbar = () => {
 	const { auth } = usePage<FullSharedProps>().props

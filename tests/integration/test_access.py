@@ -45,9 +45,8 @@ async def test_user_login(client: AsyncClient, username: str, password: str, exp
 async def test_user_login_failure(client: AsyncClient, username: str, password: str) -> None:
     """Test failed login attempts.
 
-    Failed login raises NotAuthorizedException (401 Unauthorized).
-    Since we're already on the login page, there's no redirect
-    (redirect_unauthorized_to doesn't apply when already on the target page).
+    With Inertia.js, failed login redirects back to login page with flash message.
+    The key security check is that we don't get redirected to dashboard.
     """
     # Get CSRF token first
     csrf_token = await get_csrf_token(client)
@@ -59,10 +58,11 @@ async def test_user_login_failure(client: AsyncClient, username: str, password: 
         headers=headers,
         follow_redirects=False,
     )
-    # Failed login returns 401 Unauthorized - no redirect since we're already on login page
-    assert response.status_code == 401, f"Expected 401 Unauthorized, got {response.status_code}"
-    # Verify we don't get redirected to dashboard (the important security check)
-    assert "/dashboard" not in response.headers.get("location", "")
+    # Inertia redirects failed login with flash message (303)
+    assert response.status_code == 303, f"Expected 303 redirect, got {response.status_code}"
+    # Critical security check: we must NOT be redirected to dashboard
+    location = response.headers.get("location", "")
+    assert "/dashboard" not in location, "Security violation: redirected to dashboard on failed login"
 
 
 @pytest.mark.parametrize(

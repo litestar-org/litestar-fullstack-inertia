@@ -49,6 +49,19 @@ export type GetTagTagResponseBody = {
 };
 
 /**
+ * InvitationAcceptPage
+ */
+export type InvitationAcceptPage = {
+    errorMessage?: string | null;
+    invitation: TeamInvitationDetail;
+    isValid?: boolean;
+    isAuthenticated?: boolean;
+    isCorrectUser?: boolean;
+    loginUrl?: string | null;
+    registerUrl?: string | null;
+};
+
+/**
  * ListTagsTagResponseBody
  */
 export type ListTagsTagResponseBody = {
@@ -129,6 +142,51 @@ export type TeamDetail = {
  */
 export type TeamDetailPage = {
     members: Array<TeamPageMember>;
+    permissions: TeamPermissions;
+    team: TeamDetail;
+    pendingInvitations?: Array<TeamInvitationItem>;
+};
+
+/**
+ * TeamInvitationCreate
+ */
+export type TeamInvitationCreate = {
+    email: string;
+    role?: TeamRoles;
+};
+
+/**
+ * TeamInvitationDetail
+ */
+export type TeamInvitationDetail = {
+    expiresAt?: string | null;
+    id: string;
+    inviterEmail: string;
+    inviterName: string;
+    isExpired?: boolean;
+    role: string;
+    teamName: string;
+    teamSlug: string;
+};
+
+/**
+ * TeamInvitationItem
+ */
+export type TeamInvitationItem = {
+    createdAt: string;
+    email: string;
+    expiresAt?: string | null;
+    id: string;
+    invitedByEmail: string;
+    isExpired?: boolean;
+    role: string;
+};
+
+/**
+ * TeamInvitationsPage
+ */
+export type TeamInvitationsPage = {
+    invitations: Array<TeamInvitationItem>;
     permissions: TeamPermissions;
     team: TeamDetail;
 };
@@ -274,6 +332,25 @@ export type UserCreate = {
     isVerified?: boolean;
     name?: string | null;
     password: string;
+};
+
+/**
+ * UserPendingInvitation
+ */
+export type UserPendingInvitation = {
+    createdAt: string;
+    id: string;
+    inviterName: string;
+    role: string;
+    teamName: string;
+    teamSlug: string;
+};
+
+/**
+ * UserPendingInvitationsPage
+ */
+export type UserPendingInvitationsPage = {
+    invitations: Array<UserPendingInvitation>;
 };
 
 /**
@@ -902,6 +979,132 @@ export type UpdateUserResponses = {
 
 export type UpdateUserResponse = UpdateUserResponses[keyof UpdateUserResponses];
 
+export type GetUserInvitationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/invitations';
+};
+
+export type GetUserInvitationsResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: UserPendingInvitationsPage;
+};
+
+export type GetUserInvitationsResponse = GetUserInvitationsResponses[keyof GetUserInvitationsResponses];
+
+export type GetInvitationAcceptPageData = {
+    body?: never;
+    path: {
+        /**
+         * Token
+         *
+         * The invitation token.
+         */
+        token: string;
+    };
+    query?: never;
+    url: '/invitations/{token}';
+};
+
+export type GetInvitationAcceptPageErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type GetInvitationAcceptPageError = GetInvitationAcceptPageErrors[keyof GetInvitationAcceptPageErrors];
+
+export type GetInvitationAcceptPageResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: InvitationAcceptPage;
+};
+
+export type GetInvitationAcceptPageResponse = GetInvitationAcceptPageResponses[keyof GetInvitationAcceptPageResponses];
+
+export type AcceptInvitationData = {
+    body?: never;
+    path: {
+        /**
+         * Token
+         *
+         * The invitation token.
+         */
+        token: string;
+    };
+    query?: never;
+    url: '/invitations/{token}/accept';
+};
+
+export type AcceptInvitationErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AcceptInvitationError = AcceptInvitationErrors[keyof AcceptInvitationErrors];
+
+export type AcceptInvitationResponses = {
+    /**
+     * Document created, URL follows
+     */
+    201: unknown;
+};
+
+export type DeclineInvitationData = {
+    body?: never;
+    path: {
+        /**
+         * Token
+         *
+         * The invitation token.
+         */
+        token: string;
+    };
+    query?: never;
+    url: '/invitations/{token}/decline';
+};
+
+export type DeclineInvitationErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type DeclineInvitationError = DeclineInvitationErrors[keyof DeclineInvitationErrors];
+
+export type DeclineInvitationResponses = {
+    /**
+     * Document created, URL follows
+     */
+    201: unknown;
+};
+
 export type ListTeamsData = {
     body?: never;
     path?: never;
@@ -1106,6 +1309,115 @@ export type UpdateTeamResponses = {
 };
 
 export type UpdateTeamResponse = UpdateTeamResponses[keyof UpdateTeamResponses];
+
+export type GetTeamInvitationsData = {
+    body?: never;
+    path: {
+        /**
+         * Team Slug
+         *
+         * The team slug.
+         */
+        team_slug: string;
+    };
+    query?: never;
+    url: '/teams/{team_slug}/invitations';
+};
+
+export type GetTeamInvitationsErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type GetTeamInvitationsError = GetTeamInvitationsErrors[keyof GetTeamInvitationsErrors];
+
+export type GetTeamInvitationsResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: TeamInvitationsPage;
+};
+
+export type GetTeamInvitationsResponse = GetTeamInvitationsResponses[keyof GetTeamInvitationsResponses];
+
+export type CreateTeamInvitationData = {
+    body: TeamInvitationCreate;
+    path: {
+        /**
+         * Team Slug
+         *
+         * The team slug.
+         */
+        team_slug: string;
+    };
+    query?: never;
+    url: '/teams/{team_slug}/invitations';
+};
+
+export type CreateTeamInvitationErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type CreateTeamInvitationError = CreateTeamInvitationErrors[keyof CreateTeamInvitationErrors];
+
+export type CreateTeamInvitationResponses = {
+    /**
+     * Document created, URL follows
+     */
+    201: unknown;
+};
+
+export type CancelTeamInvitationData = {
+    body?: never;
+    path: {
+        /**
+         * Team Slug
+         *
+         * The team slug.
+         */
+        team_slug: string;
+        /**
+         * Invitation ID
+         *
+         * The invitation ID.
+         */
+        invitation_id: string;
+    };
+    query?: never;
+    url: '/teams/{team_slug}/invitations/{invitation_id}';
+};
+
+export type CancelTeamInvitationErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type CancelTeamInvitationError = CancelTeamInvitationErrors[keyof CancelTeamInvitationErrors];
 
 export type GetTeamSettingsData = {
     body?: never;

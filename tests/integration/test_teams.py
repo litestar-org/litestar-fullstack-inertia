@@ -15,7 +15,7 @@ async def test_teams_with_no_auth(client: "AsyncClient") -> None:
     Routes without components return 401.
     """
     # PATCH with component="team/edit" redirects to login (303 See Other)
-    response = await client.patch("/teams/97108ac1-ffcb-411d-8b1e-d9183399f63b", json={"name": "TEST UPDATE"})
+    response = await client.patch("/teams/test-team/", json={"name": "TEST UPDATE"})
     assert response.status_code == 303
 
     # POST without component returns 401 (not authorized)
@@ -26,11 +26,11 @@ async def test_teams_with_no_auth(client: "AsyncClient") -> None:
     assert response.status_code == 401
 
     # DELETE without component returns 401 (status_code=303 only applies to success)
-    response = await client.delete("/teams/97108ac1-ffcb-411d-8b1e-d9183399f63b")
+    response = await client.delete("/teams/test-team/")
     assert response.status_code == 401
 
     # GET with component="team/show" redirects to login (307 Temporary Redirect)
-    response = await client.get("/teams/97108ac1-ffcb-411d-8b1e-d9183399f63b")
+    response = await client.get("/teams/test-team/")
     assert response.status_code == 307
     # GET with component="team/list" redirects to login (307 Temporary Redirect)
     response = await client.get("/teams")
@@ -44,7 +44,7 @@ async def test_teams_with_incorrect_role(client: "AsyncClient", user_inertia_hea
     """
     # User cannot update a team they don't have admin access to
     response = await client.patch(
-        "/teams/81108ac1-ffcb-411d-8b1e-d91833999999",
+        "/teams/simple-team/",
         json={"name": "TEST UPDATE"},
         headers=user_inertia_headers,
     )
@@ -59,7 +59,7 @@ async def test_teams_with_incorrect_role(client: "AsyncClient", user_inertia_hea
     assert response.status_code == 303  # POST redirects to GET via 303
 
     # User cannot view a team they're not a member of
-    response = await client.get("/teams/81108ac1-ffcb-411d-8b1e-d91833999999", headers=user_inertia_headers)
+    response = await client.get("/teams/simple-team/", headers=user_inertia_headers)
     assert response.status_code == 307  # GET preserves method via 307
 
     # User can view the teams list (filtered to their teams)
@@ -67,7 +67,7 @@ async def test_teams_with_incorrect_role(client: "AsyncClient", user_inertia_hea
     assert response.status_code == 200
 
     # User cannot delete a team they don't own
-    response = await client.delete("/teams/81108ac1-ffcb-411d-8b1e-d91833999999", headers=user_inertia_headers)
+    response = await client.delete("/teams/simple-team/", headers=user_inertia_headers)
     assert response.status_code == 303  # DELETE redirects to GET via 303
 
 
@@ -76,13 +76,13 @@ async def test_teams_list(client: "AsyncClient", superuser_inertia_headers: dict
     response = await client.get("/teams", headers=superuser_inertia_headers)
     assert response.status_code == 200
     data = response.json()
-    # Inertia responses wrap handler return value in props
+    # Inertia responses wrap handler return value in props.content
     assert "props" in data
-    props = data["props"]
-    assert "teams" in props
-    assert len(props["teams"]) > 0
+    content = data["props"]["content"]
+    assert "teams" in content
+    assert len(content["teams"]) > 0
     # Verify team structure includes role information
-    team = props["teams"][0]
+    team = content["teams"][0]
     assert "id" in team
     assert "name" in team
     assert "userRole" in team
@@ -91,19 +91,19 @@ async def test_teams_list(client: "AsyncClient", superuser_inertia_headers: dict
 
 async def test_teams_get(client: "AsyncClient", superuser_inertia_headers: dict[str, str]) -> None:
     """Superuser can get a specific team via Inertia endpoint."""
-    response = await client.get("/teams/97108ac1-ffcb-411d-8b1e-d9183399f63b", headers=superuser_inertia_headers)
+    response = await client.get("/teams/test-team/", headers=superuser_inertia_headers)
     assert response.status_code == 200
     data = response.json()
-    # Inertia responses wrap handler return value in props
+    # Inertia responses wrap handler return value in props.content
     assert "props" in data
-    props = data["props"]
-    assert "team" in props
-    assert props["team"]["name"] == "Test Team"
+    content = data["props"]["content"]
+    assert "team" in content
+    assert content["team"]["name"] == "Test Team"
     # Verify permissions are included
-    assert "permissions" in props
-    assert "canUpdateTeam" in props["permissions"]
+    assert "permissions" in content
+    assert "canUpdateTeam" in content["permissions"]
     # Verify members are included
-    assert "members" in props
+    assert "members" in content
 
 
 async def test_teams_create(client: "AsyncClient", superuser_inertia_headers: dict[str, str]) -> None:
@@ -120,7 +120,7 @@ async def test_teams_create(client: "AsyncClient", superuser_inertia_headers: di
 async def test_teams_update(client: "AsyncClient", superuser_inertia_headers: dict[str, str]) -> None:
     """Superuser can update a team via Inertia endpoint."""
     response = await client.patch(
-        "/teams/97108ac1-ffcb-411d-8b1e-d9183399f63b",
+        "/teams/test-team/",
         json={"name": "Name Changed"},
         headers=superuser_inertia_headers,
     )
@@ -132,7 +132,7 @@ async def test_teams_delete(
 ) -> None:
     """Superuser can delete a team."""
     response = await client.delete(
-        "/teams/81108ac1-ffcb-411d-8b1e-d91833999999",
+        "/teams/simple-team/",
         headers=superuser_inertia_headers,
     )
     # Inertia delete returns a redirect (303)
