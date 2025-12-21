@@ -10,8 +10,11 @@ axios.defaults.withCredentials = true
 
 createInertiaApp({
 	title: (title: string) => `${title} - ${appName}`,
-	// v2.3+ optimization: read page data from script element (~37% smaller HTML)
-	useScriptElementForInitialPage: true,
+	// defaults: {
+    //     future: {
+    //         useScriptElementForInitialPage: true,
+    //     },
+    // },
 	resolve: (name: string) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob("./pages/**/*.tsx")),
 	setup({ el, App, props }: { el: HTMLElement; App: React.ComponentType; props: Record<string, unknown> }) {
 		const appElement = (

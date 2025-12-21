@@ -83,6 +83,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         from app.domain.web.controllers import WebController
         from app.lib import log
         from app.lib.exceptions import inertia_exception_handler
+        from app.lib.proxy import ProxyHeadersMiddleware
         from app.lib.settings import get_settings
         from app.server import plugins
 
@@ -100,6 +101,9 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         app_config = session_auth.on_app_init(app_config)
         # log
         app_config.middleware.insert(0, log.StructlogMiddleware)
+        # Proxy headers middleware (must run first to set scheme before URL generation)
+        # Workaround for: https://github.com/litestar-org/litestar-vite/issues/167
+        app_config.middleware.insert(0, ProxyHeadersMiddleware)
         app_config.after_exception.append(log.after_exception_hook_handler)
         app_config.before_send.append(log.BeforeSendHandler())
         # TODO: Remove after litestar-vite > 0.15.0rc3 - workaround for flash message on auth redirect

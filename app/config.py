@@ -64,10 +64,10 @@ session = ServerSideSessionConfig(max_age=3600)
 log = settings.log.create_structlog_config()
 
 github_oauth2_client = GitHubOAuth2(
-    client_id=settings.app.GITHUB_OAUTH2_CLIENT_ID, client_secret=settings.app.GITHUB_OAUTH2_CLIENT_SECRET,
+    client_id=settings.app.GITHUB_OAUTH2_CLIENT_ID, client_secret=settings.app.GITHUB_OAUTH2_CLIENT_SECRET
 )
 google_oauth2_client = GoogleOAuth2(
-    client_id=settings.app.GOOGLE_OAUTH2_CLIENT_ID, client_secret=settings.app.GOOGLE_OAUTH2_CLIENT_SECRET,
+    client_id=settings.app.GOOGLE_OAUTH2_CLIENT_ID, client_secret=settings.app.GOOGLE_OAUTH2_CLIENT_SECRET
 )
 
 
@@ -82,10 +82,7 @@ def configure_storage() -> None:
     if backend == "local":
         storage_path = settings.storage.UPLOAD_DIR.absolute()
         storage_path.mkdir(parents=True, exist_ok=True)
-        avatars_backend = ObstoreBackend(
-            key="avatars",
-            fs=f"file://{storage_path}/",
-        )
+        avatars_backend = ObstoreBackend(key="avatars", fs=f"file://{storage_path}/")
     elif backend == "s3":
         kwargs: dict[str, str] = {
             "key": "avatars",
@@ -99,10 +96,7 @@ def configure_storage() -> None:
             kwargs["aws_endpoint"] = settings.storage.AWS_ENDPOINT
         avatars_backend = ObstoreBackend(**kwargs)
     elif backend == "gcs":
-        kwargs = {
-            "key": "avatars",
-            "fs": f"gs://{settings.storage.BUCKET}/",
-        }
+        kwargs = {"key": "avatars", "fs": f"gs://{settings.storage.BUCKET}/"}
         if settings.storage.GOOGLE_SERVICE_ACCOUNT:
             kwargs["google_service_account"] = settings.storage.GOOGLE_SERVICE_ACCOUNT
         avatars_backend = ObstoreBackend(**kwargs)
