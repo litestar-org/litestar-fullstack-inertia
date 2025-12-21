@@ -1,13 +1,11 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Link, router, usePage } from "@inertiajs/react"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { Link, usePage } from "@inertiajs/react"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/use-toast"
+import { useInertiaForm } from "@/hooks/use-inertia-form"
 import type { FullSharedProps } from "@/lib/generated/page-props"
 import { route } from "@/lib/generated/routes"
 
@@ -20,34 +18,18 @@ const profileSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 })
 
-type ProfileFormValues = z.infer<typeof profileSchema>
-
 export default function UpdateProfileInformation({ mustVerifyEmail, status }: Props) {
 	const { auth } = usePage<FullSharedProps>().props
-	const [isSubmitting, setIsSubmitting] = useState(false)
 
-	const form = useForm<ProfileFormValues>({
-		resolver: zodResolver(profileSchema),
-		defaultValues: {
-			name: auth?.user?.name ?? "",
+	const { form, isSubmitting, handleSubmit } = useInertiaForm({
+		schema: profileSchema,
+		defaultValues: { name: auth?.user?.name ?? "" },
+		url: route("profile.update"),
+		method: "patch",
+		onSuccess: () => {
+			toast({ description: "Your profile information has been updated." })
 		},
 	})
-
-	function onSubmit(values: ProfileFormValues) {
-		setIsSubmitting(true)
-		router.patch(route("profile.update"), values, {
-			preserveScroll: true,
-			onSuccess: () => {
-				toast({ description: "Your profile information has been updated." })
-			},
-			onError: (errors) => {
-				if (errors.name) {
-					form.setError("name", { message: errors.name as string })
-				}
-			},
-			onFinish: () => setIsSubmitting(false),
-		})
-	}
 
 	return (
 		<Card>
@@ -57,7 +39,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status }: Pr
 			</CardHeader>
 			<CardContent>
 				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+					<form onSubmit={handleSubmit} className="space-y-4">
 						<FormField
 							control={form.control}
 							name="name"

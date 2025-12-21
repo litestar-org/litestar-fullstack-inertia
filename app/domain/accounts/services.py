@@ -201,7 +201,7 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
         await self.repository.update(db_obj)
 
     async def verify_mfa(
-        self, email: str, code: str | None = None, recovery_code: str | None = None
+        self, email: str, code: str | None = None, recovery_code: str | None = None,
     ) -> MfaVerifyResult:
         """Verify MFA code or recovery code for a user.
 
@@ -241,7 +241,7 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
                 updated_codes.pop(code_index)
                 await self.update(item_id=user.id, data={"backup_codes": updated_codes or None})
                 return MfaVerifyResult(
-                    user=user, verified=True, used_backup_code=True, remaining_backup_codes=len(updated_codes)
+                    user=user, verified=True, used_backup_code=True, remaining_backup_codes=len(updated_codes),
                 )
 
         return MfaVerifyResult(user=user, verified=False)
@@ -273,7 +273,7 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
         """
         return bool(
             user.is_superuser
-            or any(assigned_role.role.name for assigned_role in user.roles if assigned_role.role.name == "Superuser")
+            or any(assigned_role.role.name for assigned_role in user.roles if assigned_role.role.name == "Superuser"),
         )
 
     # Avatar upload settings
@@ -308,7 +308,7 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
         unique_filename = f"avatars/{user.id}/{uuid7()}{ext}"
 
         user.avatar = FileObject(
-            backend="avatars", filename=unique_filename, content_type=content_type, content=content
+            backend="avatars", filename=unique_filename, content_type=content_type, content=content,
         )
         return await self.update(user, auto_commit=True)
 
@@ -456,7 +456,7 @@ class EmailTokenService(SQLAlchemyAsyncRepositoryService[EmailToken, EmailTokenR
         ), token
 
     async def validate_token(
-        self, plain_token: str, token_type: TokenType, email: str | None = None
+        self, plain_token: str, token_type: TokenType, email: str | None = None,
     ) -> EmailToken | None:
         """Validate a token without consuming it.
 
@@ -469,7 +469,7 @@ class EmailTokenService(SQLAlchemyAsyncRepositoryService[EmailToken, EmailTokenR
         return token
 
     async def consume_token(
-        self, plain_token: str, token_type: TokenType, email: str | None = None
+        self, plain_token: str, token_type: TokenType, email: str | None = None,
     ) -> EmailToken | None:
         """Validate and consume a token. Token cannot be used again after consumption.
 

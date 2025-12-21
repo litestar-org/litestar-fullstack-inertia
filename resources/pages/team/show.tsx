@@ -10,12 +10,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { AppLayout } from "@/layouts/app-layout"
-import type { TeamDetailPage } from "@/lib/generated/api/types.gen"
+import type { PagePropsFor } from "@/lib/generated/page-props"
 import { route } from "@/lib/generated/routes"
 import { cn, getGravatarUrl, getInitials } from "@/lib/utils"
 import TeamMemberManager from "@/pages/team/partials/team-member-manager"
-
-type Props = TeamDetailPage
 
 const roleStyles: Record<string, string> = {
 	owner: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
@@ -31,7 +29,7 @@ const roleIcons: Record<string, LucideIcon | null> = {
 	member: null,
 }
 
-export default function TeamShow({ team, members, permissions }: Props) {
+export default function TeamShow({ team, members, permissions }: PagePropsFor<"team/show">) {
 	const canManageTeam = permissions.canUpdateTeam || permissions.canDeleteTeam
 
 	return (

@@ -35,7 +35,6 @@ class User(UUIDAuditBase):
     avatar: Mapped[FileObject | None] = mapped_column(
         StoredObject(backend="avatars"),
         nullable=True,
-        default=None,
     )
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
     is_superuser: Mapped[bool] = mapped_column(default=False, nullable=False)

@@ -1,13 +1,10 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { router } from "@inertiajs/react"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/use-toast"
+import { useInertiaForm } from "@/hooks/use-inertia-form"
 import { route } from "@/lib/generated/routes"
 
 const passwordSchema = z
@@ -21,47 +18,23 @@ const passwordSchema = z
 		path: ["passwordConfirmation"],
 	})
 
-type PasswordFormValues = z.infer<typeof passwordSchema>
-
 export default function UpdatePasswordForm() {
-	const [isSubmitting, setIsSubmitting] = useState(false)
-
-	const form = useForm<PasswordFormValues>({
-		resolver: zodResolver(passwordSchema),
+	const { form, isSubmitting, handleSubmit, reset } = useInertiaForm({
+		schema: passwordSchema,
 		defaultValues: {
 			currentPassword: "",
 			newPassword: "",
 			passwordConfirmation: "",
 		},
-	})
-
-	function onSubmit(values: PasswordFormValues) {
-		setIsSubmitting(true)
+		url: route("password.update"),
+		method: "patch",
 		// Only send fields the backend expects (not passwordConfirmation)
-		router.patch(
-			route("password.update"),
-			{
-				currentPassword: values.currentPassword,
-				newPassword: values.newPassword,
-			},
-			{
-				preserveScroll: true,
-				onSuccess: () => {
-					toast({ description: "Your password has been updated." })
-					form.reset()
-				},
-				onError: (errors) => {
-					if (errors.currentPassword) {
-						form.setError("currentPassword", { message: errors.currentPassword as string })
-					}
-					if (errors.newPassword) {
-						form.setError("newPassword", { message: errors.newPassword as string })
-					}
-				},
-				onFinish: () => setIsSubmitting(false),
-			},
-		)
-	}
+		transform: ({ currentPassword, newPassword }) => ({ currentPassword, newPassword }),
+		onSuccess: () => {
+			toast({ description: "Your password has been updated." })
+			reset()
+		},
+	})
 
 	return (
 		<Card>
@@ -71,7 +44,7 @@ export default function UpdatePasswordForm() {
 			</CardHeader>
 			<CardContent>
 				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+					<form onSubmit={handleSubmit} className="space-y-4">
 						<FormField
 							control={form.control}
 							name="currentPassword"

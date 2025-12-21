@@ -1,45 +1,34 @@
-import { zodResolver } from "@hookform/resolvers/zod"
 import { router, usePage } from "@inertiajs/react"
 import { AlertCircle } from "lucide-react"
-import { useMemo, useState } from "react"
-import { useForm } from "react-hook-form"
-import { toast } from "sonner"
+import { useMemo } from "react"
 import { z } from "zod"
 import { Icons } from "@/components/icons"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { useInertiaForm } from "@/hooks/use-inertia-form"
 import type { FlashMessages } from "@/lib/generated/page-props"
 import { route } from "@/lib/generated/routes"
 import { cn } from "@/lib/utils"
 
 interface UserLoginFormProps extends React.HTMLAttributes<HTMLDivElement> {}
-const formSchema = z.object({
-	username: z.string().min(1, {
-		message: "Username is required.",
-	}),
+
+const loginSchema = z.object({
+	username: z.string().min(1, { message: "Username is required." }),
 	password: z.string().min(1, "Please enter a valid password."),
 	remember: z.boolean().default(false),
 })
 
-type FormProps = z.infer<typeof formSchema>
-
 export default function UserLoginForm({ className, ...props }: UserLoginFormProps) {
-	// In Inertia v2, flash is at the page level, not in props
 	const page = usePage<{
 		url: string
-		content: {
-			status_code: number
-			message: string
-		}
 		githubOAuthEnabled: boolean
 		googleOAuthEnabled: boolean
 	}>()
-	const { url, content, githubOAuthEnabled, googleOAuthEnabled } = page.props
+	const { url, githubOAuthEnabled, googleOAuthEnabled } = page.props
 	const flash = page.flash as FlashMessages | undefined
 	const hasOAuthProviders = githubOAuthEnabled || googleOAuthEnabled
-	const [isLoading, setIsLoading] = useState<boolean>(false)
 
 	// Get error from URL query param (fallback when flash couldn't be set due to no session)
 	const urlError = useMemo(() => {
@@ -53,36 +42,17 @@ export default function UserLoginForm({ className, ...props }: UserLoginFormProp
 
 	// Combined error: prefer flash, fall back to URL param
 	const errorMessage = flash?.error?.length ? flash.error : urlError ? [urlError] : null
-	const form = useForm<FormProps>({
-		resolver: zodResolver(formSchema),
-		defaultValues: {
-			username: "",
-			password: "",
-		},
+
+	const { form, isSubmitting, handleSubmit } = useInertiaForm({
+		schema: loginSchema,
+		defaultValues: { username: "", password: "", remember: false },
+		url: route("login"),
 	})
 
-	async function onSubmit(values: FormProps) {
-		try {
-			setIsLoading(true)
-			router.post(route("login"), values, {
-				onError: (err) => {
-					console.log(err)
-					if ("username" in err && typeof err.username === "string") {
-						form.setError("root", { message: err.username })
-					}
-				},
-			})
-		} catch (error: any) {
-			console.log(error)
-			toast(content?.message ?? error.response?.data?.detail ?? "There was an unexpected error logging in.")
-		} finally {
-			setIsLoading(false)
-		}
-	}
 	return (
 		<div className={cn("grid gap-6", className)} {...props}>
 			<Form {...form}>
-				<form onSubmit={form.handleSubmit(onSubmit)}>
+				<form onSubmit={handleSubmit}>
 					<div className="grid gap-2">
 						{errorMessage && (
 							<Alert variant="destructive">
@@ -99,7 +69,7 @@ export default function UserLoginForm({ className, ...props }: UserLoginFormProp
 								<FormItem>
 									<FormLabel>Email</FormLabel>
 									<FormControl>
-										<Input placeholder="name@example.com" autoCapitalize="none" autoComplete="username" autoCorrect="off" {...field} disabled={isLoading} />
+										<Input placeholder="name@example.com" autoCapitalize="none" autoComplete="username" autoCorrect="off" {...field} disabled={isSubmitting} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -120,7 +90,7 @@ export default function UserLoginForm({ className, ...props }: UserLoginFormProp
 											autoCorrect="off"
 											autoComplete="current-password"
 											{...field}
-											disabled={isLoading}
+											disabled={isSubmitting}
 										/>
 									</FormControl>
 									<FormMessage />
@@ -128,8 +98,8 @@ export default function UserLoginForm({ className, ...props }: UserLoginFormProp
 							)}
 						/>
 
-						<Button type="submit" className="mt-2 w-full" disabled={isLoading}>
-							{isLoading && <Icons.spinner className="mr-2 h-4 w-4" />}
+						<Button type="submit" className="mt-2 w-full" disabled={isSubmitting}>
+							{isSubmitting && <Icons.spinner className="mr-2 h-4 w-4" />}
 							Sign In
 						</Button>
 					</div>
@@ -146,14 +116,14 @@ export default function UserLoginForm({ className, ...props }: UserLoginFormProp
 						</div>
 					</div>
 					{githubOAuthEnabled && (
-						<Button variant="outline" type="button" disabled={isLoading} onClick={() => router.post(route("github.register"))}>
-							{isLoading ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.gitHub className="mr-2 h-4 w-4" />}
+						<Button variant="outline" type="button" disabled={isSubmitting} onClick={() => router.post(route("github.register"))}>
+							{isSubmitting ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.gitHub className="mr-2 h-4 w-4" />}
 							Continue with GitHub
 						</Button>
 					)}
 					{googleOAuthEnabled && (
-						<Button variant="outline" type="button" disabled={isLoading} onClick={() => router.post(route("google.register"))}>
-							{isLoading ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.google className="mr-2 h-4 w-4" />}
+						<Button variant="outline" type="button" disabled={isSubmitting} onClick={() => router.post(route("google.register"))}>
+							{isSubmitting ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.google className="mr-2 h-4 w-4" />}
 							Continue with Google
 						</Button>
 					)}

@@ -1,75 +1,43 @@
-import { zodResolver } from "@hookform/resolvers/zod"
 import { router, usePage } from "@inertiajs/react"
 import { AlertCircle } from "lucide-react"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { toast } from "sonner"
 import { z } from "zod"
 import { Icons } from "@/components/icons"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { useInertiaForm } from "@/hooks/use-inertia-form"
 import type { FlashMessages } from "@/lib/generated/page-props"
 import { route } from "@/lib/generated/routes"
 import { cn } from "@/lib/utils"
 
 interface UserRegistrationFormProps extends React.HTMLAttributes<HTMLDivElement> {}
-const formSchema = z.object({
+
+const registrationSchema = z.object({
 	email: z.string().email({ message: "Username must be a valid email address" }),
 	name: z.optional(z.string()),
-	password: z.string().min(6, {
-		message: "Password must be at least 6 characters.",
-	}),
+	password: z.string().min(6, { message: "Password must be at least 6 characters." }),
 })
 
-type FormProps = z.infer<typeof formSchema>
-
 export default function UserRegistrationForm({ className, ...props }: UserRegistrationFormProps) {
-	// In Inertia v2, flash is at the page level, not in props
 	const page = usePage<{
-		content: {
-			status_code: number
-			message: string
-		}
 		githubOAuthEnabled: boolean
 		googleOAuthEnabled: boolean
 	}>()
-	const { content, githubOAuthEnabled, googleOAuthEnabled } = page.props
+	const { githubOAuthEnabled, googleOAuthEnabled } = page.props
 	const flash = page.flash as FlashMessages | undefined
 	const hasOAuthProviders = githubOAuthEnabled || googleOAuthEnabled
-	const [isLoading, setIsLoading] = useState<boolean>(false)
-	const form = useForm<FormProps>({
-		resolver: zodResolver(formSchema),
-		defaultValues: {
-			email: "",
-			password: "",
-		},
-	})
 
-	async function onSubmit(values: FormProps) {
-		try {
-			setIsLoading(true)
-			router.post(route("register.add"), values, {
-				onError: (err) => {
-					console.log(err)
-					if ("email" in err && typeof err.email === "string") {
-						form.setError("root", { message: err.email })
-					}
-				},
-			})
-		} catch (error: any) {
-			console.log(error)
-			toast(content?.message ?? error.response?.data?.detail ?? "There was an unexpected error when registering user.")
-		} finally {
-			setIsLoading(false)
-		}
-	}
+	const { form, isSubmitting, handleSubmit } = useInertiaForm({
+		schema: registrationSchema,
+		defaultValues: { email: "", name: "", password: "" },
+		url: route("register.add"),
+	})
 
 	return (
 		<div className={cn("grid gap-6", className)} {...props}>
 			<Form {...form}>
-				<form onSubmit={form.handleSubmit(onSubmit)}>
+				<form onSubmit={handleSubmit}>
 					<div className="grid gap-2">
 						{flash?.error && (
 							<Alert variant="destructive">
@@ -86,7 +54,7 @@ export default function UserRegistrationForm({ className, ...props }: UserRegist
 									<FormItem>
 										<FormLabel className="sr-only">Email</FormLabel>
 										<FormControl>
-											<Input placeholder="Enter your email." autoCapitalize="none" autoComplete="email" autoCorrect="off" {...field} disabled={isLoading} />
+											<Input placeholder="Enter your email." autoCapitalize="none" autoComplete="email" autoCorrect="off" {...field} disabled={isSubmitting} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -108,17 +76,17 @@ export default function UserRegistrationForm({ className, ...props }: UserRegist
 												autoCorrect="off"
 												autoComplete="current-password"
 												{...field}
-												disabled={isLoading}
+												disabled={isSubmitting}
 											/>
-										</FormControl>{" "}
+										</FormControl>
 										<FormMessage />
 									</FormItem>
 								)}
 							/>
 						</div>
 						<div className="mt-10 grid gap-1">
-							<Button type="submit" disabled={isLoading}>
-								{isLoading && <Icons.spinner className="mr-2 h-5 w-5" />}
+							<Button type="submit" disabled={isSubmitting}>
+								{isSubmitting && <Icons.spinner className="mr-2 h-5 w-5" />}
 								Sign Up
 							</Button>
 						</div>
@@ -136,13 +104,13 @@ export default function UserRegistrationForm({ className, ...props }: UserRegist
 						</div>
 					</div>
 					{githubOAuthEnabled && (
-						<Button variant="outline" type="button" disabled={isLoading} onClick={() => router.post(route("github.register"))}>
-							{isLoading ? <Icons.spinner className="mr-2 h-5 w-5" /> : <Icons.gitHub className="mr-2 h-5 w-5" />} Sign up with GitHub
+						<Button variant="outline" type="button" disabled={isSubmitting} onClick={() => router.post(route("github.register"))}>
+							{isSubmitting ? <Icons.spinner className="mr-2 h-5 w-5" /> : <Icons.gitHub className="mr-2 h-5 w-5" />} Sign up with GitHub
 						</Button>
 					)}
 					{googleOAuthEnabled && (
-						<Button variant="outline" type="button" disabled={isLoading} onClick={() => router.post(route("google.register"))}>
-							{isLoading ? <Icons.spinner className="mr-2 h-5 w-5" /> : <Icons.google className="mr-2 h-5 w-5" />} Sign up with Google
+						<Button variant="outline" type="button" disabled={isSubmitting} onClick={() => router.post(route("google.register"))}>
+							{isSubmitting ? <Icons.spinner className="mr-2 h-5 w-5" /> : <Icons.google className="mr-2 h-5 w-5" />} Sign up with Google
 						</Button>
 					)}
 				</>

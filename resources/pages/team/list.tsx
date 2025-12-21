@@ -7,11 +7,9 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AppLayout } from "@/layouts/app-layout"
-import type { TeamListPage } from "@/lib/generated/api/types.gen"
+import type { PagePropsFor } from "@/lib/generated/page-props"
 import { route } from "@/lib/generated/routes"
 import { cn } from "@/lib/utils"
-
-type Props = TeamListPage
 
 const roleStyles: Record<string, string> = {
 	owner: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
@@ -19,7 +17,7 @@ const roleStyles: Record<string, string> = {
 	member: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
 }
 
-export default function TeamList({ teams }: Props) {
+export default function TeamList({ teams }: PagePropsFor<"team/list">) {
 	return (
 		<>
 			<Head title="Teams" />

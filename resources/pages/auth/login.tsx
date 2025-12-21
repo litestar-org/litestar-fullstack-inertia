@@ -3,12 +3,13 @@ import { AuthHeroPanel } from "@/components/auth-hero-panel"
 import { Icons } from "@/components/icons"
 import { buttonVariants } from "@/components/ui/button"
 import { GuestLayout } from "@/layouts/guest-layout"
+import type { PagePropsFor } from "@/lib/generated/page-props"
 import { route } from "@/lib/generated/routes"
 import { cn } from "@/lib/utils"
 import UserLoginForm from "./partials/user-login-form"
 
 export default function Login() {
-	const { registrationEnabled } = usePage<{ registrationEnabled: boolean }>().props
+	const { registrationEnabled } = usePage<PagePropsFor<"auth/login">>().props
 
 	return (
 		<>
