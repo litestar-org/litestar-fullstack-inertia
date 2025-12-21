@@ -15,7 +15,6 @@ from app.domain.accounts.dependencies import provide_users_service
 from app.domain.accounts.guards import requires_active_user
 from app.domain.accounts.schemas import PasswordUpdate, ProfileUpdate, User
 from app.domain.accounts.services import UserService
-from app.lib.schema import Message
 
 if TYPE_CHECKING:
     from app.db.models import User as UserModel
@@ -81,20 +80,20 @@ class ProfileController(Controller):
         flash(request, "Your account has been removed from the system.", category="info")
         return InertiaRedirect(request, request.url_for("landing"))
 
-    @post(path="/profile/avatar/", name="profile.avatar.upload", status_code=200)
+    @post(path="/profile/avatar/", name="profile.avatar.upload", status_code=303)
     async def upload_avatar(
         self,
         request: Request,
         current_user: UserModel,
         users_service: UserService,
         data: UploadFile = Body(media_type=RequestEncodingType.MULTI_PART),
-    ) -> Message:
+    ) -> InertiaRedirect:
         """Upload user avatar.
 
         Accepts multipart form with file upload.
 
         Returns:
-            Success message with new avatar URL.
+            Redirect to profile page.
         """
         content = await data.read()
         await users_service.upload_avatar(
@@ -104,20 +103,20 @@ class ProfileController(Controller):
             original_filename=data.filename or "avatar",
         )
         flash(request, "Avatar updated successfully.", category="success")
-        return Message(message="Avatar updated successfully.")
+        return InertiaRedirect(request, request.url_for("profile.show"))
 
-    @delete(path="/profile/avatar/", name="profile.avatar.delete", status_code=200)
+    @delete(path="/profile/avatar/", name="profile.avatar.delete", status_code=303)
     async def delete_avatar(
         self,
         request: Request,
         current_user: UserModel,
         users_service: UserService,
-    ) -> Message:
+    ) -> InertiaRedirect:
         """Delete user avatar and revert to Gravatar.
 
         Returns:
-            Success message.
+            Redirect to profile page.
         """
         await users_service.delete_avatar(current_user)
         flash(request, "Avatar removed. Using Gravatar.", category="success")
-        return Message(message="Avatar removed successfully.")
+        return InertiaRedirect(request, request.url_for("profile.show"))

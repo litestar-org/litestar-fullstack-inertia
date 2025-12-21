@@ -46,50 +46,61 @@ export default function UserRegistrationForm({ className, ...props }: UserRegist
 								<AlertDescription>{flash.error.join("\n")}</AlertDescription>
 							</Alert>
 						)}
-						<div className="grid gap-1">
-							<FormField
-								control={form.control}
-								name="email"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel className="sr-only">Email</FormLabel>
-										<FormControl>
-											<Input placeholder="Enter your email." autoCapitalize="none" autoComplete="email" autoCorrect="off" {...field} disabled={isSubmitting} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-						<div className="grid gap-1">
-							<FormField
-								control={form.control}
-								name="password"
-								render={({ field }) => (
-									<FormItem className="mt-4">
-										<FormLabel className="sr-only">Password</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Enter a secure password."
-												type="password"
-												autoCapitalize="none"
-												autoCorrect="off"
-												autoComplete="current-password"
-												{...field}
-												disabled={isSubmitting}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-						<div className="mt-10 grid gap-1">
-							<Button type="submit" disabled={isSubmitting}>
-								{isSubmitting && <Icons.spinner className="mr-2 h-5 w-5" />}
-								Sign Up
-							</Button>
-						</div>
+
+						<FormField
+							control={form.control}
+							name="name"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Full Name</FormLabel>
+									<FormControl>
+										<Input placeholder="Your name (optional)" autoCapitalize="words" autoComplete="name" autoCorrect="off" {...field} disabled={isSubmitting} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="email"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Email</FormLabel>
+									<FormControl>
+										<Input placeholder="name@example.com" autoCapitalize="none" autoComplete="email" autoCorrect="off" {...field} disabled={isSubmitting} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="password"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Password</FormLabel>
+									<FormControl>
+										<Input
+											placeholder="Create a secure password"
+											type="password"
+											autoCapitalize="none"
+											autoCorrect="off"
+											autoComplete="new-password"
+											{...field}
+											disabled={isSubmitting}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<Button type="submit" className="mt-2 w-full" disabled={isSubmitting}>
+							{isSubmitting && <Icons.spinner className="mr-2 h-4 w-4" />}
+							Sign Up
+						</Button>
 					</div>
 				</form>
 			</Form>
@@ -105,12 +116,12 @@ export default function UserRegistrationForm({ className, ...props }: UserRegist
 					</div>
 					{githubOAuthEnabled && (
 						<Button variant="outline" type="button" disabled={isSubmitting} onClick={() => router.post(route("github.register"))}>
-							{isSubmitting ? <Icons.spinner className="mr-2 h-5 w-5" /> : <Icons.gitHub className="mr-2 h-5 w-5" />} Sign up with GitHub
+							{isSubmitting ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.gitHub className="mr-2 h-4 w-4" />} Sign up with GitHub
 						</Button>
 					)}
 					{googleOAuthEnabled && (
 						<Button variant="outline" type="button" disabled={isSubmitting} onClick={() => router.post(route("google.register"))}>
-							{isSubmitting ? <Icons.spinner className="mr-2 h-5 w-5" /> : <Icons.google className="mr-2 h-5 w-5" />} Sign up with Google
+							{isSubmitting ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.google className="mr-2 h-4 w-4" />} Sign up with Google
 						</Button>
 					)}
 				</>

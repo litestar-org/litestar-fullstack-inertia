@@ -23,7 +23,7 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 const MAX_SIZE = 5 * 1024 * 1024 // 5MB
 
 export default function AvatarForm() {
-	const { auth, csrf_token } = usePage<FullSharedProps>().props
+	const { auth } = usePage<FullSharedProps>().props
 	const [isUploading, setIsUploading] = useState(false)
 	const [isDeleting, setIsDeleting] = useState(false)
 	const fileInputRef = useRef<HTMLInputElement>(null)
@@ -48,7 +48,7 @@ export default function AvatarForm() {
 		fileInputRef.current?.click()
 	}
 
-	async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+	function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
 		const file = event.target.files?.[0]
 		if (!file) return
 
@@ -71,66 +71,40 @@ export default function AvatarForm() {
 
 		setIsUploading(true)
 
-		try {
-			const formData = new FormData()
-			formData.append("data", file)
+		const formData = new FormData()
+		formData.append("data", file)
 
-			const response = await fetch(route("profile.avatar.upload"), {
-				method: "POST",
-				headers: {
-					"X-CSRFToken": csrf_token ?? "",
-				},
-				body: formData,
-			})
-
-			if (!response.ok) {
-				const errorData = await response.json()
-				throw new Error(errorData.detail || "Upload failed")
-			}
-
-			toast({ description: "Avatar updated successfully." })
-			router.reload({ only: ["auth"] })
-		} catch (error) {
-			toast({
-				variant: "destructive",
-				description: error instanceof Error ? error.message : "Failed to upload avatar.",
-			})
-		} finally {
-			setIsUploading(false)
-			// Reset file input
-			if (fileInputRef.current) {
-				fileInputRef.current.value = ""
-			}
-		}
+		router.post(route("profile.avatar.upload"), formData, {
+			forceFormData: true,
+			onError: (errors) => {
+				toast({
+					variant: "destructive",
+					description: Object.values(errors)[0] || "Failed to upload avatar.",
+				})
+			},
+			onFinish: () => {
+				setIsUploading(false)
+				if (fileInputRef.current) {
+					fileInputRef.current.value = ""
+				}
+			},
+		})
 	}
 
-	async function handleDelete() {
+	function handleDelete() {
 		setIsDeleting(true)
 
-		try {
-			const response = await fetch(route("profile.avatar.delete"), {
-				method: "DELETE",
-				headers: {
-					"X-CSRFToken": csrf_token ?? "",
-					"Content-Type": "application/json",
-				},
-			})
-
-			if (!response.ok) {
-				const errorData = await response.json()
-				throw new Error(errorData.detail || "Delete failed")
-			}
-
-			toast({ description: "Avatar removed. Using Gravatar." })
-			router.reload({ only: ["auth"] })
-		} catch (error) {
-			toast({
-				variant: "destructive",
-				description: error instanceof Error ? error.message : "Failed to remove avatar.",
-			})
-		} finally {
-			setIsDeleting(false)
-		}
+		router.delete(route("profile.avatar.delete"), {
+			onError: (errors) => {
+				toast({
+					variant: "destructive",
+					description: Object.values(errors)[0] || "Failed to remove avatar.",
+				})
+			},
+			onFinish: () => {
+				setIsDeleting(false)
+			},
+		})
 	}
 
 	return (

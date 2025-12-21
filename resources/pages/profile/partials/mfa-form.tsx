@@ -1,4 +1,5 @@
 import { router, useForm, usePage } from "@inertiajs/react"
+import axios from "axios"
 import { Copy, KeyRound, Loader2, QrCode, RefreshCw, ShieldCheck, ShieldOff } from "lucide-react"
 import { useState } from "react"
 import { InputError } from "@/components/input-error"
@@ -49,24 +50,7 @@ export default function MfaForm() {
 	const startSetup = async () => {
 		setIsEnabling(true)
 		try {
-			const response = await fetch(route("mfa.enable"), {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					"X-XSRF-TOKEN":
-						document.cookie
-							.split("; ")
-							.find((row) => row.startsWith("XSRF-TOKEN="))
-							?.split("=")[1] ?? "",
-				},
-				credentials: "include",
-			})
-
-			if (!response.ok) {
-				throw new Error("Failed to enable MFA")
-			}
-
-			const data: MfaSetupResponse = await response.json()
+			const { data } = await axios.post<MfaSetupResponse>(route("mfa.enable"))
 			setSetupData(data)
 			setSetupStep("qr")
 		} catch {
@@ -78,90 +62,45 @@ export default function MfaForm() {
 
 	const confirmSetup = async (e: React.FormEvent) => {
 		e.preventDefault()
-		confirmForm.setData("code", confirmForm.data.code)
 
 		try {
-			const response = await fetch(route("mfa.confirm"), {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					"X-XSRF-TOKEN":
-						document.cookie
-							.split("; ")
-							.find((row) => row.startsWith("XSRF-TOKEN="))
-							?.split("=")[1] ?? "",
-				},
-				credentials: "include",
-				body: JSON.stringify({ code: confirmForm.data.code }),
+			const { data } = await axios.post<MfaBackupCodesResponse>(route("mfa.confirm"), {
+				code: confirmForm.data.code,
 			})
-
-			if (!response.ok) {
-				const error = await response.json()
-				confirmForm.setError("code", error.detail || "Invalid code")
-				return
-			}
-
-			const data: MfaBackupCodesResponse = await response.json()
 			setBackupCodes(data.codes)
 			setSetupStep("backup")
 			router.reload({ only: ["auth"] })
-		} catch {
-			toast({ description: "Failed to confirm MFA. Please try again.", variant: "destructive" })
+		} catch (error) {
+			if (axios.isAxiosError(error) && error.response?.data?.detail) {
+				confirmForm.setError("code", error.response.data.detail)
+			} else {
+				toast({ description: "Failed to confirm MFA. Please try again.", variant: "destructive" })
+			}
 		}
 	}
 
-	const disableMfa = async () => {
-		try {
-			const response = await fetch(route("mfa.disable"), {
-				method: "DELETE",
-				headers: {
-					"Content-Type": "application/json",
-					"X-XSRF-TOKEN":
-						document.cookie
-							.split("; ")
-							.find((row) => row.startsWith("XSRF-TOKEN="))
-							?.split("=")[1] ?? "",
-				},
-				credentials: "include",
-				body: JSON.stringify({ password: disableForm.data.password }),
-			})
-
-			if (!response.ok) {
-				const error = await response.json()
-				disableForm.setError("password", error.detail || "Invalid password")
-				return
-			}
-
-			setShowDisableDialog(false)
-			disableForm.reset()
-			router.reload({ only: ["auth"] })
-			toast({ description: "MFA has been disabled." })
-		} catch {
-			toast({ description: "Failed to disable MFA. Please try again.", variant: "destructive" })
-		}
+	const disableMfa = () => {
+		router.delete(route("mfa.disable"), {
+			data: { password: disableForm.data.password },
+			onSuccess: () => {
+				setShowDisableDialog(false)
+				disableForm.reset()
+			},
+			onError: (errors) => {
+				const errorMessage = Object.values(errors)[0]
+				if (errorMessage) {
+					disableForm.setError("password", errorMessage)
+				} else {
+					toast({ description: "Failed to disable MFA. Please try again.", variant: "destructive" })
+				}
+			},
+		})
 	}
 
 	const regenerateBackupCodes = async () => {
 		setIsRegenerating(true)
 		try {
-			const response = await fetch(route("mfa.regenerate-codes"), {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					"X-XSRF-TOKEN":
-						document.cookie
-							.split("; ")
-							.find((row) => row.startsWith("XSRF-TOKEN="))
-							?.split("=")[1] ?? "",
-				},
-				credentials: "include",
-			})
-
-			if (!response.ok) {
-				throw new Error("Failed to regenerate codes")
-			}
-
-			const data: MfaBackupCodesResponse = await response.json()
+			const { data } = await axios.post<MfaBackupCodesResponse>(route("mfa.regenerate-codes"))
 			setBackupCodes(data.codes)
 			setSetupStep("backup")
 		} catch {

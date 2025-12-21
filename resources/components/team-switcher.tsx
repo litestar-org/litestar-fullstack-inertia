@@ -41,10 +41,10 @@ export function TeamSwitcher({ className }: TeamSwitcherProps) {
 			},
 		})
 	}
-	async function showTeam(teamId: string) {
+	async function showTeam(teamSlug: string) {
 		try {
 			setOpen(false)
-			router.get(route("teams.show", teamId))
+			router.get(route("teams.show", { team_slug: teamSlug }))
 		} catch (error: any) {
 			console.log(error)
 		}
@@ -90,7 +90,7 @@ export function TeamSwitcher({ className }: TeamSwitcherProps) {
 										key={team.teamId}
 										value={team.teamName}
 										onSelect={() => {
-											showTeam(team.teamId)
+											showTeam(team.teamSlug)
 											setOpen(false)
 											console.log("click")
 										}}

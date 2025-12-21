@@ -50,3 +50,4 @@ class TeamMember(UUIDAuditBase):
         lazy="joined",
     )
     team_name: AssociationProxy[str] = association_proxy("team", "name")
+    team_slug: AssociationProxy[str] = association_proxy("team", "slug")

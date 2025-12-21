@@ -41,6 +41,7 @@ class UserTeam(CamelizedBaseStruct):
 
     team_id: UUID
     team_name: str
+    team_slug: str
     is_owner: bool = False
     role: TeamRoles = TeamRoles.MEMBER
 

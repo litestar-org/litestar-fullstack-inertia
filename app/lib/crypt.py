@@ -48,7 +48,7 @@ async def verify_password(plain_password: str | bytes, hashed_password: str) -> 
         bool: True if password matches hash.
     """
     valid, _ = await asyncio.get_running_loop().run_in_executor(
-        None, hasher.verify_and_update, plain_password, hashed_password
+        None, hasher.verify_and_update, plain_password, hashed_password,
     )
     return bool(valid)
 
