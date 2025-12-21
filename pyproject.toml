@@ -16,7 +16,7 @@ classifiers = [
 ]
 dependencies = [
   "litestar[jinja,structlog,pydantic]>=2.8.3",
-  "advanced-alchemy[uuid,passlib]",
+  "advanced-alchemy[uuid,pwdlib,obstore]",
   "asyncpg>=0.28.0",
   "python-dotenv>=1.0.0",
   "litestar-vite>=0.15.0-rc.1",

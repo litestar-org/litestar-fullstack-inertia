@@ -8,6 +8,7 @@ from litestar.di import Provide
 from litestar.openapi.config import OpenAPIConfig
 from litestar.openapi.plugins import ScalarRenderPlugin, SwaggerRenderPlugin
 from litestar.plugins import CLIPluginProtocol, InitPluginProtocol
+from litestar.static_files import create_static_files_router
 
 if TYPE_CHECKING:
     from click import Group
@@ -103,8 +104,16 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         # plugins
         app_config.plugins.extend([plugins.structlog, plugins.granian, plugins.alchemy, plugins.vite])
 
+        # static files for uploads
+        uploads_router = create_static_files_router(
+            directories=[settings.storage.UPLOAD_DIR],
+            path="/uploads",
+            name="uploads",
+        )
+
         # routes
         app_config.route_handlers.extend([
+            uploads_router,
             AccessController,
             EmailVerificationController,
             MfaChallengeController,

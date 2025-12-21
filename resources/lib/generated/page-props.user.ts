@@ -17,7 +17,7 @@
  * }
  */
 export interface UserExtensions {
-  // Add your custom User properties here
+  avatarUrl?: string | null
 }
 
 /**

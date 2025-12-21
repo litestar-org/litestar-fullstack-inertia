@@ -4,8 +4,8 @@ import hashlib
 import secrets
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
-from uuid import UUID  # noqa: TC003
 
 import pyotp
 from advanced_alchemy.service import (
@@ -16,9 +16,11 @@ from advanced_alchemy.service import (
     is_dict_without_field,
     schema_dump,
 )
-from litestar.exceptions import NotAuthorizedException, PermissionDeniedException
+from advanced_alchemy.types import FileObject
+from litestar.exceptions import NotAuthorizedException, PermissionDeniedException, ValidationException
 from pwdlib import PasswordHash
 from sqlalchemy.orm import undefer_group
+from uuid_utils import uuid7
 
 from app.db.models import EmailToken, Role, TokenType, User, UserOauthAccount, UserRole
 from app.domain.accounts.repositories import (
@@ -31,13 +33,19 @@ from app.domain.accounts.repositories import (
 from app.lib import crypt
 
 if TYPE_CHECKING:
+    from uuid import UUID
+
     from sqlalchemy.ext.asyncio import AsyncSession
 
 _password_hash = PasswordHash.recommended()
 
 
 def verify_totp_code(secret: str, code: str) -> bool:
-    """Verify a TOTP code against the secret."""
+    """Verify a TOTP code against the secret.
+
+    Returns:
+        True if the code is valid, False otherwise.
+    """
     totp = pyotp.TOTP(secret)
     return totp.verify(code)
 
@@ -193,10 +201,7 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
         await self.repository.update(db_obj)
 
     async def verify_mfa(
-        self,
-        email: str,
-        code: str | None = None,
-        recovery_code: str | None = None,
+        self, email: str, code: str | None = None, recovery_code: str | None = None
     ) -> MfaVerifyResult:
         """Verify MFA code or recovery code for a user.
 
@@ -214,10 +219,7 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
         Returns:
             MfaVerifyResult with verification status and details.
         """
-        user = await self.get_one_or_none(
-            email=email,
-            load=[undefer_group("security_sensitive")],
-        )
+        user = await self.get_one_or_none(email=email, load=[undefer_group("security_sensitive")])
         if not user:
             msg = "User not found"
             raise PermissionDeniedException(detail=msg)
@@ -237,15 +239,9 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
                 # Consume the backup code
                 updated_codes = user.backup_codes.copy()
                 updated_codes.pop(code_index)
-                await self.update(
-                    item_id=user.id,
-                    data={"backup_codes": updated_codes or None},
-                )
+                await self.update(item_id=user.id, data={"backup_codes": updated_codes or None})
                 return MfaVerifyResult(
-                    user=user,
-                    verified=True,
-                    used_backup_code=True,
-                    remaining_backup_codes=len(updated_codes),
+                    user=user, verified=True, used_backup_code=True, remaining_backup_codes=len(updated_codes)
                 )
 
         return MfaVerifyResult(user=user, verified=False)
@@ -277,8 +273,71 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
         """
         return bool(
             user.is_superuser
-            or any(assigned_role.role.name for assigned_role in user.roles if assigned_role.role.name == "Superuser"),
+            or any(assigned_role.role.name for assigned_role in user.roles if assigned_role.role.name == "Superuser")
         )
+
+    # Avatar upload settings
+    ALLOWED_AVATAR_TYPES: set[str] = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+    MAX_AVATAR_SIZE: int = 5 * 1024 * 1024  # 5MB
+
+    async def upload_avatar(self, user: User, content: bytes, content_type: str, original_filename: str) -> User:
+        """Upload and save user avatar.
+
+        Args:
+            user: User to update.
+            content: File content bytes.
+            content_type: MIME type of the file.
+            original_filename: Original filename.
+
+        Returns:
+            Updated user with new avatar.
+
+        Raises:
+            ValidationException: If file type or size is invalid.
+        """
+        if content_type not in self.ALLOWED_AVATAR_TYPES:
+            msg = f"Invalid file type. Allowed: {', '.join(self.ALLOWED_AVATAR_TYPES)}"
+            raise ValidationException(detail=msg)
+
+        if len(content) > self.MAX_AVATAR_SIZE:
+            msg = f"File too large. Maximum size: {self.MAX_AVATAR_SIZE // (1024 * 1024)}MB"
+            raise ValidationException(detail=msg)
+
+        # Advanced Alchemy automatically saves the new file and deletes the old one on commit
+        ext = Path(original_filename).suffix.lower() or self._get_extension(content_type)
+        unique_filename = f"avatars/{user.id}/{uuid7()}{ext}"
+
+        user.avatar = FileObject(
+            backend="avatars", filename=unique_filename, content_type=content_type, content=content
+        )
+        return await self.update(user, auto_commit=True)
+
+    async def delete_avatar(self, user: User) -> User:
+        """Delete user avatar and revert to Gravatar.
+
+        Args:
+            user: User to update.
+
+        Returns:
+            Updated user without avatar.
+        """
+        if user.avatar is not None:
+            user.avatar = None
+            return await self.update(user, auto_commit=True)
+        return user
+
+    @staticmethod
+    def _get_extension(content_type: str) -> str:
+        """Get file extension from content type.
+
+        Args:
+            content_type: MIME type.
+
+        Returns:
+            File extension including dot.
+        """
+        extensions = {"image/jpeg": ".jpg", "image/png": ".png", "image/gif": ".gif", "image/webp": ".webp"}
+        return extensions.get(content_type, ".jpg")
 
 
 class RoleService(SQLAlchemyAsyncRepositoryService[Role, RoleRepository]):
@@ -397,7 +456,7 @@ class EmailTokenService(SQLAlchemyAsyncRepositoryService[EmailToken, EmailTokenR
         ), token
 
     async def validate_token(
-        self, plain_token: str, token_type: TokenType, email: str | None = None,
+        self, plain_token: str, token_type: TokenType, email: str | None = None
     ) -> EmailToken | None:
         """Validate a token without consuming it.
 
@@ -410,7 +469,7 @@ class EmailTokenService(SQLAlchemyAsyncRepositoryService[EmailToken, EmailTokenR
         return token
 
     async def consume_token(
-        self, plain_token: str, token_type: TokenType, email: str | None = None,
+        self, plain_token: str, token_type: TokenType, email: str | None = None
     ) -> EmailToken | None:
         """Validate and consume a token. Token cannot be used again after consumption.
 

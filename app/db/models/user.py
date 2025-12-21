@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import hashlib
 from datetime import date, datetime
 from typing import TYPE_CHECKING
 
 from advanced_alchemy.base import UUIDAuditBase
-from advanced_alchemy.types import EncryptedString
+from advanced_alchemy.types import EncryptedString, FileObject
+from advanced_alchemy.types.file_object.data_type import StoredObject
 from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -23,14 +25,18 @@ settings = get_settings()
 class User(UUIDAuditBase):
     __tablename__ = "user_account"
     __table_args__ = {"comment": "User accounts for application access"}
-    __pii_columns__ = {"name", "email", "avatar_url", "totp_secret"}
+    __pii_columns__ = {"name", "email", "avatar", "totp_secret"}
 
     email: Mapped[str] = mapped_column(unique=True, index=True, nullable=False)
     name: Mapped[str | None] = mapped_column(nullable=True, default=None)
     hashed_password: Mapped[str | None] = mapped_column(
-        String(length=255), nullable=True, default=None, deferred=True, deferred_group="security_sensitive"
+        String(length=255), nullable=True, default=None, deferred=True, deferred_group="security_sensitive",
     )
-    avatar_url: Mapped[str | None] = mapped_column(String(length=500), nullable=True, default=None)
+    avatar: Mapped[FileObject | None] = mapped_column(
+        StoredObject(backend="avatars"),
+        nullable=True,
+        default=None,
+    )
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
     is_superuser: Mapped[bool] = mapped_column(default=False, nullable=False)
     is_verified: Mapped[bool] = mapped_column(default=False, nullable=False)
@@ -49,12 +55,12 @@ class User(UUIDAuditBase):
     """Encrypted TOTP secret for generating time-based one-time passwords."""
 
     is_two_factor_enabled: Mapped[bool] = mapped_column(
-        default=False, nullable=False, comment="Whether MFA is enabled for this user"
+        default=False, nullable=False, comment="Whether MFA is enabled for this user",
     )
     """Whether multi-factor authentication is currently active."""
 
     two_factor_confirmed_at: Mapped[datetime | None] = mapped_column(
-        nullable=True, default=None, comment="When MFA was confirmed/enabled"
+        nullable=True, default=None, comment="When MFA was confirmed/enabled",
     )
     """Timestamp when MFA was successfully configured."""
 
@@ -73,13 +79,13 @@ class User(UUIDAuditBase):
     # ------------
 
     roles: Mapped[list[UserRole]] = relationship(
-        back_populates="user", lazy="selectin", uselist=True, cascade="all, delete"
+        back_populates="user", lazy="selectin", uselist=True, cascade="all, delete",
     )
     teams: Mapped[list[TeamMember]] = relationship(
-        back_populates="user", lazy="selectin", uselist=True, cascade="all, delete", viewonly=True
+        back_populates="user", lazy="selectin", uselist=True, cascade="all, delete", viewonly=True,
     )
     oauth_accounts: Mapped[list[UserOauthAccount]] = relationship(
-        back_populates="user", lazy="noload", cascade="all, delete", uselist=True
+        back_populates="user", lazy="noload", cascade="all, delete", uselist=True,
     )
 
     @hybrid_property
@@ -98,3 +104,31 @@ class User(UUIDAuditBase):
             True if MFA is enabled, False otherwise.
         """
         return self.is_two_factor_enabled
+
+    @hybrid_property
+    def avatar_url(self) -> str:
+        """Get avatar URL - uploaded file or Gravatar fallback.
+
+        For local storage, returns static file path.
+        For cloud storage (S3, GCS, Azure), returns a signed URL.
+
+        Returns:
+            URL string for avatar image.
+        """
+        if self.avatar is not None:
+            if settings.storage.is_cloud_storage:
+                return self.avatar.sign(expires_in=settings.storage.SIGNED_URL_EXPIRY)
+            return f"/uploads/{self.avatar.filename}"
+        return self._get_gravatar_url()
+
+    def _get_gravatar_url(self, size: int = 250) -> str:
+        """Generate Gravatar URL from email.
+
+        Args:
+            size: Image size in pixels.
+
+        Returns:
+            Gravatar URL string.
+        """
+        email_hash = hashlib.md5(self.email.lower().strip().encode()).hexdigest()  # noqa: S324
+        return f"https://www.gravatar.com/avatar/{email_hash}?s={size}&d=identicon"

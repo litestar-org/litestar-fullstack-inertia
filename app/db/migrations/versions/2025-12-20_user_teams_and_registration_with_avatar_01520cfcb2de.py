@@ -1,8 +1,8 @@
-"""User, teams, and registration
+"""User, teams, and registration with avatar
 
-Revision ID: 61b3cc8475e2
+Revision ID: 01520cfcb2de
 Revises:
-Create Date: 2025-12-16 17:30:40.577669+00:00
+Create Date: 2025-12-20 23:14:20.933736+00:00
 
 """
 
@@ -14,6 +14,7 @@ from alembic import op
 from advanced_alchemy.types import EncryptedString, EncryptedText, GUID, ORA_JSONB, DateTimeUTC, StoredObject, PasswordHash, FernetBackend
 from advanced_alchemy.types.encrypted_string import PGCryptoBackend
 from advanced_alchemy.types.password_hash.pwdlib import PwdlibHasher
+from sqlalchemy import Text  # noqa: F401
 from sqlalchemy.dialects import postgresql
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -32,7 +33,7 @@ sa.FernetBackend = FernetBackend
 sa.PGCryptoBackend = PGCryptoBackend
 
 # revision identifiers, used by Alembic.
-revision = '61b3cc8475e2'
+revision = '01520cfcb2de'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -80,18 +81,6 @@ def schema_upgrades() -> None:
     sa.Column('created_at', sa.DateTimeUTC(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTimeUTC(timezone=True), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_tag')),
-    sa.UniqueConstraint('slug', name='uq_tag_slug'),
-    sa.UniqueConstraint('slug', name='uq_tag_slug'),
-    sa.UniqueConstraint('slug', name='uq_tag_slug'),
-    sa.UniqueConstraint('slug', name='uq_tag_slug'),
-    sa.UniqueConstraint('slug', name='uq_tag_slug'),
-    sa.UniqueConstraint('slug', name='uq_tag_slug'),
-    sa.UniqueConstraint('slug', name='uq_tag_slug'),
-    sa.UniqueConstraint('slug', name='uq_tag_slug'),
-    sa.UniqueConstraint('slug', name='uq_tag_slug'),
-    sa.UniqueConstraint('slug', name='uq_tag_slug'),
-    sa.UniqueConstraint('slug', name='uq_tag_slug'),
-    sa.UniqueConstraint('slug', name='uq_tag_slug'),
     sa.UniqueConstraint('slug', name='uq_tag_slug')
     )
     with op.batch_alter_table('tag', schema=None) as batch_op:
@@ -107,12 +96,6 @@ def schema_upgrades() -> None:
     sa.Column('created_at', sa.DateTimeUTC(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTimeUTC(timezone=True), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_team')),
-    sa.UniqueConstraint('slug', name='uq_team_slug'),
-    sa.UniqueConstraint('slug', name='uq_team_slug'),
-    sa.UniqueConstraint('slug', name='uq_team_slug'),
-    sa.UniqueConstraint('slug', name='uq_team_slug'),
-    sa.UniqueConstraint('slug', name='uq_team_slug'),
-    sa.UniqueConstraint('slug', name='uq_team_slug'),
     sa.UniqueConstraint('slug', name='uq_team_slug')
     )
     with op.batch_alter_table('team', schema=None) as batch_op:
@@ -124,13 +107,13 @@ def schema_upgrades() -> None:
     sa.Column('email', sa.String(), nullable=False),
     sa.Column('name', sa.String(), nullable=True),
     sa.Column('hashed_password', sa.String(length=255), nullable=True),
-    sa.Column('avatar_url', sa.String(length=500), nullable=True),
+    sa.Column('avatar', sa.StoredObject(backend='local'), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('is_superuser', sa.Boolean(), nullable=False),
     sa.Column('is_verified', sa.Boolean(), nullable=False),
     sa.Column('verified_at', sa.Date(), nullable=True),
     sa.Column('joined_at', sa.Date(), nullable=False),
-    sa.Column('totp_secret', sa.EncryptedString(), nullable=True, comment='Encrypted TOTP secret key for MFA'),
+    sa.Column('totp_secret', sa.EncryptedString(key='secret-key', backend=FernetBackend, length=None), nullable=True, comment='Encrypted TOTP secret key for MFA'),
     sa.Column('is_two_factor_enabled', sa.Boolean(), nullable=False, comment='Whether MFA is enabled for this user'),
     sa.Column('two_factor_confirmed_at', sa.DateTimeUTC(timezone=True), nullable=True, comment='When MFA was confirmed/enabled'),
     sa.Column('backup_codes', postgresql.JSONB(astext_type=sa.Text()), nullable=True, comment='Hashed backup codes for MFA recovery'),

@@ -30,7 +30,7 @@ class Team(UUIDAuditBase, SlugKey):
     # ORM Relationships
     # ------------
     members: Mapped[list[TeamMember]] = relationship(
-        back_populates="team", cascade="all, delete", passive_deletes=True, lazy="selectin"
+        back_populates="team", cascade="all, delete", passive_deletes=True, lazy="selectin",
     )
     invitations: Mapped[list[TeamInvitation]] = relationship(back_populates="team", cascade="all, delete")
     pending_invitations: Mapped[list[TeamInvitation]] = relationship(
@@ -40,7 +40,7 @@ class Team(UUIDAuditBase, SlugKey):
         lazy="noload",
     )
     tags: Mapped[list[Tag]] = relationship(
-        secondary=lambda: team_tag, back_populates="teams", cascade="all, delete", passive_deletes=True
+        secondary=lambda: team_tag, back_populates="teams", cascade="all, delete", passive_deletes=True,
     )
 
 
@@ -67,5 +67,5 @@ def _pending_invitations_join() -> "ColumnElement[bool]":
     """
     inv = _TeamInvitation()
     return and_(
-        Team.id == inv.team_id, inv.is_accepted.is_(False), or_(inv.expires_at.is_(None), inv.expires_at > func.now())
+        Team.id == inv.team_id, inv.is_accepted.is_(False), or_(inv.expires_at.is_(None), inv.expires_at > func.now()),
     )

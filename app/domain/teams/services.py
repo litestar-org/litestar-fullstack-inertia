@@ -15,7 +15,7 @@ from advanced_alchemy.service import (
 )
 from advanced_alchemy.utils.text import slugify
 from sqlalchemy import ColumnElement, or_
-from uuid_utils.compat import uuid4
+from uuid_utils import uuid7
 
 from app.db.models import Team, TeamInvitation, TeamMember, TeamRoles
 from app.db.models.tag import Tag
@@ -81,7 +81,7 @@ class TeamService(SQLAlchemyAsyncRepositoryService[Team, TeamRepository]):
 
         if operation == "create":
             if "id" not in data:
-                data["id"] = uuid4()
+                data["id"] = uuid7()
             if owner_id is None and owner is None:
                 msg = "'owner_id' is required to create a team."
                 raise RepositoryError(msg)

@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from io import BytesIO
 
 import pyotp
-import qrcode
+import qrcode  # type: ignore[import-untyped]
 from litestar import Controller, Request, delete, post
 from litestar.di import Provide
 from litestar.exceptions import PermissionDeniedException, ValidationException
@@ -23,6 +23,16 @@ from app.domain.accounts.services import UserService, verify_totp_code
 __all__ = ("MfaController",)
 
 _password_hash = PasswordHash.recommended()
+
+# Exception messages
+_MSG_AUTH_REQUIRED = "Authentication required"
+_MSG_USER_NOT_FOUND = "User not found"
+_MSG_MFA_ALREADY_ENABLED = "MFA is already enabled"
+_MSG_MFA_ALREADY_CONFIRMED = "MFA is already confirmed"
+_MSG_MFA_NOT_INITIATED = "MFA setup not initiated. Please enable MFA first."
+_MSG_MFA_NOT_ENABLED = "MFA is not enabled"
+_MSG_INVALID_CODE = "Invalid verification code"
+_MSG_INVALID_CREDENTIALS = "Invalid password"
 
 
 def generate_backup_codes(count: int = 8) -> tuple[list[str], list[str]]:
@@ -51,7 +61,7 @@ def generate_qr_code(secret: str, email: str, issuer: str = "Litestar Fullstack"
 
     img = qr.make_image(fill_color="black", back_color="white")
     buffer = BytesIO()
-    img.save(buffer, format="PNG")  # type: ignore[call-arg]
+    img.save(buffer, "PNG")
     buffer.seek(0)
 
     return base64.b64encode(buffer.getvalue()).decode("utf-8")
@@ -75,14 +85,14 @@ class MfaController(Controller):
         """
         user_id = request.session.get("user_id")
         if not user_id:
-            raise PermissionDeniedException("Authentication required")
+            raise PermissionDeniedException(_MSG_AUTH_REQUIRED)
 
         user = await users_service.get_one_or_none(email=user_id)
         if not user:
-            raise PermissionDeniedException("User not found")
+            raise PermissionDeniedException(_MSG_USER_NOT_FOUND)
 
         if user.is_two_factor_enabled:
-            raise ValidationException("MFA is already enabled")
+            raise ValidationException(_MSG_MFA_ALREADY_ENABLED)
 
         # Generate new TOTP secret
         secret = pyotp.random_base32()
@@ -102,22 +112,22 @@ class MfaController(Controller):
         """
         user_id = request.session.get("user_id")
         if not user_id:
-            raise PermissionDeniedException("Authentication required")
+            raise PermissionDeniedException(_MSG_AUTH_REQUIRED)
 
         # Need credentials to access totp_secret
         user = await users_service.get_one_or_none(email=user_id, load=[undefer_group("security_sensitive")])
         if not user:
-            raise PermissionDeniedException("User not found")
+            raise PermissionDeniedException(_MSG_USER_NOT_FOUND)
 
         if not user.totp_secret:
-            raise ValidationException("MFA setup not initiated. Please enable MFA first.")
+            raise ValidationException(_MSG_MFA_NOT_INITIATED)
 
         if user.is_two_factor_enabled:
-            raise ValidationException("MFA is already confirmed")
+            raise ValidationException(_MSG_MFA_ALREADY_CONFIRMED)
 
         # Verify the TOTP code
         if not verify_totp_code(user.totp_secret, data.code):
-            raise ValidationException("Invalid verification code")
+            raise ValidationException(_MSG_INVALID_CODE)
 
         # Generate backup codes
         plain_codes, hashed_codes = generate_backup_codes()
@@ -144,19 +154,19 @@ class MfaController(Controller):
         """
         user_id = request.session.get("user_id")
         if not user_id:
-            raise PermissionDeniedException("Authentication required")
+            raise PermissionDeniedException(_MSG_AUTH_REQUIRED)
 
         # Need credentials to verify password
         user = await users_service.get_one_or_none(email=user_id, load=[undefer_group("security_sensitive")])
         if not user:
-            raise PermissionDeniedException("User not found")
+            raise PermissionDeniedException(_MSG_USER_NOT_FOUND)
 
         if not user.is_two_factor_enabled:
-            raise ValidationException("MFA is not enabled")
+            raise ValidationException(_MSG_MFA_NOT_ENABLED)
 
         # Verify password
         if not user.hashed_password or not _password_hash.verify(data.password, user.hashed_password):
-            raise ValidationException("Invalid password")
+            raise ValidationException(_MSG_INVALID_CREDENTIALS)
 
         # Disable MFA
         await users_service.update(
@@ -181,14 +191,14 @@ class MfaController(Controller):
         """
         user_id = request.session.get("user_id")
         if not user_id:
-            raise PermissionDeniedException("Authentication required")
+            raise PermissionDeniedException(_MSG_AUTH_REQUIRED)
 
         user = await users_service.get_one_or_none(email=user_id)
         if not user:
-            raise PermissionDeniedException("User not found")
+            raise PermissionDeniedException(_MSG_USER_NOT_FOUND)
 
         if not user.is_two_factor_enabled:
-            raise ValidationException("MFA is not enabled")
+            raise ValidationException(_MSG_MFA_NOT_ENABLED)
 
         # Generate new backup codes
         plain_codes, hashed_codes = generate_backup_codes()

@@ -1,10 +1,11 @@
 import { Head } from "@inertiajs/react"
-import { KeyRound, Shield, Trash2, User } from "lucide-react"
+import { ImageIcon, KeyRound, Shield, Trash2, User } from "lucide-react"
 import { useState } from "react"
 import { Container } from "@/components/container"
 import { Header } from "@/components/header"
 import { SettingsSidebar, type SettingsSidebarItem } from "@/components/settings-sidebar"
 import { AppLayout } from "@/layouts/app-layout"
+import AvatarForm from "@/pages/profile/partials/avatar-form"
 import DeleteUserForm from "@/pages/profile/partials/delete-user-form"
 import MfaForm from "@/pages/profile/partials/mfa-form"
 import UpdatePasswordForm from "@/pages/profile/partials/update-password-form"
@@ -16,6 +17,12 @@ interface Props {
 }
 
 const sidebarItems: SettingsSidebarItem[] = [
+	{
+		id: "avatar",
+		label: "Avatar",
+		icon: ImageIcon,
+		description: "Upload a profile picture",
+	},
 	{
 		id: "profile-information",
 		label: "Profile Information",
@@ -44,7 +51,7 @@ const sidebarItems: SettingsSidebarItem[] = [
 
 const title = "User Profile"
 export default function Edit({ mustVerifyEmail, status }: Props) {
-	const [activeSection, setActiveSection] = useState("profile-information")
+	const [activeSection, setActiveSection] = useState("avatar")
 
 	return (
 		<>
@@ -54,6 +61,9 @@ export default function Edit({ mustVerifyEmail, status }: Props) {
 				<div className="grid gap-6 lg:grid-cols-3">
 					{/* Main Content */}
 					<div className="lg:col-span-2 space-y-6">
+						<div id="avatar">
+							<AvatarForm />
+						</div>
 						<div id="profile-information">
 							<UpdateProfileInformationForm mustVerifyEmail={mustVerifyEmail} status={status} />
 						</div>

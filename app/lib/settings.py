@@ -271,6 +271,48 @@ class EmailSettings:
 
 
 @dataclass
+class StorageSettings:
+    """File storage configuration."""
+
+    BACKEND: str = field(default_factory=get_env("STORAGE_BACKEND", "local"))
+    """Storage backend: 'local', 's3', 'gcs', or 'azure'."""
+    UPLOAD_DIR: Path = field(default_factory=get_env("STORAGE_UPLOAD_DIR", Path("uploads")))
+    """Directory for file uploads (local backend only)."""
+    BUCKET: str = field(default_factory=get_env("STORAGE_BUCKET", ""))
+    """Cloud storage bucket name (s3/gcs/azure)."""
+    SIGNED_URL_EXPIRY: int = field(default_factory=get_env("STORAGE_SIGNED_URL_EXPIRY", 3600))
+    """Signed URL expiry time in seconds."""
+
+    # AWS S3 settings
+    AWS_ACCESS_KEY_ID: str = field(default_factory=get_env("AWS_ACCESS_KEY_ID", ""))
+    """AWS access key ID."""
+    AWS_SECRET_ACCESS_KEY: str = field(default_factory=get_env("AWS_SECRET_ACCESS_KEY", ""))
+    """AWS secret access key."""
+    AWS_REGION: str = field(default_factory=get_env("AWS_REGION", "us-east-1"))
+    """AWS region."""
+    AWS_ENDPOINT: str = field(default_factory=get_env("AWS_ENDPOINT", ""))
+    """Custom S3 endpoint (for MinIO, etc.)."""
+
+    # GCS settings
+    GOOGLE_SERVICE_ACCOUNT: str = field(default_factory=get_env("GOOGLE_SERVICE_ACCOUNT", ""))
+    """Path to GCS service account JSON file."""
+
+    # Azure settings
+    AZURE_CONNECTION_STRING: str = field(default_factory=get_env("AZURE_STORAGE_CONNECTION_STRING", ""))
+    """Azure storage connection string."""
+
+    MAX_AVATAR_SIZE: int = field(default_factory=get_env("MAX_AVATAR_SIZE", 5 * 1024 * 1024))
+    """Maximum avatar file size in bytes (5MB)."""
+    ALLOWED_AVATAR_TYPES: tuple[str, ...] = ("image/jpeg", "image/png", "image/gif", "image/webp")
+    """Allowed MIME types for avatars."""
+
+    @property
+    def is_cloud_storage(self) -> bool:
+        """Check if using cloud storage backend."""
+        return self.BACKEND in {"s3", "gcs", "azure"}
+
+
+@dataclass
 class AppSettings:
     """Application configuration"""
 
@@ -338,6 +380,7 @@ class Settings:
     app: AppSettings = field(default_factory=AppSettings)
     db: DatabaseSettings = field(default_factory=DatabaseSettings)
     email: EmailSettings = field(default_factory=EmailSettings)
+    storage: StorageSettings = field(default_factory=StorageSettings)
     vite: ViteSettings = field(default_factory=ViteSettings)
     server: ServerSettings = field(default_factory=ServerSettings)
     log: LogSettings = field(default_factory=LogSettings)

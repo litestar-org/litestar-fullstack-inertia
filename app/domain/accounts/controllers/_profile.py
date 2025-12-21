@@ -4,8 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from litestar import Controller, Request, delete, get, patch
+from litestar import Controller, Request, delete, get, patch, post
+from litestar.datastructures import UploadFile
 from litestar.di import Provide
+from litestar.enums import RequestEncodingType
+from litestar.params import Body
 from litestar_vite.inertia import InertiaRedirect, flash
 
 from app.domain.accounts.dependencies import provide_users_service
@@ -77,3 +80,44 @@ class ProfileController(Controller):
         _ = await users_service.delete(current_user.id)
         flash(request, "Your account has been removed from the system.", category="info")
         return InertiaRedirect(request, request.url_for("landing"))
+
+    @post(path="/profile/avatar/", name="profile.avatar.upload", status_code=200)
+    async def upload_avatar(
+        self,
+        request: Request,
+        current_user: UserModel,
+        users_service: UserService,
+        data: UploadFile = Body(media_type=RequestEncodingType.MULTI_PART),
+    ) -> Message:
+        """Upload user avatar.
+
+        Accepts multipart form with file upload.
+
+        Returns:
+            Success message with new avatar URL.
+        """
+        content = await data.read()
+        await users_service.upload_avatar(
+            user=current_user,
+            content=content,
+            content_type=data.content_type or "application/octet-stream",
+            original_filename=data.filename or "avatar",
+        )
+        flash(request, "Avatar updated successfully.", category="success")
+        return Message(message="Avatar updated successfully.")
+
+    @delete(path="/profile/avatar/", name="profile.avatar.delete", status_code=200)
+    async def delete_avatar(
+        self,
+        request: Request,
+        current_user: UserModel,
+        users_service: UserService,
+    ) -> Message:
+        """Delete user avatar and revert to Gravatar.
+
+        Returns:
+            Success message.
+        """
+        await users_service.delete_avatar(current_user)
+        flash(request, "Avatar removed. Using Gravatar.", category="success")
+        return Message(message="Avatar removed successfully.")

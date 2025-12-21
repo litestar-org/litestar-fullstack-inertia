@@ -52,7 +52,7 @@ def inertia_exception_handler(request: "Request[UserT, AuthT, StateT]", exc: "Ex
     if inertia_plugin is None:
         return _original_handler(request, exc)
 
-    redirect_to_login = inertia_plugin.config.redirect_unauthorized_to
+    redirect_to_login = inertia_plugin.config.redirect_unauthorized_to  # type: ignore[unreachable]
     if redirect_to_login is None or request.url.path == redirect_to_login:
         return _original_handler(request, exc)
 
