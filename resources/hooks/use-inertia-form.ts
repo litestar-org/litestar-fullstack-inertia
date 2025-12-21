@@ -104,15 +104,13 @@ export function useInertiaForm<TSchema extends z.ZodType, TSubmit = z.infer<TSch
 			const submitValues = transform ? transform(values) : values
 			setIsSubmitting(true)
 
-			const routerMethod = router[method] as typeof router.post
-
-			routerMethod(url, submitValues as FieldValues, {
+			const options = {
 				preserveScroll,
 				preserveState,
 				onSuccess: () => {
 					onSuccess?.()
 				},
-				onError: (errors) => {
+				onError: (errors: Record<string, string>) => {
 					// Map server errors to form fields
 					for (const [field, message] of Object.entries(errors)) {
 						if (typeof message === "string") {
@@ -126,13 +124,29 @@ export function useInertiaForm<TSchema extends z.ZodType, TSubmit = z.infer<TSch
 							}
 						}
 					}
-					onError?.(errors as Record<string, string>)
+					onError?.(errors)
 				},
 				onFinish: () => {
 					setIsSubmitting(false)
 					onFinish?.()
 				},
-			})
+			}
+
+			// Use explicit method calls to ensure proper `this` binding
+			switch (method) {
+				case "post":
+					router.post(url, submitValues as FieldValues, options)
+					break
+				case "put":
+					router.put(url, submitValues as FieldValues, options)
+					break
+				case "patch":
+					router.patch(url, submitValues as FieldValues, options)
+					break
+				case "delete":
+					router.delete(url, options)
+					break
+			}
 		},
 		[form, url, method, transform, defaultValues, preserveScroll, preserveState, onSuccess, onError, onFinish],
 	)
