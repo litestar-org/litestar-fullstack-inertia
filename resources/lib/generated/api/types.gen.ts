@@ -5,25 +5,6 @@ export type ClientOptions = {
 };
 
 /**
- * CreateTagTagRequestBody
- */
-export type CreateTagTagRequestBody = {
-    description?: string | null;
-    name: string;
-    slug: string;
-};
-
-/**
- * CreateTagTagResponseBody
- */
-export type CreateTagTagResponseBody = {
-    description?: string | null;
-    id?: string;
-    name: string;
-    slug: string;
-};
-
-/**
  * CurrentTeam
  */
 export type CurrentTeam = {
@@ -39,16 +20,6 @@ export type EmailSent = {
 };
 
 /**
- * GetTagTagResponseBody
- */
-export type GetTagTagResponseBody = {
-    description?: string | null;
-    id?: string;
-    name: string;
-    slug: string;
-};
-
-/**
  * InvitationAcceptPage
  */
 export type InvitationAcceptPage = {
@@ -59,16 +30,6 @@ export type InvitationAcceptPage = {
     isValid?: boolean;
     loginUrl?: string | null;
     registerUrl?: string | null;
-};
-
-/**
- * ListTagsTagResponseBody
- */
-export type ListTagsTagResponseBody = {
-    description?: string | null;
-    id?: string;
-    name: string;
-    slug: string;
 };
 
 /**
@@ -104,6 +65,32 @@ export type OauthAccount = {
 export type PasswordResetToken = {
     email: string;
     token: string;
+};
+
+/**
+ * Tag
+ */
+export type Tag = {
+    description?: string | null;
+    id: string;
+    name: string;
+    slug: string;
+};
+
+/**
+ * TagCreate
+ */
+export type TagCreate = {
+    description?: string | null;
+    name: string;
+};
+
+/**
+ * TagUpdate
+ */
+export type TagUpdate = {
+    description?: string | null;
+    name?: string | null;
 };
 
 /**
@@ -284,25 +271,6 @@ export type TeamUpdate = {
     description?: string | null;
     name?: string | null;
     tags?: Array<string> | null;
-};
-
-/**
- * UpdateTagTagRequestBody
- */
-export type UpdateTagTagRequestBody = {
-    description?: string | null;
-    name?: string;
-    slug?: string;
-};
-
-/**
- * UpdateTagTagResponseBody
- */
-export type UpdateTagTagResponseBody = {
-    description?: string | null;
-    id?: string;
-    name: string;
-    slug: string;
 };
 
 /**
@@ -527,7 +495,7 @@ export type ListTagsResponses = {
      * Request fulfilled, document follows
      */
     200: {
-        items?: Array<ListTagsTagResponseBody>;
+        items?: Array<Tag>;
         /**
          * Maximal number of items to send.
          */
@@ -546,7 +514,7 @@ export type ListTagsResponses = {
 export type ListTagsResponse = ListTagsResponses[keyof ListTagsResponses];
 
 export type CreateTagData = {
-    body: CreateTagTagRequestBody;
+    body: TagCreate;
     path?: never;
     query?: never;
     url: '/api/tags';
@@ -571,7 +539,7 @@ export type CreateTagResponses = {
     /**
      * Document created, URL follows
      */
-    201: CreateTagTagResponseBody;
+    201: Tag;
 };
 
 export type CreateTagResponse = CreateTagResponses[keyof CreateTagResponses];
@@ -647,13 +615,13 @@ export type GetTagResponses = {
     /**
      * Request fulfilled, document follows
      */
-    200: GetTagTagResponseBody;
+    200: Tag;
 };
 
 export type GetTagResponse = GetTagResponses[keyof GetTagResponses];
 
 export type UpdateTagData = {
-    body: UpdateTagTagRequestBody;
+    body: TagUpdate;
     path: {
         /**
          * Tag ID
@@ -685,7 +653,7 @@ export type UpdateTagResponses = {
     /**
      * Request fulfilled, document follows
      */
-    200: UpdateTagTagResponseBody;
+    200: Tag;
 };
 
 export type UpdateTagResponse = UpdateTagResponses[keyof UpdateTagResponses];

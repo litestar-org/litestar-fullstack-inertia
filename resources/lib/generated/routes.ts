@@ -43,6 +43,8 @@ export type RouteName =
   | 'openapi.json'
   | 'password.update'
   | 'privacy-policy'
+  | 'profile.avatar.delete'
+  | 'profile.avatar.upload'
   | 'profile.show'
   | 'profile.update'
   | 'register'
@@ -67,6 +69,7 @@ export type RouteName =
   | 'teams:add-member'
   | 'teams:remove-member'
   | 'terms-of-service'
+  | 'uploads'
   | 'users:assign-role'
   | 'users:create'
   | 'users:delete'
@@ -113,6 +116,8 @@ export interface RoutePathParams {
   'openapi.json': Record<string, never>;
   'password.update': Record<string, never>;
   'privacy-policy': Record<string, never>;
+  'profile.avatar.delete': Record<string, never>;
+  'profile.avatar.upload': Record<string, never>;
   'profile.show': Record<string, never>;
   'profile.update': Record<string, never>;
   'register': Record<string, never>;
@@ -162,6 +167,9 @@ export interface RoutePathParams {
     team_slug: string;
   };
   'terms-of-service': Record<string, never>;
+  'uploads': {
+    file_path: any;
+  };
   'users:assign-role': {
     role_slug: string;
   };
@@ -225,6 +233,8 @@ export interface RouteQueryParams {
   'openapi.json': Record<string, never>;
   'password.update': Record<string, never>;
   'privacy-policy': Record<string, never>;
+  'profile.avatar.delete': Record<string, never>;
+  'profile.avatar.upload': Record<string, never>;
   'profile.show': Record<string, never>;
   'profile.update': Record<string, never>;
   'register': Record<string, never>;
@@ -276,6 +286,7 @@ export interface RouteQueryParams {
   'teams:add-member': Record<string, never>;
   'teams:remove-member': Record<string, never>;
   'terms-of-service': Record<string, never>;
+  'uploads': Record<string, never>;
   'users:assign-role': Record<string, never>;
   'users:create': Record<string, never>;
   'users:delete': Record<string, never>;
@@ -519,6 +530,20 @@ export const routeDefinitions = {
     queryParams: [] as const,
     component: 'legal/privacy-policy',
   },
+  'profile.avatar.delete': {
+    path: '/profile/avatar',
+    methods: ['DELETE'] as const,
+    method: 'delete',
+    pathParams: [] as const,
+    queryParams: [] as const,
+  },
+  'profile.avatar.upload': {
+    path: '/profile/avatar',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: [] as const,
+    queryParams: [] as const,
+  },
   'profile.show': {
     path: '/profile',
     methods: ['GET'] as const,
@@ -699,6 +724,13 @@ export const routeDefinitions = {
     pathParams: [] as const,
     queryParams: [] as const,
     component: 'legal/terms-of-service',
+  },
+  'uploads': {
+    path: '/uploads/{file_path}',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: ['file_path'] as const,
+    queryParams: [] as const,
   },
   'users:assign-role': {
     path: '/api/roles/{role_slug}/assign',

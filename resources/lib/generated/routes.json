@@ -240,6 +240,20 @@
       ],
       "uri": "/privacy-policy"
     },
+    "profile.avatar.delete": {
+      "method": "delete",
+      "methods": [
+        "DELETE"
+      ],
+      "uri": "/profile/avatar"
+    },
+    "profile.avatar.upload": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/profile/avatar"
+    },
     "profile.show": {
       "component": "profile/edit",
       "method": "get",
@@ -524,6 +538,19 @@
         "GET"
       ],
       "uri": "/terms-of-service"
+    },
+    "uploads": {
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "file_path": "any"
+      },
+      "parameters": [
+        "file_path"
+      ],
+      "uri": "/uploads/{file_path}"
     },
     "users:assign-role": {
       "method": "post",

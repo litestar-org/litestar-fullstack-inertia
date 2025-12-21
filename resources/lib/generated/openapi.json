@@ -1,62 +1,6 @@
 {
   "components": {
     "schemas": {
-      "CreateTagTagRequestBody": {
-        "properties": {
-          "description": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "name": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "slug"
-        ],
-        "title": "CreateTagTagRequestBody",
-        "type": "object"
-      },
-      "CreateTagTagResponseBody": {
-        "properties": {
-          "description": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "id": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "slug"
-        ],
-        "title": "CreateTagTagResponseBody",
-        "type": "object"
-      },
       "CurrentTeam": {
         "properties": {
           "teamId": {
@@ -83,36 +27,6 @@
         },
         "required": [],
         "title": "EmailSent",
-        "type": "object"
-      },
-      "GetTagTagResponseBody": {
-        "properties": {
-          "description": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "id": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "slug"
-        ],
-        "title": "GetTagTagResponseBody",
         "type": "object"
       },
       "InvitationAcceptPage": {
@@ -167,36 +81,6 @@
           "invitation"
         ],
         "title": "InvitationAcceptPage",
-        "type": "object"
-      },
-      "ListTagsTagResponseBody": {
-        "properties": {
-          "description": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "id": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "slug"
-        ],
-        "title": "ListTagsTagResponseBody",
         "type": "object"
       },
       "Message": {
@@ -280,6 +164,86 @@
           "token"
         ],
         "title": "PasswordResetToken",
+        "type": "object"
+      },
+      "Tag": {
+        "properties": {
+          "description": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ],
+        "title": "Tag",
+        "type": "object"
+      },
+      "TagCreate": {
+        "properties": {
+          "description": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "TagCreate",
+        "type": "object"
+      },
+      "TagUpdate": {
+        "properties": {
+          "description": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [],
+        "title": "TagUpdate",
         "type": "object"
       },
       "Team": {
@@ -827,67 +791,6 @@
         },
         "required": [],
         "title": "TeamUpdate",
-        "type": "object"
-      },
-      "UpdateTagTagRequestBody": {
-        "properties": {
-          "description": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "name": {
-            "oneOf": [
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "slug": {
-            "oneOf": [
-              {
-                "type": "string"
-              }
-            ]
-          }
-        },
-        "required": [],
-        "title": "UpdateTagTagRequestBody",
-        "type": "object"
-      },
-      "UpdateTagTagResponseBody": {
-        "properties": {
-          "description": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "id": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "slug"
-        ],
-        "title": "UpdateTagTagResponseBody",
         "type": "object"
       },
       "User": {
@@ -1601,7 +1504,7 @@
                   "properties": {
                     "items": {
                       "items": {
-                        "$ref": "#/components/schemas/ListTagsTagResponseBody"
+                        "$ref": "#/components/schemas/Tag"
                       },
                       "type": "array"
                     },
@@ -1677,7 +1580,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTagTagRequestBody"
+                "$ref": "#/components/schemas/TagCreate"
               }
             }
           },
@@ -1688,7 +1591,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CreateTagTagResponseBody"
+                  "$ref": "#/components/schemas/Tag"
                 }
               }
             },
@@ -1833,7 +1736,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GetTagTagResponseBody"
+                  "$ref": "#/components/schemas/Tag"
                 }
               }
             },
@@ -1907,7 +1810,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateTagTagRequestBody"
+                "$ref": "#/components/schemas/TagUpdate"
               }
             }
           },
@@ -1918,7 +1821,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UpdateTagTagResponseBody"
+                  "$ref": "#/components/schemas/Tag"
                 }
               }
             },
