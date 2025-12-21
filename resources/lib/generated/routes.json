@@ -87,6 +87,13 @@
       ],
       "uri": "/register/google"
     },
+    "health_check": {
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/health"
+    },
     "home": {
       "method": "get",
       "methods": [

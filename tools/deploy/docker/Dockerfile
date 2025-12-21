@@ -103,9 +103,13 @@ COPY tools ./tools/
 COPY resources ./resources/
 COPY app ./app/
 
+# Create public directory first (required for hatchling force-include before any uv sync)
+RUN mkdir -p app/domain/web/public
+
 # Build frontend assets and create wheel
 RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
-    uv run python tools/build.py --executor bun \
+    uv run app assets build \
+    && cp resources/index.html app/domain/web/public/index.html \
     && uv sync ${UV_INSTALL_ARGS} --frozen --no-editable \
     && uv build
 

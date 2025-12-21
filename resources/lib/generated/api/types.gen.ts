@@ -354,6 +354,7 @@ export type UserTeam = {
     role?: TeamRoles;
     teamId: string;
     teamName: string;
+    teamSlug: string;
 };
 
 /**
@@ -727,9 +728,9 @@ export type RemoveMemberFromTeamError = RemoveMemberFromTeamErrors[keyof RemoveM
 
 export type RemoveMemberFromTeamResponses = {
     /**
-     * Document created, URL follows
+     * Request fulfilled, document follows
      */
-    201: Team;
+    200: Team;
 };
 
 export type RemoveMemberFromTeamResponse = RemoveMemberFromTeamResponses[keyof RemoveMemberFromTeamResponses];

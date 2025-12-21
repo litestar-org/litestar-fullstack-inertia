@@ -1053,11 +1053,15 @@ export const UserTeamSchema = {
         },
         teamName: {
             type: 'string'
+        },
+        teamSlug: {
+            type: 'string'
         }
     },
     required: [
         'teamId',
-        'teamName'
+        'teamName',
+        'teamSlug'
     ],
     title: 'UserTeam',
     type: 'object'

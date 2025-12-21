@@ -1020,11 +1020,15 @@
           },
           "teamName": {
             "type": "string"
+          },
+          "teamSlug": {
+            "type": "string"
           }
         },
         "required": [
           "teamId",
-          "teamName"
+          "teamName",
+          "teamSlug"
         ],
         "title": "UserTeam",
         "type": "object"
@@ -1989,7 +1993,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -1997,7 +2001,7 @@
                 }
               }
             },
-            "description": "Document created, URL follows",
+            "description": "Request fulfilled, document follows",
             "headers": {}
           },
           "400": {

@@ -25,6 +25,7 @@ export type RouteName =
   | 'github.register'
   | 'google.complete'
   | 'google.register'
+  | 'health_check'
   | 'home'
   | 'invitation.accept'
   | 'invitation.accept.page'
@@ -92,6 +93,7 @@ export interface RoutePathParams {
   'github.register': Record<string, never>;
   'google.complete': Record<string, never>;
   'google.register': Record<string, never>;
+  'health_check': Record<string, never>;
   'home': Record<string, never>;
   'invitation.accept': {
     token: string;
@@ -215,6 +217,7 @@ export interface RouteQueryParams {
     state?: string;
   };
   'google.register': Record<string, never>;
+  'health_check': Record<string, never>;
   'home': Record<string, never>;
   'invitation.accept': Record<string, never>;
   'invitation.accept.page': Record<string, never>;
@@ -392,6 +395,13 @@ export const routeDefinitions = {
     path: '/register/google',
     methods: ['POST'] as const,
     method: 'post',
+    pathParams: [] as const,
+    queryParams: [] as const,
+  },
+  'health_check': {
+    path: '/health',
+    methods: ['GET'] as const,
+    method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
   },
