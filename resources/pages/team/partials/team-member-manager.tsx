@@ -34,10 +34,10 @@ interface Props {
 }
 
 const roleStyles: Record<string, string> = {
-	owner: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-	admin: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-	editor: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-	member: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
+	owner: "bg-[#EDB641] text-[#202235] dark:bg-[#EDB641] dark:text-[#202235]",
+	admin: "bg-[#202235] text-white dark:bg-[#202235] dark:text-white",
+	editor: "bg-[#FFD480] text-[#202235] dark:bg-[#FFD480] dark:text-[#202235]",
+	member: "bg-[#DCDFE4] text-[#202235] dark:bg-[#2A2D45] dark:text-white",
 }
 
 const roleIcons: Record<string, LucideIcon | null> = {

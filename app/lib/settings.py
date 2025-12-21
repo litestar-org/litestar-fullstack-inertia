@@ -16,7 +16,15 @@ from app.utils.engine_factory import create_sqlalchemy_engine
 from app.utils.env import get_env
 
 if TYPE_CHECKING:
+    from advanced_alchemy.extensions.litestar import SQLAlchemyAsyncConfig
+    from litestar.config.compression import CompressionConfig
+    from litestar.config.cors import CORSConfig
+    from litestar.config.csrf import CSRFConfig
     from litestar.data_extractors import RequestExtractorField, ResponseExtractorField
+    from litestar.middleware.session.server_side import ServerSideSessionConfig
+    from litestar.plugins.structlog import StructlogConfig
+    from litestar.template import TemplateConfig
+    from litestar_vite import ViteConfig
 
 DEFAULT_MODULE_NAME = "app"
 BASE_DIR: Final[Path] = module_to_os_path(DEFAULT_MODULE_NAME)
@@ -66,6 +74,20 @@ class DatabaseSettings:
         self._engine_instance = create_sqlalchemy_engine(self)
         return self._engine_instance
 
+    def get_config(self) -> SQLAlchemyAsyncConfig:
+        from advanced_alchemy.extensions.litestar import AlembicAsyncConfig, AsyncSessionConfig, SQLAlchemyAsyncConfig
+
+        return SQLAlchemyAsyncConfig(
+            engine_instance=self.get_engine(),
+            before_send_handler="autocommit_include_redirects",
+            session_config=AsyncSessionConfig(expire_on_commit=False),
+            alembic_config=AlembicAsyncConfig(
+                version_table_name=self.MIGRATION_DDL_VERSION_TABLE,
+                script_config=self.MIGRATION_CONFIG,
+                script_location=self.MIGRATION_PATH,
+            ),
+        )
+
 
 @dataclass
 class ViteSettings:
@@ -78,6 +100,35 @@ class ViteSettings:
     """Start `vite` development server."""
     TEMPLATE_DIR: Path = field(default_factory=get_env("VITE_TEMPLATE_DIR", Path(f"{BASE_DIR.parent}/resources")))
     """Template directory."""
+
+    def get_config(self, app_settings: AppSettings) -> ViteConfig:
+        from litestar_vite import InertiaConfig, PathConfig, RuntimeConfig, TypeGenConfig, ViteConfig
+
+        from app.domain.teams.schemas import CurrentTeam
+
+        return ViteConfig(
+            dev_mode=self.DEV_MODE,
+            runtime=RuntimeConfig(executor="bun", trusted_proxies="*"),
+            paths=PathConfig(
+                root=BASE_DIR.parent,
+                bundle_dir=Path("app/domain/web/public"),
+                resource_dir=Path("resources"),
+            ),
+            inertia=InertiaConfig(
+                redirect_unauthorized_to="/login",
+                extra_static_page_props={
+                    "canResetPassword": True,
+                    "hasTermsAndPrivacyPolicyFeature": True,
+                    "mustVerifyEmail": True,
+                    "githubOAuthEnabled": app_settings.github_oauth_enabled,
+                    "googleOAuthEnabled": app_settings.google_oauth_enabled,
+                    "registrationEnabled": app_settings.REGISTRATION_ENABLED,
+                    "mfaEnabled": app_settings.MFA_ENABLED,
+                },
+                extra_session_page_props={"currentTeam": CurrentTeam},
+            ),
+            types=TypeGenConfig(output=BASE_DIR.parent / "resources" / "lib" / "generated"),
+        )
 
 
 @dataclass
@@ -135,7 +186,7 @@ class LogSettings:
     GRANIAN_ERROR_LEVEL: int = field(default_factory=get_env("GRANIAN_ERROR_LOG_LEVEL", 20))
     """Level to log granian error logs."""
 
-    def create_structlog_config(self) -> Any:
+    def get_structlog_config(self) -> StructlogConfig:
         """Create the complete Litestar StructlogConfig.
 
         Returns:
@@ -315,6 +366,50 @@ class StorageSettings:
         """Check if using cloud storage backend."""
         return self.BACKEND in {"s3", "gcs", "azure"}
 
+    def configure_storage(self) -> None:
+        """Configure file storage backends based on settings.
+
+        Raises:
+            ValueError: If an unsupported storage backend is configured.
+        """
+        from advanced_alchemy.types.file_object import storages
+        from advanced_alchemy.types.file_object.backends.obstore import ObstoreBackend
+
+        backend = self.BACKEND
+
+        if backend == "local":
+            storage_path = self.UPLOAD_DIR.absolute()
+            storage_path.mkdir(parents=True, exist_ok=True)
+            avatars_backend = ObstoreBackend(key="avatars", fs=f"file://{storage_path}/")
+        elif backend == "s3":
+            kwargs: dict[str, str] = {
+                "key": "avatars",
+                "fs": f"s3://{self.BUCKET}/",
+                "aws_region": self.AWS_REGION,
+            }
+            if self.AWS_ACCESS_KEY_ID:
+                kwargs["aws_access_key_id"] = self.AWS_ACCESS_KEY_ID
+                kwargs["aws_secret_access_key"] = self.AWS_SECRET_ACCESS_KEY
+            if self.AWS_ENDPOINT:
+                kwargs["aws_endpoint"] = self.AWS_ENDPOINT
+            avatars_backend = ObstoreBackend(**kwargs)
+        elif backend == "gcs":
+            kwargs = {"key": "avatars", "fs": f"gs://{self.BUCKET}/"}
+            if self.GOOGLE_SERVICE_ACCOUNT:
+                kwargs["google_service_account"] = self.GOOGLE_SERVICE_ACCOUNT
+            avatars_backend = ObstoreBackend(**kwargs)
+        elif backend == "azure":
+            avatars_backend = ObstoreBackend(
+                key="avatars",
+                fs=f"az://{self.BUCKET}/",
+                azure_storage_connection_string=self.AZURE_CONNECTION_STRING,
+            )
+        else:
+            msg = f"Unsupported storage backend: {backend}"
+            raise ValueError(msg)
+
+        storages.register_backend(avatars_backend)
+
 
 @dataclass
 class AppSettings:
@@ -377,6 +472,37 @@ class AppSettings:
             True if both client ID and secret are set.
         """
         return bool(self.GOOGLE_OAUTH2_CLIENT_ID and self.GOOGLE_OAUTH2_CLIENT_SECRET)
+
+    def get_compression_config(self) -> CompressionConfig:
+        from litestar.config.compression import CompressionConfig
+
+        return CompressionConfig(backend="gzip")
+
+    def get_csrf_config(self) -> CSRFConfig:
+        from litestar.config.csrf import CSRFConfig
+
+        return CSRFConfig(
+            secret=self.SECRET_KEY,
+            cookie_secure=self.CSRF_COOKIE_SECURE,
+            cookie_name=self.CSRF_COOKIE_NAME,
+            header_name=self.CSRF_HEADER_NAME,
+        )
+
+    def get_cors_config(self) -> CORSConfig:
+        from litestar.config.cors import CORSConfig
+
+        return CORSConfig(allow_origins=self.ALLOWED_CORS_ORIGINS)
+
+    def get_session_config(self) -> ServerSideSessionConfig:
+        from litestar.middleware.session.server_side import ServerSideSessionConfig
+
+        return ServerSideSessionConfig(max_age=3600)
+
+    def get_template_config(self, template_dir: Path) -> TemplateConfig:
+        from litestar.contrib.jinja import JinjaTemplateEngine
+        from litestar.template import TemplateConfig
+
+        return TemplateConfig(engine=JinjaTemplateEngine(directory=template_dir))
 
 
 @dataclass

@@ -320,6 +320,10 @@ class EmailService:
         """
         app_name = context.get("APP_NAME", self.app_name)
         user_name = context.get("USER_NAME", "there")
+        primary = "#202235"
+        accent = "#EDB641"
+        surface = "#ffffff"
+        border = "#DCDFE4"
 
         # Generate content based on template type
         if "verification" in template_name:
@@ -329,8 +333,8 @@ class EmailService:
                 <p>Hi {user_name},</p>
                 <p>Please verify your email address by clicking the link below:</p>
                 <p><a href="{url}" style="display: inline-block; padding: 10px 20px;
-                    background-color: #1a73e8; color: white; text-decoration: none;
-                    border-radius: 4px;">Verify Email</a></p>
+                    background-color: {accent}; color: {primary}; text-decoration: none;
+                    border-radius: 4px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Verify Email</a></p>
                 <p>Or copy and paste this URL: {url}</p>
                 <p>This link expires in {expires} hours.</p>
             """
@@ -341,8 +345,8 @@ class EmailService:
                 <p>Hi {user_name},</p>
                 <p>You requested to reset your password. Click the link below:</p>
                 <p><a href="{url}" style="display: inline-block; padding: 10px 20px;
-                    background-color: #1a73e8; color: white; text-decoration: none;
-                    border-radius: 4px;">Reset Password</a></p>
+                    background-color: {accent}; color: {primary}; text-decoration: none;
+                    border-radius: 4px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Reset Password</a></p>
                 <p>Or copy and paste this URL: {url}</p>
                 <p>This link expires in {expires} minutes.</p>
                 <p>If you didn't request this, please ignore this email.</p>
@@ -353,8 +357,8 @@ class EmailService:
                 <p>Hi {user_name},</p>
                 <p>Your password has been successfully reset.</p>
                 <p><a href="{url}" style="display: inline-block; padding: 10px 20px;
-                    background-color: #28a745; color: white; text-decoration: none;
-                    border-radius: 4px;">Log In</a></p>
+                    background-color: {accent}; color: {primary}; text-decoration: none;
+                    border-radius: 4px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Log In</a></p>
                 <p>If you didn't make this change, contact support immediately.</p>
             """
         elif "welcome" in template_name:
@@ -363,8 +367,8 @@ class EmailService:
                 <p>Hi {user_name},</p>
                 <p>Welcome to {app_name}! Your account is now active.</p>
                 <p><a href="{url}" style="display: inline-block; padding: 10px 20px;
-                    background-color: #28a745; color: white; text-decoration: none;
-                    border-radius: 4px;">Log In</a></p>
+                    background-color: {accent}; color: {primary}; text-decoration: none;
+                    border-radius: 4px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Log In</a></p>
             """
         elif "invitation" in template_name:
             url = context.get("INVITATION_URL", "")
@@ -375,8 +379,8 @@ class EmailService:
                 <p>Hi there,</p>
                 <p>{inviter} has invited you to join {team} on {app_name}.</p>
                 <p><a href="{url}" style="display: inline-block; padding: 10px 20px;
-                    background-color: #1a73e8; color: white; text-decoration: none;
-                    border-radius: 4px;">Accept Invitation</a></p>
+                    background-color: {accent}; color: {primary}; text-decoration: none;
+                    border-radius: 4px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Accept Invitation</a></p>
                 <p>Or copy and paste this URL: {url}</p>
                 <p>This invitation expires in {expires} days.</p>
             """
@@ -393,15 +397,16 @@ class EmailService:
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
-        <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                     line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="background: #1a73e8; color: white; padding: 20px; text-align: center;">
+        <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                     line-height: 1.6; color: {primary}; background: {border};
+                     max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: {primary}; color: white; padding: 20px; text-align: center;">
                 <h1 style="margin: 0;">{app_name}</h1>
             </div>
-            <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0;">
+            <div style="background: {surface}; padding: 30px; border: 1px solid {border};">
                 {content}
             </div>
-            <div style="text-align: center; padding: 20px; font-size: 12px; color: #666;">
+            <div style="text-align: center; padding: 20px; font-size: 12px; color: {primary};">
                 <p>&copy; {app_name}</p>
             </div>
         </body>

@@ -7,12 +7,13 @@ from litestar.middleware.session.server_side import ServerSideSessionBackend
 from litestar.security.session_auth import SessionAuth
 from litestar_vite.inertia import share
 
-from app.config import alchemy, github_oauth2_client, google_oauth2_client, settings
+from app.config import alchemy, github_oauth2_client, google_oauth2_client
 from app.config import session as session_config
 from app.db.models import User as UserModel
 from app.domain.accounts.dependencies import provide_users_service
 from app.domain.accounts.schemas import User as UserSchema
 from app.lib.oauth import OAuth2AuthorizeCallback
+from app.lib.settings import get_settings
 
 if TYPE_CHECKING:
     from litestar.connection import ASGIConnection
@@ -41,7 +42,7 @@ def requires_registration_enabled(connection: ASGIConnection, _: BaseRouteHandle
     Raises:
         PermissionDeniedException: If registration is disabled.
     """
-    if settings.app.REGISTRATION_ENABLED:
+    if get_settings().app.REGISTRATION_ENABLED:
         return
     msg = "Registration is currently disabled."
     raise PermissionDeniedException(detail=msg)

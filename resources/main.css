@@ -1,31 +1,32 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;400;700&display=swap");
 @import "tailwindcss";
 
 /* shadcn/ui theme configuration */
 @theme {
-	--color-border: hsl(214.3 31.8% 91.4%);
-	--color-input: hsl(214.3 31.8% 91.4%);
-	--color-ring: hsl(222.2 84% 4.9%);
+	--color-border: hsl(217.5 12.9% 87.8%);
+	--color-input: hsl(217.5 12.9% 87.8%);
+	--color-ring: hsl(40.8 82.7% 59.2%);
 	--color-background: hsl(0 0% 100%);
-	--color-foreground: hsl(222.2 84% 4.9%);
-	--color-primary: hsl(222.2 47.4% 11.2%);
-	--color-primary-foreground: hsl(210 40% 98%);
-	--color-secondary: hsl(210 40% 96.1%);
-	--color-secondary-foreground: hsl(222.2 47.4% 11.2%);
+	--color-foreground: hsl(234.3 24.7% 16.7%);
+	--color-primary: hsl(40.8 82.7% 59.2%);
+	--color-primary-foreground: hsl(234.3 24.7% 16.7%);
+	--color-secondary: hsl(217.5 12.9% 87.8%);
+	--color-secondary-foreground: hsl(234.3 24.7% 16.7%);
 	--color-destructive: hsl(0 84.2% 60.2%);
-	--color-destructive-foreground: hsl(210 40% 98%);
-	--color-muted: hsl(210 40% 96.1%);
-	--color-muted-foreground: hsl(215.4 16.3% 46.9%);
-	--color-accent: hsl(210 40% 96.1%);
-	--color-accent-foreground: hsl(222.2 47.4% 11.2%);
+	--color-destructive-foreground: hsl(0 0% 100%);
+	--color-muted: hsl(217.5 12.9% 87.8%);
+	--color-muted-foreground: hsl(234.3 24.7% 32%);
+	--color-accent: hsl(39.7 100% 75.1%);
+	--color-accent-foreground: hsl(234.3 24.7% 16.7%);
 	--color-popover: hsl(0 0% 100%);
-	--color-popover-foreground: hsl(222.2 84% 4.9%);
+	--color-popover-foreground: hsl(234.3 24.7% 16.7%);
 	--color-card: hsl(0 0% 100%);
-	--color-card-foreground: hsl(222.2 84% 4.9%);
-	--color-chart-1: hsl(12 76% 61%);
-	--color-chart-2: hsl(173 58% 39%);
-	--color-chart-3: hsl(197 37% 24%);
-	--color-chart-4: hsl(43 74% 66%);
-	--color-chart-5: hsl(27 87% 67%);
+	--color-card-foreground: hsl(234.3 24.7% 16.7%);
+	--color-chart-1: hsl(40.8 82.7% 59.2%);
+	--color-chart-2: hsl(234.3 24.7% 16.7%);
+	--color-chart-3: hsl(39.7 100% 75.1%);
+	--color-chart-4: hsl(217.5 12.9% 87.8%);
+	--color-chart-5: hsl(234.3 24.7% 32%);
 	--radius-lg: 0.5rem;
 	--radius-md: calc(0.5rem - 2px);
 	--radius-sm: calc(0.5rem - 4px);
@@ -66,43 +67,68 @@
 	}
 
 	--animate-grid: grid 15s linear infinite;
+
+	@keyframes star-drift {
+		0% {
+			background-position: 0 0;
+		}
+		100% {
+			background-position: 140px -100px;
+		}
+	}
+
+	--animate-star-drift: star-drift 22s linear infinite;
 }
 
 /* Dark mode theme */
 .dark {
-	--color-background: hsl(222.2 84% 4.9%);
-	--color-foreground: hsl(210 40% 98%);
-	--color-card: hsl(222.2 84% 4.9%);
-	--color-card-foreground: hsl(210 40% 98%);
-	--color-popover: hsl(222.2 84% 4.9%);
-	--color-popover-foreground: hsl(210 40% 98%);
-	--color-primary: hsl(210 40% 98%);
-	--color-primary-foreground: hsl(222.2 47.4% 11.2%);
-	--color-secondary: hsl(217.2 32.6% 17.5%);
-	--color-secondary-foreground: hsl(210 40% 98%);
-	--color-muted: hsl(217.2 32.6% 17.5%);
-	--color-muted-foreground: hsl(215 20.2% 65.1%);
-	--color-accent: hsl(217.2 32.6% 17.5%);
-	--color-accent-foreground: hsl(210 40% 98%);
+	--color-background: hsl(234.3 24.7% 16.7%);
+	--color-foreground: hsl(0 0% 100%);
+	--color-card: hsl(234.3 22% 20%);
+	--color-card-foreground: hsl(0 0% 100%);
+	--color-popover: hsl(234.3 22% 20%);
+	--color-popover-foreground: hsl(0 0% 100%);
+	--color-primary: hsl(40.8 82.7% 59.2%);
+	--color-primary-foreground: hsl(234.3 24.7% 16.7%);
+	--color-secondary: hsl(234.3 18% 24%);
+	--color-secondary-foreground: hsl(0 0% 100%);
+	--color-muted: hsl(234.3 18% 24%);
+	--color-muted-foreground: hsl(0 0% 80%);
+	--color-accent: hsl(39.7 100% 75.1%);
+	--color-accent-foreground: hsl(234.3 24.7% 16.7%);
 	--color-destructive: hsl(0 62.8% 30.6%);
-	--color-destructive-foreground: hsl(210 40% 98%);
-	--color-border: hsl(217.2 32.6% 17.5%);
-	--color-input: hsl(217.2 32.6% 17.5%);
-	--color-ring: hsl(212.7 26.8% 83.9%);
-	--color-chart-1: hsl(220 70% 50%);
-	--color-chart-2: hsl(160 60% 45%);
-	--color-chart-3: hsl(30 80% 55%);
-	--color-chart-4: hsl(280 65% 60%);
-	--color-chart-5: hsl(340 75% 55%);
+	--color-destructive-foreground: hsl(0 0% 100%);
+	--color-border: hsl(234.3 18% 28%);
+	--color-input: hsl(234.3 18% 28%);
+	--color-ring: hsl(40.8 82.7% 59.2%);
+	--color-chart-1: hsl(40.8 82.7% 59.2%);
+	--color-chart-2: hsl(0 0% 100%);
+	--color-chart-3: hsl(39.7 100% 75.1%);
+	--color-chart-4: hsl(234.3 18% 28%);
+	--color-chart-5: hsl(217.5 12.9% 87.8%);
+	--grid-line: rgba(220, 223, 228, 0.18);
+	--grid-line-strong: rgba(220, 223, 228, 0.32);
+	--grid-glow: rgba(255, 212, 128, 0.45);
+	--grid-star: rgba(255, 212, 128, 0.4);
+	--grid-noise: rgba(220, 223, 228, 0.08);
 }
 
 /* Base layer styles */
 @layer base {
+	:root {
+		--font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+		--grid-line: rgba(32, 34, 53, 0.22);
+		--grid-line-strong: rgba(32, 34, 53, 0.35);
+		--grid-glow: rgba(237, 182, 65, 0.55);
+		--grid-star: rgba(237, 182, 65, 0.5);
+		--grid-noise: rgba(32, 34, 53, 0.08);
+	}
 	* {
 		@apply border-border;
 	}
 	body {
 		@apply bg-background text-foreground;
+		font-family: var(--font-sans);
 	}
 }
 
@@ -110,5 +136,13 @@
 @layer utilities {
 	.animate-grid {
 		animation: var(--animate-grid);
+	}
+	.animate-star-drift {
+		animation: var(--animate-star-drift);
+	}
+	.heading-uppercase {
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		font-weight: 700;
 	}
 }

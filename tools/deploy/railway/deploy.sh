@@ -1,21 +1,22 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Railway Deployment Script
+# Railway Deployment Script (Unified)
 # =============================================================================
-# This script handles deployment of the Litestar Fullstack Inertia application
-# to Railway, including database migrations.
-#
-# Prerequisites:
-#   - Railway CLI installed and authenticated
-#   - Project initialized with ./setup.sh
+# This script handles the complete Railway deployment workflow:
+#   - Project setup (if not already configured)
+#   - Environment variable configuration
+#   - Database provisioning
+#   - Application deployment
 #
 # Usage:
-#   ./deploy.sh [--detach]
+#   ./deploy.sh [OPTIONS]
 #
 # Options:
 #   --detach          Don't wait for deployment to complete
+#   --skip-setup      Skip setup checks (assumes already configured)
+#   --email           Configure Resend email after deployment
 #
-# Note: Migrations run automatically via preDeployCommand in railway.json
+# The script is fully idempotent - safe to run multiple times.
 # =============================================================================
 
 set -euo pipefail
@@ -29,8 +30,12 @@ NC='\033[0m' # No Color
 
 # Default values
 DETACH=false
+SKIP_SETUP=false
+CONFIGURE_EMAIL=false
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
+PROJECT_NAME=""
+EXISTING_PROJECT=false
 
 # -----------------------------------------------------------------------------
 # Parse Arguments
@@ -42,8 +47,17 @@ while [[ $# -gt 0 ]]; do
             DETACH=true
             shift
             ;;
+        --skip-setup)
+            SKIP_SETUP=true
+            shift
+            ;;
+        --email)
+            CONFIGURE_EMAIL=true
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
+            echo "Usage: ./deploy.sh [--detach] [--skip-setup] [--email]"
             exit 1
             ;;
     esac
@@ -77,38 +91,236 @@ check_command() {
 }
 
 # -----------------------------------------------------------------------------
-# Pre-flight Checks
+# Railway CLI Setup
 # -----------------------------------------------------------------------------
 
-preflight_checks() {
-    log_info "Running pre-flight checks..."
+ensure_railway_cli() {
+    if check_command railway; then
+        log_info "Railway CLI: $(railway --version)"
+        return 0
+    fi
 
-    # Check Railway CLI
-    if ! check_command railway; then
-        log_error "Railway CLI not installed. Run ./setup.sh first."
+    log_info "Installing Railway CLI..."
+
+    if ! check_command npm; then
+        log_error "npm is required to install Railway CLI"
+        log_info "Install Node.js from https://nodejs.org/"
         exit 1
     fi
 
-    # Check authentication
-    if ! railway whoami &> /dev/null; then
-        log_error "Not authenticated with Railway. Run 'railway login'."
+    npm install -g @railway/cli
+
+    if check_command railway; then
+        log_success "Railway CLI installed: $(railway --version)"
+    else
+        log_error "Failed to install Railway CLI"
         exit 1
     fi
+}
 
-    # Check if project is linked by running railway status
+# -----------------------------------------------------------------------------
+# Authentication
+# -----------------------------------------------------------------------------
+
+ensure_authenticated() {
+    if railway whoami &> /dev/null; then
+        log_info "Authenticated as: $(railway whoami)"
+        return 0
+    fi
+
+    log_info "Please authenticate with Railway..."
+    railway login
+
+    if railway whoami &> /dev/null; then
+        log_success "Authenticated as: $(railway whoami)"
+    else
+        log_error "Authentication failed"
+        exit 1
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# Project Detection/Creation
+# -----------------------------------------------------------------------------
+
+check_existing_project() {
     cd "${PROJECT_ROOT}"
-    if ! railway status &> /dev/null; then
-        log_error "Project not linked. Run ./setup.sh first or 'railway link'."
-        exit 1
+
+    # Check if already linked to a Railway project
+    if railway status &> /dev/null; then
+        # Extract project name from status
+        PROJECT_NAME=$(railway status --json 2>/dev/null | grep -o '"name":"[^"]*"' | head -1 | cut -d'"' -f4 || echo "")
+        if [ -n "${PROJECT_NAME}" ]; then
+            log_success "Linked to project: ${PROJECT_NAME}"
+            EXISTING_PROJECT=true
+            return 0
+        fi
     fi
 
-    # Verify railway.json exists
-    if [ ! -f "${PROJECT_ROOT}/railway.json" ]; then
-        log_error "railway.json not found in project root."
-        exit 1
+    EXISTING_PROJECT=false
+}
+
+ensure_project() {
+    if [ "${EXISTING_PROJECT}" = true ]; then
+        return 0
     fi
 
-    log_success "Pre-flight checks passed"
+    echo ""
+    read -p "Enter project name [litestar-fullstack-demo]: " PROJECT_NAME
+    PROJECT_NAME="${PROJECT_NAME:-litestar-fullstack-demo}"
+    echo ""
+
+    log_info "Creating Railway project: ${PROJECT_NAME}"
+    cd "${PROJECT_ROOT}"
+    railway init --name "${PROJECT_NAME}"
+    log_success "Project created: ${PROJECT_NAME}"
+}
+
+# -----------------------------------------------------------------------------
+# Database Provisioning
+# -----------------------------------------------------------------------------
+
+ensure_database() {
+    log_info "Checking PostgreSQL database..."
+    cd "${PROJECT_ROOT}"
+
+    # Check if Postgres service already exists
+    if railway status --json 2>/dev/null | grep -qi 'postgres'; then
+        log_success "PostgreSQL database already provisioned"
+        return 0
+    fi
+
+    log_info "Provisioning PostgreSQL database..."
+    railway add --database postgres
+    log_success "PostgreSQL database provisioned"
+}
+
+# -----------------------------------------------------------------------------
+# App Service Setup
+# -----------------------------------------------------------------------------
+
+ensure_app_service() {
+    log_info "Checking application service..."
+    cd "${PROJECT_ROOT}"
+
+    # Check if app service already exists
+    if railway status --json 2>/dev/null | grep -qi '"app"'; then
+        log_success "Application service already exists"
+        railway service link app 2>/dev/null || true
+        return 0
+    fi
+
+    log_info "Creating application service..."
+    railway add --service "app"
+    railway service link app
+    log_success "Application service created and linked"
+}
+
+# -----------------------------------------------------------------------------
+# Domain Generation
+# -----------------------------------------------------------------------------
+
+ensure_domain() {
+    log_info "Checking public domain..."
+    cd "${PROJECT_ROOT}"
+
+    # Check if domain already exists
+    if railway domain --json 2>/dev/null | grep -q 'railway.app'; then
+        log_success "Public domain already configured"
+        return 0
+    fi
+
+    log_info "Generating public domain..."
+    railway domain
+    log_success "Public domain generated"
+}
+
+# -----------------------------------------------------------------------------
+# Environment Variables
+# -----------------------------------------------------------------------------
+
+ensure_environment() {
+    log_info "Configuring environment variables..."
+    cd "${PROJECT_ROOT}"
+
+    # Check if already configured (SECRET_KEY exists)
+    if railway variables --kv 2>/dev/null | grep -q "SECRET_KEY="; then
+        log_success "Environment variables already configured"
+
+        # Always ensure PORT is set (may need update)
+        if ! railway variables --kv 2>/dev/null | grep -q "PORT=8080"; then
+            log_info "Updating PORT configuration..."
+            railway variables --set "PORT=8080" --set "LITESTAR_PORT=8080" --skip-deploys
+        fi
+        return 0
+    fi
+
+    # Generate a secure secret key
+    SECRET_KEY=$(openssl rand -base64 32 | tr -d '=' | tr '+/' '-_')
+
+    # Set essential variables
+    railway variables --set "SECRET_KEY=${SECRET_KEY}" \
+        --set "LITESTAR_DEBUG=false" \
+        --set "VITE_DEV_MODE=false" \
+        --set "DATABASE_ECHO=false" \
+        --set "EMAIL_ENABLED=false" \
+        --set "EMAIL_BACKEND=console" \
+        --set "PORT=8080" \
+        --set "LITESTAR_PORT=8080" \
+        --set 'DATABASE_URL=${{Postgres.DATABASE_URL}}' \
+        --set 'APP_URL=https://${{RAILWAY_PUBLIC_DOMAIN}}' \
+        --skip-deploys
+
+    log_success "Environment variables configured"
+    log_info "  - DATABASE_URL: linked to Postgres service"
+    log_info "  - APP_URL: auto-configured from Railway domain"
+    log_info "  - PORT/LITESTAR_PORT: 8080"
+}
+
+# -----------------------------------------------------------------------------
+# Metal Builds
+# -----------------------------------------------------------------------------
+
+enable_metal_builds() {
+    log_info "Checking metal builds..."
+    cd "${PROJECT_ROOT}"
+
+    if railway variables --kv 2>/dev/null | grep -q "RAILWAY_USE_METAL_BUILDS=true"; then
+        log_success "Metal builds already enabled"
+        return 0
+    fi
+
+    railway variables --set "RAILWAY_USE_METAL_BUILDS=true" --skip-deploys
+    log_success "Metal builds enabled"
+}
+
+# -----------------------------------------------------------------------------
+# Email Configuration (Optional)
+# -----------------------------------------------------------------------------
+
+configure_email() {
+    echo ""
+    echo "=============================================="
+    echo "Resend Email Configuration"
+    echo "=============================================="
+    echo ""
+    log_info "Resend provides 3,000 emails/month on the free tier"
+    log_info "Get your API key at: https://resend.com/api-keys"
+    echo ""
+
+    read -p "Enter Resend API key: " RESEND_API_KEY
+    read -p "Enter 'From' email address (must be verified in Resend): " EMAIL_FROM
+
+    log_info "Configuring Resend..."
+
+    cd "${PROJECT_ROOT}"
+
+    railway variables --set "EMAIL_ENABLED=true" \
+        --set "EMAIL_BACKEND=resend" \
+        --set "EMAIL_FROM=${EMAIL_FROM}" \
+        --set "RESEND_API_KEY=${RESEND_API_KEY}"
+
+    log_success "Resend configured successfully"
 }
 
 # -----------------------------------------------------------------------------
@@ -126,58 +338,13 @@ verify_build() {
         exit 1
     fi
 
-    # Check package.json and pyproject.toml exist
-    if [ ! -f "package.json" ]; then
-        log_error "package.json not found"
-        exit 1
-    fi
-
-    if [ ! -f "pyproject.toml" ]; then
-        log_error "pyproject.toml not found"
+    # Check railway.json exists
+    if [ ! -f "railway.json" ]; then
+        log_error "railway.json not found in project root"
         exit 1
     fi
 
     log_success "Build configuration verified"
-}
-
-# -----------------------------------------------------------------------------
-# Enable Metal Builds
-# -----------------------------------------------------------------------------
-
-enable_metal_builds() {
-    log_info "Enabling metal builds for faster Docker builds..."
-
-    cd "${PROJECT_ROOT}"
-
-    # Check if metal builds is already enabled
-    if railway variables --kv 2>/dev/null | grep -q "RAILWAY_USE_METAL_BUILDS=true"; then
-        log_success "Metal builds already enabled"
-        return 0
-    fi
-
-    # Enable metal builds
-    railway variables --set "RAILWAY_USE_METAL_BUILDS=true" --skip-deploys
-    log_success "Metal builds enabled"
-}
-
-# -----------------------------------------------------------------------------
-# Configure Port Variable
-# -----------------------------------------------------------------------------
-
-configure_port() {
-    log_info "Configuring LITESTAR_PORT variable..."
-
-    cd "${PROJECT_ROOT}"
-
-    # Check if LITESTAR_PORT is already set
-    if railway variables --kv 2>/dev/null | grep -q "LITESTAR_PORT="; then
-        log_success "LITESTAR_PORT already configured"
-        return 0
-    fi
-
-    # Set LITESTAR_PORT to reference Railway's PORT variable
-    railway variables --set 'LITESTAR_PORT=${{PORT}}' --skip-deploys
-    log_success "LITESTAR_PORT configured to use Railway's PORT"
 }
 
 # -----------------------------------------------------------------------------
@@ -241,12 +408,26 @@ display_summary() {
     echo -e "${GREEN}Deployment Complete!${NC}"
     echo "=============================================="
     echo ""
+    echo "Project: ${PROJECT_NAME:-$(railway status --json 2>/dev/null | grep -o '"name":"[^"]*"' | head -1 | cut -d'"' -f4 || echo 'Unknown')}"
+    echo ""
+    echo "Configuration:"
+    echo "  - PostgreSQL database with shared DATABASE_URL"
+    echo "  - Public domain (APP_URL auto-detected)"
+    echo "  - PORT/LITESTAR_PORT: 8080"
+    echo "  - Dockerfile.distroless builder"
+    echo "  - 2 CPU / 2 GB RAM limits"
+    echo ""
     echo "Useful commands:"
     echo "  railway open     - Open Railway dashboard"
     echo "  railway logs     - View application logs"
     echo "  railway status   - Check deployment status"
     echo "  railway run bash - SSH into container"
     echo ""
+    if [ "${CONFIGURE_EMAIL}" = false ]; then
+        echo "To configure email:"
+        echo "  ./deploy.sh --email"
+        echo ""
+    fi
     echo "=============================================="
 }
 
@@ -261,14 +442,35 @@ main() {
     echo "=============================================="
     echo ""
 
-    preflight_checks
+    # Pre-flight
+    ensure_railway_cli
+    ensure_authenticated
+
+    # Setup (if needed)
+    if [ "${SKIP_SETUP}" = false ]; then
+        check_existing_project
+        ensure_project
+        ensure_database
+        ensure_app_service
+        ensure_domain
+        ensure_environment
+        enable_metal_builds
+    fi
+
+    # Build verification
     verify_build
-    enable_metal_builds
-    configure_port
+
+    # Deploy
     deploy
 
+    # Health check (if not detached)
     if [ "${DETACH}" = false ]; then
         health_check
+    fi
+
+    # Optional email config
+    if [ "${CONFIGURE_EMAIL}" = true ]; then
+        configure_email
     fi
 
     display_summary

@@ -2,19 +2,14 @@
 # =============================================================================
 # Railway Environment Configuration Script
 # =============================================================================
-# This script helps configure environment variables for the Railway deployment,
-# including Resend settings for email functionality.
-#
-# Prerequisites:
-#   - Railway CLI installed and authenticated
-#   - Project initialized with ./setup.sh
+# Helper script for configuring optional environment variables.
+# For initial setup, use ./deploy.sh instead.
 #
 # Usage:
-#   ./env-setup.sh [--email] [--from-file .env.railway]
-#
-# Options:
-#   --email          Configure Resend email settings interactively
-#   --from-file      Load variables from an env file
+#   ./env-setup.sh                    # Interactive menu
+#   ./env-setup.sh --email            # Configure Resend email
+#   ./env-setup.sh --from-file .env   # Load variables from file
+#   ./env-setup.sh --set KEY=VALUE    # Set a single variable
 # =============================================================================
 
 set -euo pipefail
@@ -29,6 +24,7 @@ NC='\033[0m' # No Color
 # Default values
 CONFIGURE_EMAIL=false
 ENV_FILE=""
+SET_VAR=""
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 
@@ -46,8 +42,13 @@ while [[ $# -gt 0 ]]; do
             ENV_FILE="$2"
             shift 2
             ;;
+        --set)
+            SET_VAR="$2"
+            shift 2
+            ;;
         *)
             echo "Unknown option: $1"
+            echo "Usage: ./env-setup.sh [--email] [--from-file .env] [--set KEY=VALUE]"
             exit 1
             ;;
     esac
@@ -78,11 +79,9 @@ log_error() {
 # -----------------------------------------------------------------------------
 
 preflight_checks() {
-    log_info "Running pre-flight checks..."
-
     # Check Railway CLI
     if ! command -v railway &> /dev/null; then
-        log_error "Railway CLI not installed. Run ./setup.sh first."
+        log_error "Railway CLI not installed. Run ./deploy.sh first."
         exit 1
     fi
 
@@ -92,7 +91,12 @@ preflight_checks() {
         exit 1
     fi
 
-    log_success "Pre-flight checks passed"
+    # Check if project is linked
+    cd "${PROJECT_ROOT}"
+    if ! railway status &> /dev/null; then
+        log_error "No Railway project linked. Run ./deploy.sh first."
+        exit 1
+    fi
 }
 
 # -----------------------------------------------------------------------------
@@ -100,10 +104,6 @@ preflight_checks() {
 # -----------------------------------------------------------------------------
 
 load_from_file() {
-    if [ -z "${ENV_FILE}" ]; then
-        return 0
-    fi
-
     if [ ! -f "${ENV_FILE}" ]; then
         log_error "Environment file not found: ${ENV_FILE}"
         exit 1
@@ -125,14 +125,14 @@ load_from_file() {
         [[ -z "$value" || "$value" == "your-"* ]] && continue
 
         log_info "Setting: $key"
-        railway variables --set "${key}=${value}"
+        railway variables --set "${key}=${value}" --skip-deploys
     done < "${ENV_FILE}"
 
     log_success "Environment variables loaded from file"
 }
 
 # -----------------------------------------------------------------------------
-# Resend Configuration
+# Email Configuration
 # -----------------------------------------------------------------------------
 
 configure_email() {
@@ -158,10 +158,26 @@ configure_email() {
         --set "RESEND_API_KEY=${RESEND_API_KEY}"
 
     log_success "Resend configured successfully"
+    log_info "Redeploy to apply changes: ./deploy.sh"
 }
 
 # -----------------------------------------------------------------------------
-# Display Current Variables
+# Set Single Variable
+# -----------------------------------------------------------------------------
+
+set_variable() {
+    if [[ ! "${SET_VAR}" =~ = ]]; then
+        log_error "Invalid format. Use: --set KEY=VALUE"
+        exit 1
+    fi
+
+    cd "${PROJECT_ROOT}"
+    railway variables --set "${SET_VAR}"
+    log_success "Variable set: ${SET_VAR%%=*}"
+}
+
+# -----------------------------------------------------------------------------
+# Display Variables
 # -----------------------------------------------------------------------------
 
 display_variables() {
@@ -171,14 +187,13 @@ display_variables() {
     echo "=============================================="
 
     cd "${PROJECT_ROOT}"
-
     railway variables
 
     echo ""
 }
 
 # -----------------------------------------------------------------------------
-# Main Menu
+# Interactive Menu
 # -----------------------------------------------------------------------------
 
 main_menu() {
@@ -209,10 +224,9 @@ main_menu() {
             main_menu
             ;;
         3)
-            read -p "Variable name: " var_name
-            read -p "Variable value: " var_value
-            railway variables --set "${var_name}=${var_value}"
-            log_success "Variable set: ${var_name}"
+            read -p "Variable (KEY=VALUE): " var_input
+            railway variables --set "${var_input}"
+            log_success "Variable set: ${var_input%%=*}"
             main_menu
             ;;
         4)
@@ -239,9 +253,14 @@ main_menu() {
 main() {
     preflight_checks
 
-    # If specific flags were passed, execute and exit
+    # Handle specific flags
     if [ -n "${ENV_FILE}" ]; then
         load_from_file
+        exit 0
+    fi
+
+    if [ -n "${SET_VAR}" ]; then
+        set_variable
         exit 0
     fi
 

@@ -30,6 +30,6 @@ createInertiaApp({
 		hydrateRoot(el, appElement)
 	},
 	progress: {
-		color: "#4B5563",
+		color: "#EDB641",
 	},
 } as unknown as Parameters<typeof createInertiaApp>[0])

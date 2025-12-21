@@ -18,7 +18,7 @@ from typing import Any
 from app.lib.settings import BASE_DIR
 
 # Default template directory for email templates
-DEFAULT_TEMPLATE_DIR = BASE_DIR / "lib" / "templates" / "emails"
+DEFAULT_TEMPLATE_DIR = BASE_DIR / "lib" / "email" / "templates"
 
 # Pattern for placeholder matching: {{VARIABLE_NAME}}
 PLACEHOLDER_PATTERN = re.compile(r"\{\{(\w+)\}\}")
@@ -46,7 +46,7 @@ class TemplateRenderer:
 
         Args:
             template_dir: Directory containing template files.
-                         Defaults to lib/templates/emails.
+                         Defaults to lib/email/templates.
         """
         self.template_dir = template_dir or DEFAULT_TEMPLATE_DIR
         self._cache: dict[str, str] = {}

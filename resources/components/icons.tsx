@@ -154,8 +154,8 @@ export const Icons = {
 			<path d="M318.5 165H229.5L315.5 251L229.5 337H318.5L404.5 251L318.5 165Z" stroke="currentColor" fill="white" />
 			<defs>
 				<linearGradient id="paint0_linear" x1="3" y1="20" x2="24" y2="20" gradientUnits="userSpaceOnUse">
-					<stop stopColor="#934EE7" />
-					<stop offset="1" stopColor="#7270EC" />
+					<stop stopColor="#EDB641" />
+					<stop offset="1" stopColor="#FFD480" />
 				</linearGradient>
 			</defs>
 		</svg>
