@@ -42,7 +42,7 @@ alchemy = SQLAlchemyAsyncConfig(
 templates = TemplateConfig(engine=JinjaTemplateEngine(directory=settings.vite.TEMPLATE_DIR))
 vite = ViteConfig(
     dev_mode=settings.vite.DEV_MODE,
-    runtime=RuntimeConfig(executor="bun"),
+    runtime=RuntimeConfig(executor="bun", trusted_proxies="*"),
     paths=PathConfig(root=BASE_DIR.parent, bundle_dir=Path("app/domain/web/public"), resource_dir=Path("resources")),
     inertia=InertiaConfig(
         redirect_unauthorized_to="/login",
@@ -64,10 +64,10 @@ session = ServerSideSessionConfig(max_age=3600)
 log = settings.log.create_structlog_config()
 
 github_oauth2_client = GitHubOAuth2(
-    client_id=settings.app.GITHUB_OAUTH2_CLIENT_ID, client_secret=settings.app.GITHUB_OAUTH2_CLIENT_SECRET
+    client_id=settings.app.GITHUB_OAUTH2_CLIENT_ID, client_secret=settings.app.GITHUB_OAUTH2_CLIENT_SECRET,
 )
 google_oauth2_client = GoogleOAuth2(
-    client_id=settings.app.GOOGLE_OAUTH2_CLIENT_ID, client_secret=settings.app.GOOGLE_OAUTH2_CLIENT_SECRET
+    client_id=settings.app.GOOGLE_OAUTH2_CLIENT_ID, client_secret=settings.app.GOOGLE_OAUTH2_CLIENT_SECRET,
 )
 
 

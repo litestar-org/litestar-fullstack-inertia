@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from advanced_alchemy.exceptions import IntegrityError
 from advanced_alchemy.extensions.litestar.providers import create_service_provider
 from litestar import Controller, post
 from litestar.di import Provide
+from litestar.exceptions import ValidationException
 from litestar.params import Parameter
 from sqlalchemy.orm import joinedload, noload, selectinload
 
@@ -21,6 +21,11 @@ from app.domain.teams.schemas import Team, TeamMemberModify
 from app.domain.teams.services import TeamMemberService, TeamService
 
 __all__ = ("TeamMemberController",)
+
+# Exception messages
+_MSG_USER_NOT_FOUND = "User not found"
+_MSG_USER_ALREADY_MEMBER = "User is already a member of the team"
+_MSG_USER_NOT_MEMBER = "User is not a member of this team"
 
 
 class TeamMemberController(Controller):
@@ -73,14 +78,15 @@ class TeamMemberController(Controller):
             Updated team data with new member.
 
         Raises:
-            IntegrityError: If the user is already a member of the team.
+            ValidationException: If the user is not found or already a member of the team.
         """
         team_obj = await teams_service.get_one(slug=team_slug)
-        user_obj = await users_service.get_one(email=data.user_name)
+        user_obj = await users_service.get_one_or_none(email=data.user_name)
+        if not user_obj:
+            raise ValidationException(_MSG_USER_NOT_FOUND)
         is_member = any(membership.team_id == team_obj.id for membership in user_obj.teams)
         if is_member:
-            msg = "User is already a member of the team."
-            raise IntegrityError(msg)
+            raise ValidationException(_MSG_USER_ALREADY_MEMBER)
         await team_members_service.create({"team_id": team_obj.id, "user_id": user_obj.id, "role": TeamRoles.MEMBER})
         team_obj = await teams_service.get_one(slug=team_slug)
         return teams_service.to_schema(schema_type=Team, data=team_obj)
@@ -107,14 +113,15 @@ class TeamMemberController(Controller):
             Updated team data without the removed member.
 
         Raises:
-            IntegrityError: If the user is not a member of this team.
+            ValidationException: If the user is not found or not a member of this team.
         """
         team_obj = await teams_service.get_one(slug=team_slug)
-        user_obj = await users_service.get_one(email=data.user_name)
+        user_obj = await users_service.get_one_or_none(email=data.user_name)
+        if not user_obj:
+            raise ValidationException(_MSG_USER_NOT_FOUND)
         membership = next((membership for membership in user_obj.teams if membership.team_id == team_obj.id), None)
         if not membership:
-            msg = "User is not a member of this team."
-            raise IntegrityError(msg)
+            raise ValidationException(_MSG_USER_NOT_MEMBER)
         _ = await team_members_service.delete(membership.id)
         team_obj = await teams_service.get_one(slug=team_slug)
         return teams_service.to_schema(schema_type=Team, data=team_obj)

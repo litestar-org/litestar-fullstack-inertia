@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
-from urllib.parse import quote, urlparse, urlunparse
 
-from litestar.exceptions import HTTPException, NotAuthorizedException
+from advanced_alchemy.exceptions import IntegrityError, NotFoundError, RepositoryError
+from litestar.exceptions import HTTPException
 from litestar.response import Response
-from litestar.status_codes import HTTP_401_UNAUTHORIZED
+from litestar.status_codes import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 from litestar_vite.inertia import flash
-from litestar_vite.inertia.exception_handler import create_inertia_exception_response as _original_handler
-from litestar_vite.inertia.plugin import InertiaPlugin
-from litestar_vite.inertia.response import InertiaRedirect
+from litestar_vite.inertia.exception_handler import create_inertia_exception_response as inertia_exception_handler
+from litestar_vite.inertia.response import InertiaBack
 
 if TYPE_CHECKING:
     from litestar.connection import Request
@@ -23,53 +22,10 @@ __all__ = (
     "HealthCheckConfigurationError",
     "MissingDependencyError",
     "inertia_exception_handler",
+    "integrity_error_handler",
+    "not_found_error_handler",
+    "repository_error_handler",
 )
-
-
-# TODO: Remove this workaround after litestar-vite > 0.15.0rc3 is released.
-# This fixes the issue where flash messages don't work for unauthorized redirects
-# because no session exists yet. The fix passes the error via query parameter instead.
-# See: https://github.com/litestar-org/litestar-vite/issues/164
-def inertia_exception_handler(request: "Request[UserT, AuthT, StateT]", exc: "Exception") -> "Response[Any]":
-    """Workaround exception handler that passes error via query param when flash fails.
-
-    This is a temporary fix until litestar-vite > 0.15.0rc3 is released with the proper fix.
-    """
-    # Check if this is an unauthorized error that would redirect to login
-    status_code = exc.status_code if isinstance(exc, HTTPException) else 500
-    is_unauthorized = status_code == HTTP_401_UNAUTHORIZED or isinstance(exc, NotAuthorizedException)
-
-    if not is_unauthorized:
-        return _original_handler(request, exc)
-
-    # Try to get the inertia plugin config
-    inertia_plugin: InertiaPlugin | None
-    try:
-        inertia_plugin = request.app.plugins.get("InertiaPlugin")
-    except KeyError:
-        inertia_plugin = None
-
-    if inertia_plugin is None:
-        return _original_handler(request, exc)
-
-    redirect_to_login = inertia_plugin.config.redirect_unauthorized_to  # type: ignore[unreachable]
-    if redirect_to_login is None or request.url.path == redirect_to_login:
-        return _original_handler(request, exc)
-
-    # Try to flash, check if it succeeded
-    detail = exc.detail if isinstance(exc, HTTPException) else str(exc)
-    flash_succeeded = False
-    if detail:
-        flash_succeeded = flash(request, detail, category="error")
-
-    # If flash failed, add error to query params
-    if not flash_succeeded and detail:
-        parsed = urlparse(redirect_to_login)
-        error_param = f"error={quote(detail, safe='')}"
-        query = f"{parsed.query}&{error_param}" if parsed.query else error_param
-        redirect_to_login = urlunparse(parsed._replace(query=query))
-
-    return InertiaRedirect(request, redirect_to=redirect_to_login)
 
 
 class ApplicationError(Exception):
@@ -119,3 +75,37 @@ class AuthorizationError(ApplicationClientError):
 
 class HealthCheckConfigurationError(ApplicationError):
     """An error occurred while registering an health check."""
+
+
+def integrity_error_handler(request: "Request[UserT, AuthT, StateT]", exc: IntegrityError) -> "Response[Any]":
+    """Handle database integrity errors (constraint violations) as validation errors.
+
+    Returns:
+        an Inertia-compatible error response with a flash message and redirect back.
+    """
+    detail = exc.detail if hasattr(exc, "detail") and exc.detail else str(exc)
+    flash(request, detail, category="error")
+    return InertiaBack(request, status_code=HTTP_400_BAD_REQUEST)
+
+
+def not_found_error_handler(request: "Request[UserT, AuthT, StateT]", exc: NotFoundError) -> "Response[Any]":
+    """Handle repository not found errors as 404 responses.
+
+    Returns:
+        an Inertia-compatible 404 error response.
+    """
+    detail = exc.detail if hasattr(exc, "detail") and exc.detail else "Resource not found"
+    # Use the Inertia exception handler which knows how to create proper error pages
+    http_exc = HTTPException(status_code=HTTP_404_NOT_FOUND, detail=detail)
+    return inertia_exception_handler(request, http_exc)
+
+
+def repository_error_handler(request: "Request[UserT, AuthT, StateT]", exc: RepositoryError) -> "Response[Any]":
+    """Handle general repository errors as validation errors.
+
+    Returns:
+        an Inertia-compatible error response with a flash message and redirect back.
+    """
+    detail = exc.detail if hasattr(exc, "detail") and exc.detail else "An error occurred processing your request"
+    flash(request, detail, category="error")
+    return InertiaBack(request, status_code=HTTP_400_BAD_REQUEST)

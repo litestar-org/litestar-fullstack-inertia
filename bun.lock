@@ -628,7 +628,7 @@
 
     "lightningcss-win32-x64-msvc": ["lightningcss-win32-x64-msvc@1.30.2", "", { "os": "win32", "cpu": "x64" }, "sha512-5g1yc73p+iAkid5phb4oVFMB45417DkRevRbt/El/gKXJk4jid+vPFF/AXbxn05Aky8PapwzZrdJShv5C0avjw=="],
 
-    "litestar-vite-plugin": ["litestar-vite-plugin@0.15.0-rc.4", "", { "dependencies": { "picocolors": "^1.1.1", "vite-plugin-full-reload": "^1.2.0" }, "peerDependencies": { "vite": "^6.0.0 || ^7.0.0" }, "bin": { "clean-orphaned-assets": "tools/clean.js", "litestar-vite-typegen": "dist/js/typegen-cli.js" } }, "sha512-RENVgX854wqG3MAr48VoMMUGAzW5wrWyZUVQmvuZUMUUN3nVWImJm3Cxuo9CJiiho3UojbVNNp7HQRlJ23gyEg=="],
+    "litestar-vite-plugin": ["litestar-vite-plugin@0.15.0-rc.5", "", { "dependencies": { "picocolors": "^1.1.1", "vite-plugin-full-reload": "^1.2.0" }, "peerDependencies": { "vite": "^6.0.0 || ^7.0.0" }, "bin": { "clean-orphaned-assets": "tools/clean.js", "litestar-vite-typegen": "dist/js/typegen-cli.js" } }, "sha512-0HPJX9sTOzEytuFzfmQiq/Nu6LIoDkDAfen652zAgNRgkoCIb6xNDS6naDleNCntosm9IczBBoM/krkdnk/b3w=="],
 
     "lodash": ["lodash@4.17.21", "", {}, "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg=="],
 

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from advanced_alchemy.utils.text import slugify
 from litestar import Controller, Request, get, post
 from litestar.di import Provide
+from litestar.exceptions import ValidationException
 from litestar_vite.inertia import InertiaExternalRedirect, InertiaRedirect, flash, share
 
 from app.config import github_oauth2_client, google_oauth2_client
@@ -25,6 +26,9 @@ if TYPE_CHECKING:
     from httpx_oauth.oauth2 import BaseOAuth2
 
 __all__ = ("RegistrationController",)
+
+# Exception messages
+_MSG_EMAIL_EXISTS = "A user with this email already exists"
 
 
 class RegistrationController(Controller):
@@ -68,7 +72,15 @@ class RegistrationController(Controller):
 
         Returns:
             Redirect to dashboard on successful registration, or to invitation page if pending.
+
+        Raises:
+            ValidationException: If the email is already registered.
         """
+        # Check if email already exists
+        existing_user = await users_service.get_one_or_none(email=data.email)
+        if existing_user:
+            raise ValidationException(_MSG_EMAIL_EXISTS)
+
         user_data = data.to_dict()
         role_obj = await roles_service.get_one_or_none(slug=slugify(users_service.default_role))
         if role_obj is not None:

@@ -54,6 +54,8 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             The modified :class:`AppConfig <.config.app.AppConfig>` instance.
         """
 
+        from advanced_alchemy.exceptions import IntegrityError, NotFoundError, RepositoryError
+
         from app import config
         from app.__metadata__ import __version__ as current_version
         from app.db.models import User as UserModel
@@ -82,8 +84,12 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         )
         from app.domain.web.controllers import WebController
         from app.lib import log
-        from app.lib.exceptions import inertia_exception_handler
-        from app.lib.proxy import ProxyHeadersMiddleware
+        from app.lib.exceptions import (
+            inertia_exception_handler,
+            integrity_error_handler,
+            not_found_error_handler,
+            repository_error_handler,
+        )
         from app.lib.settings import get_settings
         from app.server import plugins
 
@@ -101,13 +107,15 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         app_config = session_auth.on_app_init(app_config)
         # log
         app_config.middleware.insert(0, log.StructlogMiddleware)
-        # Proxy headers middleware (must run first to set scheme before URL generation)
-        # Workaround for: https://github.com/litestar-org/litestar-vite/issues/167
-        app_config.middleware.insert(0, ProxyHeadersMiddleware)
         app_config.after_exception.append(log.after_exception_hook_handler)
         app_config.before_send.append(log.BeforeSendHandler())
-        # TODO: Remove after litestar-vite > 0.15.0rc3 - workaround for flash message on auth redirect
-        app_config.exception_handlers.update({Exception: inertia_exception_handler})
+        # Exception handlers for database errors (order matters - more specific first)
+        app_config.exception_handlers.update({
+            IntegrityError: integrity_error_handler,
+            NotFoundError: not_found_error_handler,
+            RepositoryError: repository_error_handler,
+            Exception: inertia_exception_handler,
+        })
         # security
         app_config.cors_config = config.cors
         app_config.csrf_config = config.csrf
