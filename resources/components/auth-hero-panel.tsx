@@ -25,7 +25,7 @@ export function AuthHeroPanel({
 			</Link>
 
 			<div className="relative z-20 mt-auto">
-				{showTestimonial && (
+				{showTestimonial ? (
 					<div className="space-y-4">
 						<p className="text-lg font-medium leading-relaxed">{description}</p>
 						<div className="flex items-center gap-4">
@@ -39,6 +39,8 @@ export function AuthHeroPanel({
 							</div>
 						</div>
 					</div>
+				) : (
+					<p className="text-lg font-medium leading-relaxed text-muted-foreground">{description}</p>
 				)}
 			</div>
 		</div>

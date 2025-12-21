@@ -18,7 +18,8 @@ from sqlalchemy.orm import undefer_group
 
 from app.domain.accounts.dependencies import provide_users_service
 from app.domain.accounts.schemas import MfaBackupCodes, MfaConfirm, MfaDisable, MfaSetup
-from app.domain.accounts.services import UserService, verify_totp_code
+from app.domain.accounts.services import UserService
+from app.lib import crypt
 
 __all__ = ("MfaController",)
 
@@ -126,7 +127,7 @@ class MfaController(Controller):
             raise ValidationException(_MSG_MFA_ALREADY_CONFIRMED)
 
         # Verify the TOTP code
-        if not verify_totp_code(user.totp_secret, data.code):
+        if not await crypt.verify_totp_code(user.totp_secret, data.code):
             raise ValidationException(_MSG_INVALID_CODE)
 
         # Generate backup codes

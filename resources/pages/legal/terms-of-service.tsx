@@ -1,52 +1,58 @@
 import { Head, Link } from "@inertiajs/react"
-import { Logo } from "@/components/logo"
+import { ArrowLeftIcon } from "lucide-react"
+import { AuthHeroPanel } from "@/components/auth-hero-panel"
+import { buttonVariants } from "@/components/ui/button"
+import { GuestLayout } from "@/layouts/guest-layout"
+import Footer from "@/layouts/partials/footer"
 import { route } from "@/lib/generated/routes"
+import { cn } from "@/lib/utils"
 
-export default function TermsOfService({ terms: _terms }: { terms: string }) {
+interface Props {
+	terms: string
+}
+
+export default function TermsOfService({ terms }: Props) {
 	return (
 		<>
 			<Head title="Terms of Service" />
-			<div className="relative overflow-hidden bg-background py-16">
-				<div className="hidden lg:absolute lg:inset-y-0 lg:block lg:h-full lg:w-full lg:[overflow-anchor:none]">
-					<div className="relative mx-auto h-full max-w-prose text-lg" aria-hidden="true">
-						<svg className="absolute top-12 left-full translate-x-32 transform" width={404} height={384} fill="none" viewBox="0 0 404 384">
-							<defs>
-								<pattern id="74b3fd99-0a6f-4271-bef2-e80eeafdf357" x={0} y={0} width={20} height={20} patternUnits="userSpaceOnUse">
-									<rect x={0} y={0} width={4} height={4} className="text-primary/10" fill="currentColor" />
-								</pattern>
-							</defs>
-							<rect width={404} height={384} fill="url(#74b3fd99-0a6f-4271-bef2-e80eeafdf357)" />
-						</svg>
-						<svg className="-translate-x-32 -translate-y-1/2 absolute top-1/2 right-full transform" width={404} height={384} fill="none" viewBox="0 0 404 384">
-							<defs>
-								<pattern id="f210dbf6-a58d-4871-961e-36d5016a0f49" x={0} y={0} width={20} height={20} patternUnits="userSpaceOnUse">
-									<rect x={0} y={0} width={4} height={4} className="text-primary/10" fill="currentColor" />
-								</pattern>
-							</defs>
-							<rect width={404} height={384} fill="url(#f210dbf6-a58d-4871-961e-36d5016a0f49)" />
-						</svg>
-						<svg className="absolute bottom-12 left-full translate-x-32 transform" width={404} height={384} fill="none" viewBox="0 0 404 384">
-							<defs>
-								<pattern id="d3eb07ae-5182-43e6-857d-35c643af9034" x={0} y={0} width={20} height={20} patternUnits="userSpaceOnUse">
-									<rect x={0} y={0} width={4} height={4} className="text-primary/10" fill="currentColor" />
-								</pattern>
-							</defs>
-							<rect width={404} height={384} fill="url(#d3eb07ae-5182-43e6-857d-35c643af9034)" />
-						</svg>
+
+			<AuthHeroPanel title="Terms & Conditions" description="Please review the terms and conditions that govern your use of our services." showTestimonial={false} />
+
+			<div className="flex flex-col overflow-y-auto">
+				<div className="flex justify-end gap-2 p-4 md:p-8">
+					<Link href={route("home")} className={cn(buttonVariants({ variant: "ghost" }))}>
+						<ArrowLeftIcon className="mr-2 h-4 w-4" />
+						Home
+					</Link>
+					<Link href={route("login")} className={cn(buttonVariants({ variant: "ghost" }))}>
+						Sign in
+					</Link>
+				</div>
+
+				<div className="flex-1 px-4 pb-8 sm:px-8 lg:px-12">
+					<div className="mx-auto max-w-2xl">
+						<div className="mb-8">
+							<h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Terms of Service</h1>
+							<p className="mt-2 text-sm text-muted-foreground">Last updated: December 2024</p>
+						</div>
+
+						<div className="prose prose-lg prose-zinc dark:prose-invert">
+							{terms || <p>These Terms of Service govern your access to and use of our services. By using our services, you agree to be bound by these terms.</p>}
+						</div>
+
+						<p className="mt-12 text-center text-sm text-muted-foreground">
+							Also see our{" "}
+							<Link href={route("privacy-policy")} className="underline underline-offset-4 hover:text-primary">
+								Privacy Policy
+							</Link>
+						</p>
 					</div>
 				</div>
-				<div className="relative px-6 lg:px-8">
-					<div className="mx-auto max-w-prose text-lg">
-						<Link href={route("home")}>
-							<Logo className="mx-auto h-48 w-48 fill-current text-foreground" />
-						</Link>
-						<h1>
-							<span className="mt-2 block text-center font-bold text-3xl text-foreground leading-8 tracking-tight sm:text-4xl">Terms of Service</span>
-						</h1>
-						<div className="prose prose-lg prose-zinc dark:prose-invert mx-auto mt-6 text-muted-foreground">Lorem ipsum</div>{" "}
-					</div>
-				</div>
+
+				<Footer />
 			</div>
 		</>
 	)
 }
+
+TermsOfService.layout = (page: React.ReactNode) => <GuestLayout>{page}</GuestLayout>

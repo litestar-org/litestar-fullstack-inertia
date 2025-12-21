@@ -7,7 +7,6 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import pyotp
 from advanced_alchemy.service import (
     ModelDictT,
     SQLAlchemyAsyncRepositoryService,
@@ -18,7 +17,6 @@ from advanced_alchemy.service import (
 )
 from advanced_alchemy.types import FileObject
 from litestar.exceptions import NotAuthorizedException, PermissionDeniedException, ValidationException
-from pwdlib import PasswordHash
 from sqlalchemy.orm import undefer_group
 from uuid_utils import uuid7
 
@@ -36,30 +34,6 @@ if TYPE_CHECKING:
     from uuid import UUID
 
     from sqlalchemy.ext.asyncio import AsyncSession
-
-_password_hash = PasswordHash.recommended()
-
-
-def verify_totp_code(secret: str, code: str) -> bool:
-    """Verify a TOTP code against the secret.
-
-    Returns:
-        True if the code is valid, False otherwise.
-    """
-    totp = pyotp.TOTP(secret)
-    return totp.verify(code)
-
-
-def verify_backup_code(code: str, hashed_codes: list[str]) -> int | None:
-    """Verify a backup code and return its index if valid.
-
-    Returns:
-        Index of the used code, or None if invalid.
-    """
-    for i, hashed_code in enumerate(hashed_codes):
-        if _password_hash.verify(code.upper(), hashed_code):
-            return i
-    return None
 
 
 @dataclass
@@ -229,12 +203,12 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
             return MfaVerifyResult(user=user, verified=True, mfa_disabled=True)
 
         # Try TOTP code first
-        if code and verify_totp_code(user.totp_secret, code):
+        if code and await crypt.verify_totp_code(user.totp_secret, code):
             return MfaVerifyResult(user=user, verified=True)
 
         # Try recovery code
         if recovery_code and user.backup_codes:
-            code_index = verify_backup_code(recovery_code, user.backup_codes)
+            code_index = await crypt.verify_backup_code(recovery_code, user.backup_codes)
             if code_index is not None:
                 # Consume the backup code
                 updated_codes = user.backup_codes.copy()
