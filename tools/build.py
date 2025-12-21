@@ -80,6 +80,8 @@ def copy_index_html() -> None:
     dest = project_root / "app" / "domain" / "web" / "public" / "index.html"
 
     if source.exists():
+        # Ensure destination directory exists
+        dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, dest)
         logger.info("Copied index.html to %s", dest)
     else:

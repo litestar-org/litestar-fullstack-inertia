@@ -259,6 +259,10 @@ class EmailSettings:
     SMTP_TIMEOUT: int = field(default_factory=get_env("EMAIL_SMTP_TIMEOUT", 30))
     """SMTP connection timeout in seconds."""
 
+    # Resend Settings
+    RESEND_API_KEY: str = field(default_factory=get_env("RESEND_API_KEY", ""))
+    """Resend API key for sending emails via Resend."""
+
     # Token expiration settings
     VERIFICATION_TOKEN_EXPIRES_HOURS: int = field(default_factory=get_env("EMAIL_VERIFICATION_TOKEN_EXPIRES_HOURS", 24))
     """Hours until email verification token expires."""

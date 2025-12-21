@@ -76,11 +76,10 @@ const getSidebarItems = (permissions: Props["permissions"]): SettingsSidebarItem
 }
 
 export default function TeamSettings({ team, members, permissions, pendingInvitations = [] }: Props) {
-	const [activeSection, setActiveSection] = useState("team-details")
+	const sidebarItems = getSidebarItems(permissions)
+	const [activeSection, setActiveSection] = useState(() => sidebarItems[0]?.id ?? "team-members")
 	const [showInviteDialog, setShowInviteDialog] = useState(false)
 	const [invitationToCancel, setInvitationToCancel] = useState<TeamInvitationItem | null>(null)
-
-	const sidebarItems = getSidebarItems(permissions)
 
 	const inviteForm = useForm({
 		email: "",

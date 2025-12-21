@@ -39,7 +39,7 @@ def create_sqlalchemy_engine(settings: "DatabaseSettings") -> "AsyncEngine":
     Returns:
         Configured AsyncEngine instance.
     """
-    url = settings.URL.replace("postgresql://", "postgresql+psycopg://")
+    url = settings.URL.replace("postgresql://", "postgresql+asyncpg://")
     if url.startswith("postgresql+asyncpg"):
         engine = create_async_engine(
             url=url,

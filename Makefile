@@ -137,13 +137,13 @@ build-all: build build-binary                      ## Build wheel and standalone
 .PHONY: mypy
 mypy:                                              ## Run mypy
 	@echo "${INFO} Running mypy... 🔍"
-	@uv run dmypy run
+	@uv run dmypy run -- app
 	@echo "${OK} Mypy checks passed ✨"
 
 .PHONY: mypy-nocache
 mypy-nocache:                                      ## Run Mypy without cache
 	@echo "${INFO} Running mypy without cache... 🔍"
-	@uv run mypy
+	@uv run mypy app
 	@echo "${OK} Mypy checks passed ✨"
 
 .PHONY: pyright

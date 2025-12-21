@@ -136,7 +136,7 @@ export default function TeamShow({ team, members, permissions }: PagePropsFor<"t
 							</CardHeader>
 							<CardContent className="space-y-2">
 								{canManageTeam && (
-									<Link href={route("teams.settings", { team_id: team.id })} className="block">
+									<Link href={route("teams.settings", { team_slug: team.slug })} className="block">
 										<Button variant="outline" className="w-full justify-start">
 											<Settings className="mr-2 h-4 w-4" />
 											Team Settings

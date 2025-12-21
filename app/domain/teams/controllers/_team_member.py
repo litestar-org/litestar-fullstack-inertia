@@ -14,7 +14,9 @@ from sqlalchemy.orm import joinedload, noload, selectinload
 from app.db.models import Team as TeamModel
 from app.db.models import TeamMember, TeamRoles
 from app.domain.accounts.dependencies import provide_users_service
+from app.domain.accounts.guards import requires_active_user
 from app.domain.accounts.services import UserService
+from app.domain.teams.guards import requires_team_admin
 from app.domain.teams.schemas import Team, TeamMemberModify
 from app.domain.teams.services import TeamMemberService, TeamService
 
@@ -25,6 +27,7 @@ class TeamMemberController(Controller):
     """Team Members."""
 
     tags = ["Team Members"]
+    guards = [requires_active_user, requires_team_admin]
     dependencies = {
         "teams_service": create_service_provider(
             TeamService,
@@ -59,6 +62,7 @@ class TeamMemberController(Controller):
     async def add_member_to_team(
         self,
         teams_service: TeamService,
+        team_members_service: TeamMemberService,
         users_service: UserService,
         data: TeamMemberModify,
         team_slug: Annotated[str, Parameter(title="Team Slug", description="The team slug.")],
@@ -73,12 +77,12 @@ class TeamMemberController(Controller):
         """
         team_obj = await teams_service.get_one(slug=team_slug)
         user_obj = await users_service.get_one(email=data.user_name)
-        is_member = any(membership.team.id == team_obj.id for membership in user_obj.teams)
+        is_member = any(membership.team_id == team_obj.id for membership in user_obj.teams)
         if is_member:
             msg = "User is already a member of the team."
             raise IntegrityError(msg)
-        team_obj.members.append(TeamMember(user_id=user_obj.id, role=TeamRoles.MEMBER))
-        team_obj = await teams_service.update(item_id=team_obj.id, data=team_obj)
+        await team_members_service.create({"team_id": team_obj.id, "user_id": user_obj.id, "role": TeamRoles.MEMBER})
+        team_obj = await teams_service.get_one(slug=team_slug)
         return teams_service.to_schema(schema_type=Team, data=team_obj)
 
     @post(
@@ -87,6 +91,7 @@ class TeamMemberController(Controller):
         summary="Remove Team Member",
         description="Removes a member from a team",
         path="/api/teams/{team_slug:str}/members/remove",
+        status_code=200,
     )
     async def remove_member_from_team(
         self,
@@ -106,13 +111,10 @@ class TeamMemberController(Controller):
         """
         team_obj = await teams_service.get_one(slug=team_slug)
         user_obj = await users_service.get_one(email=data.user_name)
-        removed_member = False
-        for membership in user_obj.teams:
-            if membership.user_id == user_obj.id:
-                removed_member = True
-                _ = await team_members_service.delete(membership.id)
-        if not removed_member:
+        membership = next((membership for membership in user_obj.teams if membership.team_id == team_obj.id), None)
+        if not membership:
             msg = "User is not a member of this team."
             raise IntegrityError(msg)
+        _ = await team_members_service.delete(membership.id)
         team_obj = await teams_service.get_one(slug=team_slug)
         return teams_service.to_schema(schema_type=Team, data=team_obj)

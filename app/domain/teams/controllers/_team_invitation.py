@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Annotated
 
 from advanced_alchemy.extensions.litestar.providers import create_service_provider
 from litestar import Controller, Request, delete, get, post
+from litestar.exceptions import PermissionDeniedException
 from litestar.params import Parameter
 from litestar_vite.inertia import InertiaRedirect, flash
 from sqlalchemy.orm import joinedload, selectinload
@@ -188,6 +189,10 @@ class TeamInvitationController(Controller):
         Returns:
             Redirect to invitations page.
         """
+        invitation = await team_invitations_service.get_one_or_none(id=invitation_id)
+        if invitation is None or invitation.team.slug != team_slug:
+            msg = "Invitation does not belong to this team."
+            raise PermissionDeniedException(detail=msg)
         await team_invitations_service.delete(invitation_id)
         flash(request, "Invitation cancelled.", category="info")
         return InertiaRedirect(request, request.url_for("teams.invitations", team_slug=team_slug))

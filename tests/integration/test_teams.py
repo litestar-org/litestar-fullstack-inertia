@@ -2,8 +2,13 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from app.db.models import TeamRoles
+from app.domain.accounts.services import UserService
+from app.domain.teams.services import TeamInvitationService, TeamService
+
 if TYPE_CHECKING:
     from httpx import AsyncClient
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 pytestmark = pytest.mark.anyio
 
@@ -143,3 +148,85 @@ async def test_teams_delete(
         headers=superuser_token_headers,
     )
     assert response.status_code == 200
+
+
+async def test_team_member_requires_admin(
+    client: "AsyncClient", user_token_headers: dict[str, str],
+) -> None:
+    """Non-admin users cannot add members to teams they don't manage."""
+    response = await client.post(
+        "/api/teams/simple-team/members/add",
+        json={"userName": "another@example.com"},
+        headers=user_token_headers,
+    )
+    assert response.status_code == 403
+
+
+async def test_team_member_remove_only_target_team(
+    client: "AsyncClient",
+    superuser_token_headers: dict[str, str],
+    superuser_inertia_headers: dict[str, str],
+) -> None:
+    """Removing a member from one team should not remove them from others."""
+    response = await client.post(
+        "/api/teams/simple-team/members/add",
+        json={"userName": "user@example.com"},
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 201
+    response = await client.post(
+        "/api/teams/extra-team/members/add",
+        json={"userName": "user@example.com"},
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 201
+
+    response = await client.post(
+        "/api/teams/simple-team/members/remove",
+        json={"userName": "user@example.com"},
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 200
+
+    response = await client.get("/teams/extra-team/", headers=superuser_inertia_headers)
+    assert response.status_code == 200
+    extra_members = response.json()["props"]["content"]["members"]
+    assert any(member["email"] == "user@example.com" for member in extra_members)
+
+    response = await client.get("/teams/simple-team/", headers=superuser_inertia_headers)
+    assert response.status_code == 200
+    simple_members = response.json()["props"]["content"]["members"]
+    assert all(member["email"] != "user@example.com" for member in simple_members)
+
+
+async def test_invitation_cancel_team_mismatch(
+    client: "AsyncClient",
+    sessionmaker: "async_sessionmaker[AsyncSession]",
+    superuser_inertia_headers: dict[str, str],
+) -> None:
+    """Invitation cancellation should verify the invitation belongs to the team slug."""
+    async with sessionmaker() as session:
+        team_service = TeamService(session=session)
+        user_service = UserService(session=session)
+        invitation_service = TeamInvitationService(session=session)
+        team = await team_service.get_one(slug="simple-team")
+        inviter = await user_service.get_one(email="superuser@example.com")
+        invitation, _ = await invitation_service.create_invitation(
+            team=team,
+            email="another@example.com",
+            role=TeamRoles.MEMBER,
+            invited_by=inviter,
+        )
+        await invitation_service.repository.session.commit()
+        invitation_id = invitation.id
+
+    response = await client.delete(
+        f"/teams/test-team/invitations/{invitation_id}",
+        headers=superuser_inertia_headers,
+    )
+    assert response.status_code == 303
+
+    async with sessionmaker() as session:
+        invitation_service = TeamInvitationService(session=session)
+        stored = await invitation_service.get_one_or_none(id=invitation_id)
+        assert stored is not None

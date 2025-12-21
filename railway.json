@@ -1,0 +1,35 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "tools/deploy/docker/Dockerfile.distroless",
+    "buildEnvironment": "V3"
+  },
+  "deploy": {
+    "runtime": "V2",
+    "numReplicas": 1,
+    "startCommand": "litestar run --host 0.0.0.0 --port $LITESTAR_PORT",
+    "limitOverride": {
+      "containers": {
+        "cpu": 2,
+        "memoryBytes": 2000000000
+      }
+    },
+    "overlapSeconds": 0,
+    "drainingSeconds": 0,
+    "healthcheckPath": "/health",
+    "preDeployCommand": [
+      "litestar database upgrade --no-prompt"
+    ],
+    "sleepApplication": true,
+    "useLegacyStacker": false,
+    "multiRegionConfig": {
+      "us-west2": {
+        "numReplicas": 1
+      }
+    },
+    "restartPolicyType": "ON_FAILURE",
+    "healthcheckTimeout": 300,
+    "restartPolicyMaxRetries": 5
+  }
+}

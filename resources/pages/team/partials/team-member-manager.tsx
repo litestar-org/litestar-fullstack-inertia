@@ -1,4 +1,5 @@
-import { useForm } from "@inertiajs/react"
+import { router, useForm } from "@inertiajs/react"
+import axios from "axios"
 import type { LucideIcon } from "lucide-react"
 import { Shield, ShieldCheck, Trash2, UserPlus } from "lucide-react"
 import { useState } from "react"
@@ -49,37 +50,59 @@ const roleIcons: Record<string, LucideIcon | null> = {
 export default function TeamMemberManager({ team, members, permissions }: Props) {
 	const [showAddMemberDialog, setShowAddMemberDialog] = useState(false)
 	const [memberToRemove, setMemberToRemove] = useState<TeamPageMember | null>(null)
+	const [isAdding, setIsAdding] = useState(false)
+	const [isRemoving, setIsRemoving] = useState(false)
 
 	const addMemberForm = useForm({
-		user_name: "",
+		userName: "",
 	})
 
-	const removeMemberForm = useForm({
-		user_name: "",
-	})
-
-	const addMember = (e: React.FormEvent) => {
+	const addMember = async (e: React.FormEvent) => {
 		e.preventDefault()
-		addMemberForm.post(route("teams:add-member", { team_slug: team.slug }), {
-			preserveScroll: true,
-			onSuccess: () => {
-				addMemberForm.reset()
-				setShowAddMemberDialog(false)
-				toast({ description: "Team member added." })
-			},
-		})
+		setIsAdding(true)
+		addMemberForm.clearErrors()
+		try {
+			await axios.post(route("teams:add-member", { team_slug: team.slug }), {
+				userName: addMemberForm.data.userName,
+			})
+			addMemberForm.reset()
+			setShowAddMemberDialog(false)
+			toast({ description: "Team member added." })
+			router.reload()
+		} catch (error) {
+			if (axios.isAxiosError(error)) {
+				const detail = error.response?.data?.detail
+				const fieldErrors = error.response?.data?.errors
+				if (detail) {
+					addMemberForm.setError("userName", detail)
+					return
+				}
+				if (fieldErrors?.userName) {
+					addMemberForm.setError("userName", fieldErrors.userName)
+					return
+				}
+			}
+			toast({ description: "Failed to add team member. Please try again.", variant: "destructive" })
+		} finally {
+			setIsAdding(false)
+		}
 	}
 
-	const removeMember = () => {
+	const removeMember = async () => {
 		if (!memberToRemove) return
-		removeMemberForm.setData("user_name", memberToRemove.email)
-		removeMemberForm.post(route("teams:remove-member", { team_slug: team.slug }), {
-			preserveScroll: true,
-			onSuccess: () => {
-				setMemberToRemove(null)
-				toast({ description: "Team member removed." })
-			},
-		})
+		setIsRemoving(true)
+		try {
+			await axios.post(route("teams:remove-member", { team_slug: team.slug }), {
+				userName: memberToRemove.email,
+			})
+			setMemberToRemove(null)
+			toast({ description: "Team member removed." })
+			router.reload()
+		} catch {
+			toast({ description: "Failed to remove team member. Please try again.", variant: "destructive" })
+		} finally {
+			setIsRemoving(false)
+		}
 	}
 
 	return (
@@ -105,24 +128,25 @@ export default function TeamMemberManager({ team, members, permissions }: Props)
 										<DialogDescription>Add a new team member by their email address. They must already have an account.</DialogDescription>
 									</DialogHeader>
 									<div className="my-4">
-										<Label htmlFor="user_name">Email Address</Label>
+										<Label htmlFor="userName">Email Address</Label>
 										<Input
-											id="user_name"
+											id="userName"
 											type="email"
-											value={addMemberForm.data.user_name}
-											onChange={(e) => addMemberForm.setData("user_name", e.target.value)}
+											value={addMemberForm.data.userName}
+											onChange={(e) => addMemberForm.setData("userName", e.target.value)}
 											className="mt-1"
 											placeholder="member@example.com"
 											autoFocus
+											disabled={isAdding}
 										/>
-										<InputError message={addMemberForm.errors.user_name} className="mt-2" />
+										<InputError message={addMemberForm.errors.userName} className="mt-2" />
 									</div>
 									<DialogFooter>
 										<Button type="button" variant="outline" onClick={() => setShowAddMemberDialog(false)}>
 											Cancel
 										</Button>
-										<Button type="submit" disabled={addMemberForm.processing}>
-											Add Member
+										<Button type="submit" disabled={isAdding}>
+											{isAdding ? "Adding..." : "Add Member"}
 										</Button>
 									</DialogFooter>
 								</form>
@@ -169,12 +193,8 @@ export default function TeamMemberManager({ team, members, permissions }: Props)
 											</AlertDialogHeader>
 											<AlertDialogFooter>
 												<AlertDialogCancel>Cancel</AlertDialogCancel>
-												<AlertDialogAction
-													onClick={removeMember}
-													disabled={removeMemberForm.processing}
-													className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-												>
-													Remove Member
+												<AlertDialogAction onClick={removeMember} disabled={isRemoving} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+													{isRemoving ? "Removing..." : "Remove Member"}
 												</AlertDialogAction>
 											</AlertDialogFooter>
 										</AlertDialogContent>

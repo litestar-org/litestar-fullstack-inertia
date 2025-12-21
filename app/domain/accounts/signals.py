@@ -10,7 +10,7 @@ from litestar.events import listener
 from app.config import alchemy
 from app.db.models import TokenType
 from app.domain.accounts.dependencies import provide_users_service
-from app.domain.accounts.services import provide_email_token_service
+from app.domain.accounts.services import EmailTokenService
 from app.lib.email import EmailService
 from app.lib.settings import get_settings
 
@@ -63,7 +63,7 @@ async def user_created_event_handler(
 
         # Create verification token and send email
         settings = get_settings()
-        token_service = await provide_email_token_service(db_session)
+        token_service = EmailTokenService(session=db_session)
 
         # Invalidate any existing verification tokens
         await token_service.invalidate_existing_tokens(
@@ -154,7 +154,7 @@ async def password_reset_requested_handler(
 
         # Create reset token and send email
         settings = get_settings()
-        token_service = await provide_email_token_service(db_session)
+        token_service = EmailTokenService(session=db_session)
 
         # Invalidate any existing reset tokens
         await token_service.invalidate_existing_tokens(

@@ -1,61 +1,89 @@
 from __future__ import annotations
 
-import hashlib
+import base64
 import secrets
-from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
+from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from advanced_alchemy.service import (
-    ModelDictT,
-    SQLAlchemyAsyncRepositoryService,
-    is_dict,
-    is_dict_with_field,
-    is_dict_without_field,
-    schema_dump,
-)
+import pyotp
+import qrcode  # type: ignore[import-untyped]
+from advanced_alchemy.repository import SQLAlchemyAsyncRepository
+from advanced_alchemy.service import ModelDictT, SQLAlchemyAsyncRepositoryService, is_dict, schema_dump
 from advanced_alchemy.types import FileObject
 from litestar.exceptions import NotAuthorizedException, PermissionDeniedException, ValidationException
 from sqlalchemy.orm import undefer_group
 from uuid_utils import uuid7
 
-from app.db.models import EmailToken, Role, TokenType, User, UserOauthAccount, UserRole
-from app.domain.accounts.repositories import (
-    EmailTokenRepository,
-    RoleRepository,
-    UserOauthAccountRepository,
-    UserRepository,
-    UserRoleRepository,
-)
+from app.db.models import User, UserRole
 from app.lib import crypt
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from sqlalchemy.ext.asyncio import AsyncSession
 
-
-@dataclass
 class MfaVerifyResult:
     """Result of MFA verification attempt."""
 
-    user: User
-    """The user being verified."""
-    verified: bool
-    """Whether the MFA code was valid."""
-    mfa_disabled: bool = False
-    """True if MFA was found to be disabled (user can proceed without verification)."""
-    used_backup_code: bool = False
-    """True if a backup code was used instead of TOTP."""
-    remaining_backup_codes: int = 0
-    """Number of backup codes remaining after this verification."""
+    __slots__ = ("mfa_disabled", "remaining_backup_codes", "used_backup_code", "user", "verified")
+
+    def __init__(
+        self,
+        user: User,
+        verified: bool,
+        mfa_disabled: bool = False,
+        used_backup_code: bool = False,
+        remaining_backup_codes: int = 0,
+    ) -> None:
+        self.user = user
+        self.verified = verified
+        self.mfa_disabled = mfa_disabled
+        self.used_backup_code = used_backup_code
+        self.remaining_backup_codes = remaining_backup_codes
 
 
-class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
+async def generate_backup_codes(count: int = 8) -> tuple[list[str], list[str]]:
+    """Generate backup codes and their hashes.
+
+    Returns:
+        Tuple of (plain_codes, hashed_codes).
+    """
+    plain_codes = [secrets.token_hex(4).upper() for _ in range(count)]
+    hashed_codes: list[str] = [await crypt.hash_backup_code(code) for code in plain_codes]
+    return plain_codes, hashed_codes
+
+
+def generate_qr_code(secret: str, email: str, issuer: str = "Litestar Fullstack") -> str:
+    """Generate a QR code for TOTP setup.
+
+    Returns:
+        Base64 encoded PNG image.
+    """
+    totp = pyotp.TOTP(secret)
+    provisioning_uri = totp.provisioning_uri(name=email, issuer_name=issuer)
+
+    qr = qrcode.QRCode(version=1, box_size=10, border=4)
+    qr.add_data(provisioning_uri)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = BytesIO()
+    img.save(buffer, "PNG")
+    buffer.seek(0)
+
+    return base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+
+class UserService(SQLAlchemyAsyncRepositoryService[User]):
     """Handles database operations for users."""
 
-    repository_type = UserRepository
+    class Repo(SQLAlchemyAsyncRepository[User]):
+        """User SQLAlchemy Repository."""
+
+        model_type = User
+
+    repository_type = Repo
     default_role = "Application Access"
 
     async def to_model_on_create(self, data: ModelDictT[User]) -> ModelDictT[User]:
@@ -175,7 +203,10 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
         await self.repository.update(db_obj)
 
     async def verify_mfa(
-        self, email: str, code: str | None = None, recovery_code: str | None = None,
+        self,
+        email: str,
+        code: str | None = None,
+        recovery_code: str | None = None,
     ) -> MfaVerifyResult:
         """Verify MFA code or recovery code for a user.
 
@@ -215,7 +246,10 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
                 updated_codes.pop(code_index)
                 await self.update(item_id=user.id, data={"backup_codes": updated_codes or None})
                 return MfaVerifyResult(
-                    user=user, verified=True, used_backup_code=True, remaining_backup_codes=len(updated_codes),
+                    user=user,
+                    verified=True,
+                    used_backup_code=True,
+                    remaining_backup_codes=len(updated_codes),
                 )
 
         return MfaVerifyResult(user=user, verified=False)
@@ -282,7 +316,10 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
         unique_filename = f"avatars/{user.id}/{uuid7()}{ext}"
 
         user.avatar = FileObject(
-            backend="avatars", filename=unique_filename, content_type=content_type, content=content,
+            backend="avatars",
+            filename=unique_filename,
+            content_type=content_type,
+            content=content,
         )
         return await self.update(user, auto_commit=True)
 
@@ -312,172 +349,3 @@ class UserService(SQLAlchemyAsyncRepositoryService[User, UserRepository]):
         """
         extensions = {"image/jpeg": ".jpg", "image/png": ".png", "image/gif": ".gif", "image/webp": ".webp"}
         return extensions.get(content_type, ".jpg")
-
-
-class RoleService(SQLAlchemyAsyncRepositoryService[Role, RoleRepository]):
-    """Handles database operations for roles."""
-
-    repository_type = RoleRepository
-    match_fields = ["name"]
-
-    async def to_model_on_create(self, data: ModelDictT[Role]) -> ModelDictT[Role]:
-        """Auto-generate slug on create if not provided.
-
-        Returns:
-            Role data with auto-generated slug if not provided.
-        """
-        data = schema_dump(data)
-        if is_dict_without_field(data, "slug"):
-            data["slug"] = await self.repository.get_available_slug(data["name"])
-        return data
-
-    async def to_model_on_update(self, data: ModelDictT[Role]) -> ModelDictT[Role]:
-        """Auto-generate slug on update if name changed but no slug provided.
-
-        Returns:
-            Role data with auto-generated slug if name changed without slug.
-        """
-        data = schema_dump(data)
-        if is_dict_without_field(data, "slug") and is_dict_with_field(data, "name"):
-            data["slug"] = await self.repository.get_available_slug(data["name"])
-        return data
-
-
-class UserRoleService(SQLAlchemyAsyncRepositoryService[UserRole, UserRoleRepository]):
-    """Handles database operations for user roles."""
-
-    repository_type = UserRoleRepository
-
-
-class UserOAuthAccountService(SQLAlchemyAsyncRepositoryService[UserOauthAccount, UserOauthAccountRepository]):
-    """Handles database operations for user OAuth accounts."""
-
-    repository_type = UserOauthAccountRepository
-
-
-class EmailTokenService(SQLAlchemyAsyncRepositoryService[EmailToken, EmailTokenRepository]):
-    """Service for managing email tokens.
-
-    Handles creation, validation, and consumption of secure tokens
-    for email verification, password reset, and similar flows.
-
-    Tokens are hashed (SHA-256) before storage - plain tokens are
-    only returned once during creation.
-    """
-
-    repository_type = EmailTokenRepository
-
-    @staticmethod
-    def _hash_token(token: str) -> str:
-        """Hash a token using SHA-256.
-
-        Args:
-            token: Plain text token to hash.
-
-        Returns:
-            SHA-256 hex digest of the token.
-        """
-        return hashlib.sha256(token.encode()).hexdigest()
-
-    @staticmethod
-    def _generate_token() -> str:
-        """Generate a secure random token.
-
-        Returns:
-            URL-safe base64 encoded random token.
-        """
-        return secrets.token_urlsafe(32)
-
-    async def to_model_on_create(self, data: ModelDictT[EmailToken]) -> ModelDictT[EmailToken]:
-        """Auto-hash token if plain token is provided.
-
-        Returns:
-            Token data with hashed token.
-        """
-        data = schema_dump(data)
-        if is_dict_with_field(data, "token") and is_dict_without_field(data, "token_hash"):
-            data["token_hash"] = self._hash_token(data.pop("token"))
-        return data
-
-    async def create_token(
-        self,
-        email: str,
-        token_type: TokenType,
-        expires_delta: timedelta,
-        user_id: UUID | None = None,
-        ip_address: str | None = None,
-        user_agent: str | None = None,
-        metadata: dict | None = None,
-    ) -> tuple[EmailToken, str]:
-        """Create a new email token.
-
-        Returns:
-            Tuple of (database record, plain token). Plain token should be sent to user via email.
-        """
-        token = self._generate_token()
-        return await self.create(
-            {
-                "email": email,
-                "token_type": token_type,
-                "token": token,  # to_model_on_create hashes this
-                "expires_at": datetime.now(UTC) + expires_delta,
-                "user_id": user_id,
-                "ip_address": ip_address,
-                "user_agent": user_agent,
-                "metadata_": metadata or {},
-            },
-            auto_commit=True,
-        ), token
-
-    async def validate_token(
-        self, plain_token: str, token_type: TokenType, email: str | None = None,
-    ) -> EmailToken | None:
-        """Validate a token without consuming it.
-
-        Returns:
-            EmailToken record if valid, None otherwise.
-        """
-        token = await self.get_one_or_none(token_hash=self._hash_token(plain_token), token_type=token_type)
-        if token is None or not token.is_valid or (email and token.email != email):
-            return None
-        return token
-
-    async def consume_token(
-        self, plain_token: str, token_type: TokenType, email: str | None = None,
-    ) -> EmailToken | None:
-        """Validate and consume a token. Token cannot be used again after consumption.
-
-        Returns:
-            EmailToken record if valid and consumed, None otherwise.
-        """
-        if (token := await self.validate_token(plain_token, token_type, email)) is None:
-            return None
-        token.mark_used()
-        await self.update(token, auto_commit=True)
-        return token
-
-    async def invalidate_existing_tokens(self, email: str, token_type: TokenType) -> int:
-        """Invalidate all existing valid tokens of a type for an email.
-
-        Returns:
-            Number of tokens invalidated.
-        """
-        tokens = [t for t in await self.list(email=email, token_type=token_type, used_at=None) if t.is_valid]
-        for token in tokens:
-            token.mark_used()
-            await self.update(token, auto_commit=False)
-        if tokens:
-            await self.repository.session.commit()
-        return len(tokens)
-
-
-async def provide_email_token_service(db_session: AsyncSession) -> EmailTokenService:
-    """Provide EmailTokenService instance.
-
-    Args:
-        db_session: Database session.
-
-    Returns:
-        Configured EmailTokenService instance.
-    """
-    return EmailTokenService(session=db_session)

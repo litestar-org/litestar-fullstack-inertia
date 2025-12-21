@@ -94,3 +94,17 @@ async def verify_backup_code(code: str, hashed_codes: list[str]) -> int | None:
         Index of the used code, or None if invalid.
     """
     return await asyncio.get_running_loop().run_in_executor(None, _verify_backup_code_sync, code, hashed_codes)
+
+
+async def hash_backup_code(code: str) -> str:
+    """Hash a backup code using the recommended hasher.
+
+    Runs in thread executor to avoid blocking the event loop.
+
+    Args:
+        code: Plain backup code to hash.
+
+    Returns:
+        Hashed backup code.
+    """
+    return await asyncio.get_running_loop().run_in_executor(None, backup_code_hasher.hash, code)

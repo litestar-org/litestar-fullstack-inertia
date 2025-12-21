@@ -40,8 +40,8 @@ ENV UV_LINK_MODE=copy \
     LC_ALL=C.UTF-8 \
     LITESTAR_APP="${LITESTAR_APP}"
 
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+RUN --mount=type=cache,id=apt-cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=apt-lib,target=/var/lib/apt,sharing=locked \
     apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
@@ -86,7 +86,7 @@ RUN bun install --frozen-lockfile
 
 # Create virtual environment and install Python dependencies
 # Using cache mounts for faster rebuilds
-RUN --mount=type=cache,target=/root/.cache/uv \
+RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
     uv venv \
     && uv sync ${UV_INSTALL_ARGS} --frozen --no-install-project --no-editable
 
@@ -96,7 +96,7 @@ COPY resources ./resources/
 COPY app ./app/
 
 # Build frontend assets and complete sync
-RUN --mount=type=cache,target=/root/.cache/uv \
+RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
     uv run python tools/build.py --executor bun \
     && uv sync ${UV_INSTALL_ARGS} --frozen
 

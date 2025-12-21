@@ -4,11 +4,19 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID
 
+from litestar import get
 from litestar.di import Provide
 from litestar.openapi.config import OpenAPIConfig
 from litestar.openapi.plugins import ScalarRenderPlugin, SwaggerRenderPlugin
 from litestar.plugins import CLIPluginProtocol, InitPluginProtocol
 from litestar.static_files import create_static_files_router
+
+
+@get("/health", exclude_from_auth=True, include_in_schema=False)
+async def health_check() -> dict[str, str]:
+    """Health check endpoint for Railway and load balancers."""
+    return {"status": "ok"}
+
 
 if TYPE_CHECKING:
     from click import Group
@@ -113,6 +121,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
 
         # routes
         app_config.route_handlers.extend([
+            health_check,
             uploads_router,
             AccessController,
             EmailVerificationController,

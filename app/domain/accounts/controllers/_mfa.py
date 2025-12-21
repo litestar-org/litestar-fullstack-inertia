@@ -2,28 +2,21 @@
 
 from __future__ import annotations
 
-import base64
-import secrets
 from datetime import UTC, datetime
-from io import BytesIO
 
 import pyotp
-import qrcode  # type: ignore[import-untyped]
 from litestar import Controller, Request, delete, post
 from litestar.di import Provide
 from litestar.exceptions import PermissionDeniedException, ValidationException
 from litestar_vite.inertia import InertiaRedirect, flash
-from pwdlib import PasswordHash
 from sqlalchemy.orm import undefer_group
 
 from app.domain.accounts.dependencies import provide_users_service
 from app.domain.accounts.schemas import MfaBackupCodes, MfaConfirm, MfaDisable, MfaSetup
-from app.domain.accounts.services import UserService
+from app.domain.accounts.services import UserService, generate_backup_codes, generate_qr_code
 from app.lib import crypt
 
 __all__ = ("MfaController",)
-
-_password_hash = PasswordHash.recommended()
 
 # Exception messages
 _MSG_AUTH_REQUIRED = "Authentication required"
@@ -34,38 +27,6 @@ _MSG_MFA_NOT_INITIATED = "MFA setup not initiated. Please enable MFA first."
 _MSG_MFA_NOT_ENABLED = "MFA is not enabled"
 _MSG_INVALID_CODE = "Invalid verification code"
 _MSG_INVALID_CREDENTIALS = "Invalid password"
-
-
-def generate_backup_codes(count: int = 8) -> tuple[list[str], list[str]]:
-    """Generate backup codes and their hashes.
-
-    Returns:
-        Tuple of (plain_codes, hashed_codes).
-    """
-    plain_codes = [secrets.token_hex(4).upper() for _ in range(count)]
-    hashed_codes = [_password_hash.hash(code) for code in plain_codes]
-    return plain_codes, hashed_codes
-
-
-def generate_qr_code(secret: str, email: str, issuer: str = "Litestar Fullstack") -> str:
-    """Generate a QR code for TOTP setup.
-
-    Returns:
-        Base64 encoded PNG image.
-    """
-    totp = pyotp.TOTP(secret)
-    provisioning_uri = totp.provisioning_uri(name=email, issuer_name=issuer)
-
-    qr = qrcode.QRCode(version=1, box_size=10, border=4)
-    qr.add_data(provisioning_uri)
-    qr.make(fit=True)
-
-    img = qr.make_image(fill_color="black", back_color="white")
-    buffer = BytesIO()
-    img.save(buffer, "PNG")
-    buffer.seek(0)
-
-    return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 
 class MfaController(Controller):
@@ -80,6 +41,10 @@ class MfaController(Controller):
     @post(path="/enable", name="mfa.enable")
     async def enable_mfa(self, request: Request, users_service: UserService) -> MfaSetup:
         """Generate TOTP secret and QR code for MFA setup.
+
+        Raises:
+            PermissionDeniedException: If user is not authenticated.
+            ValidationException: If MFA is already enabled.
 
         Returns:
             MfaSetup with secret and QR code.
@@ -108,6 +73,10 @@ class MfaController(Controller):
     async def confirm_mfa(self, request: Request, users_service: UserService, data: MfaConfirm) -> MfaBackupCodes:
         """Confirm MFA setup with a valid TOTP code.
 
+        Raises:
+            PermissionDeniedException: If user is not authenticated.
+            ValidationException: If MFA not initiated, already confirmed, or code is invalid.
+
         Returns:
             Backup codes for account recovery.
         """
@@ -131,7 +100,7 @@ class MfaController(Controller):
             raise ValidationException(_MSG_INVALID_CODE)
 
         # Generate backup codes
-        plain_codes, hashed_codes = generate_backup_codes()
+        plain_codes, hashed_codes = await generate_backup_codes()
 
         # Enable MFA
         await users_service.update(
@@ -150,6 +119,10 @@ class MfaController(Controller):
     async def disable_mfa(self, request: Request, users_service: UserService, data: MfaDisable) -> InertiaRedirect:
         """Disable MFA with password confirmation.
 
+        Raises:
+            PermissionDeniedException: If user is not authenticated.
+            ValidationException: If MFA not enabled or password is invalid.
+
         Returns:
             Redirect to profile page.
         """
@@ -166,7 +139,7 @@ class MfaController(Controller):
             raise ValidationException(_MSG_MFA_NOT_ENABLED)
 
         # Verify password
-        if not user.hashed_password or not _password_hash.verify(data.password, user.hashed_password):
+        if not user.hashed_password or not await crypt.verify_password(data.password, user.hashed_password):
             raise ValidationException(_MSG_INVALID_CREDENTIALS)
 
         # Disable MFA
@@ -187,6 +160,10 @@ class MfaController(Controller):
     async def regenerate_backup_codes(self, request: Request, users_service: UserService) -> MfaBackupCodes:
         """Regenerate backup codes for MFA recovery.
 
+        Raises:
+            PermissionDeniedException: If user is not authenticated.
+            ValidationException: If MFA not enabled.
+
         Returns:
             New backup codes.
         """
@@ -202,7 +179,7 @@ class MfaController(Controller):
             raise ValidationException(_MSG_MFA_NOT_ENABLED)
 
         # Generate new backup codes
-        plain_codes, hashed_codes = generate_backup_codes()
+        plain_codes, hashed_codes = await generate_backup_codes()
 
         await users_service.update(item_id=user.id, data={"backup_codes": hashed_codes})
 

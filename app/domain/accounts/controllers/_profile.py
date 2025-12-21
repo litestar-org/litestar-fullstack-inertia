@@ -15,6 +15,7 @@ from app.domain.accounts.dependencies import provide_users_service
 from app.domain.accounts.guards import requires_active_user
 from app.domain.accounts.schemas import PasswordUpdate, ProfileUpdate, User
 from app.domain.accounts.services import UserService
+from app.lib.schema import Message
 
 if TYPE_CHECKING:
     from app.db.models import User as UserModel

@@ -9,7 +9,13 @@ from sqlalchemy.orm import joinedload, load_only, selectinload
 
 from app.db.models import Role, Team, TeamMember, UserOauthAccount, UserRole
 from app.db.models import User as UserModel
-from app.domain.accounts.services import RoleService, UserOAuthAccountService, UserRoleService, UserService
+from app.domain.accounts.services import (
+    EmailTokenService,
+    RoleService,
+    UserOAuthAccountService,
+    UserRoleService,
+    UserService,
+)
 
 if TYPE_CHECKING:
     from litestar.connection import Request
@@ -44,15 +50,11 @@ provide_users_service = create_service_provider(
 )
 
 provide_roles_service = create_service_provider(
-    RoleService,
-    load=[selectinload(Role.users).options(joinedload(UserRole.user, innerjoin=True))],
+    RoleService, load=[selectinload(Role.users).options(joinedload(UserRole.user, innerjoin=True))],
 )
 
-provide_user_oauth_account_service = create_service_provider(
-    UserOAuthAccountService,
-    load=[UserOauthAccount.user],
-)
+provide_user_oauth_account_service = create_service_provider(UserOAuthAccountService, load=[UserOauthAccount.user])
 
-provide_user_roles_service = create_service_provider(
-    UserRoleService,
-)
+provide_user_roles_service = create_service_provider(UserRoleService)
+
+provide_email_token_service = create_service_provider(EmailTokenService)

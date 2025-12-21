@@ -7,9 +7,9 @@ from litestar.di import Provide
 from litestar_vite.inertia import InertiaRedirect, flash
 
 from app.db.models import TokenType
-from app.domain.accounts.dependencies import provide_users_service
+from app.domain.accounts.dependencies import provide_email_token_service, provide_users_service
 from app.domain.accounts.schemas import EmailSent, ForgotPasswordRequest, PasswordReset, PasswordResetToken
-from app.domain.accounts.services import EmailTokenService, UserService, provide_email_token_service
+from app.domain.accounts.services import EmailTokenService, UserService
 from app.lib.schema import NoProps
 
 __all__ = ("PasswordResetController",)

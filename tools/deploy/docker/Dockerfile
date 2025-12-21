@@ -32,8 +32,8 @@ ARG BUILDER_IMAGE=python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION}
 # =============================================================================
 FROM ${BUILDER_IMAGE} AS python-base
 
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+RUN --mount=type=cache,id=apt-cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=apt-lib,target=/var/lib/apt,sharing=locked \
     apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
@@ -73,8 +73,8 @@ ENV GRPC_PYTHON_BUILD_WITH_CYTHON=1 \
     LC_ALL=C.UTF-8
 
 # Install build dependencies
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+RUN --mount=type=cache,id=apt-cache-builder,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=apt-lib-builder,target=/var/lib/apt,sharing=locked \
     apt-get install -y --no-install-recommends \
         build-essential \
         curl \
@@ -93,7 +93,7 @@ RUN bun install --frozen-lockfile
 
 # Create virtual environment and install Python dependencies
 # Using cache mounts for faster rebuilds
-RUN --mount=type=cache,target=/root/.cache/uv \
+RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
     uv venv \
     && uv sync ${UV_INSTALL_ARGS} --frozen --no-install-project --no-editable \
     && uv export ${UV_INSTALL_ARGS} --frozen --no-hashes --no-emit-project --output-file=requirements.txt
@@ -104,7 +104,7 @@ COPY resources ./resources/
 COPY app ./app/
 
 # Build frontend assets and create wheel
-RUN --mount=type=cache,target=/root/.cache/uv \
+RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
     uv run python tools/build.py --executor bun \
     && uv sync ${UV_INSTALL_ARGS} --frozen --no-editable \
     && uv build
@@ -141,7 +141,7 @@ COPY --from=builder --chown=65532:65532 /workspace/app/dist/*.whl /tmp/
 
 WORKDIR /workspace/app
 
-RUN --mount=type=cache,target=/root/.cache/uv \
+RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
     uv pip install --quiet --disable-pip-version-check --no-cache-dir /tmp/*.whl \
     && rm -rf /tmp/* \
     && chown -R nonroot:nonroot /workspace/app

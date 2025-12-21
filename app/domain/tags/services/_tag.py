@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from advanced_alchemy.repository import SQLAlchemyAsyncRepository
 from advanced_alchemy.service import (
     SQLAlchemyAsyncRepositoryService,
     is_dict_with_field,
@@ -12,18 +13,21 @@ from advanced_alchemy.utils.text import slugify
 
 from app.db.models import Tag
 
-from .repositories import TagRepository
-
 if TYPE_CHECKING:
     from advanced_alchemy.service import ModelDictT
 
 __all__ = ("TagService",)
 
 
-class TagService(SQLAlchemyAsyncRepositoryService[Tag, TagRepository]):
+class TagService(SQLAlchemyAsyncRepositoryService[Tag]):
     """Handles basic lookup operations for a Tag."""
 
-    repository_type = TagRepository
+    class Repo(SQLAlchemyAsyncRepository[Tag]):
+        """Tag SQLAlchemy Repository."""
+
+        model_type = Tag
+
+    repository_type = Repo
     match_fields = ["name"]
 
     async def to_model_on_create(self, data: ModelDictT[Tag]) -> ModelDictT[Tag]:
