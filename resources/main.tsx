@@ -11,10 +11,10 @@ axios.defaults.withCredentials = true
 createInertiaApp({
 	title: (title: string) => `${title} - ${appName}`,
 	// defaults: {
-    //     future: {
-    //         useScriptElementForInitialPage: true,
-    //     },
-    // },
+	//     future: {
+	//         useScriptElementForInitialPage: true,
+	//     },
+	// },
 	resolve: (name: string) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob("./pages/**/*.tsx")),
 	setup({ el, App, props }: { el: HTMLElement; App: React.ComponentType; props: Record<string, unknown> }) {
 		const appElement = (
