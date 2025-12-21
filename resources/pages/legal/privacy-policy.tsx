@@ -18,22 +18,24 @@ export default function PrivacyPolicy({ policy }: Props) {
 
 			<AuthHeroPanel title="Privacy & Security" description="Your privacy matters. Learn how we collect, use, and protect your personal information." showTestimonial={false} />
 
-			<div className="flex flex-col overflow-y-auto">
-				<div className="flex justify-end gap-2 p-4 md:p-8">
-					<Link href={route("home")} className={cn(buttonVariants({ variant: "ghost" }))}>
+			<div className="flex h-full flex-col">
+				{/* Fixed header */}
+				<div className="sticky top-0 z-10 flex justify-end gap-2 border-b bg-background/95 p-4 backdrop-blur supports-backdrop-filter:bg-background/60 md:p-6">
+					<Link href={route("home")} className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
 						<ArrowLeftIcon className="mr-2 h-4 w-4" />
 						Home
 					</Link>
-					<Link href={route("login")} className={cn(buttonVariants({ variant: "ghost" }))}>
+					<Link href={route("login")} className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
 						Sign in
 					</Link>
 				</div>
 
-				<div className="flex-1 px-4 pb-8 sm:px-8 lg:px-12">
+				{/* Scrollable content */}
+				<div className="flex-1 overflow-y-auto px-4 py-8 sm:px-8 lg:px-12">
 					<div className="mx-auto max-w-2xl">
 						<div className="mb-8">
 							<h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Privacy Policy</h1>
-							<p className="mt-2 text-sm text-muted-foreground">Last updated: December 2024</p>
+							<p className="mt-2 text-sm text-muted-foreground">Last updated: December 2025</p>
 						</div>
 
 						<div className="prose prose-lg prose-zinc dark:prose-invert">
@@ -49,6 +51,7 @@ export default function PrivacyPolicy({ policy }: Props) {
 					</div>
 				</div>
 
+				{/* Fixed footer */}
 				<Footer />
 			</div>
 		</>

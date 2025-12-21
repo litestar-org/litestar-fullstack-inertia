@@ -56,14 +56,15 @@ export default function Landing() {
 			</div>
 
 			{/* Content - Right Side */}
-			<div className="flex flex-col overflow-y-auto">
-				<div className="flex justify-end p-4 md:p-8">
-					<Link href={route("login")} className={cn(buttonVariants({ variant: "ghost" }))}>
+			<div className="flex h-full flex-col">
+				{/* Fixed header */}
+				<div className="sticky top-0 z-10 flex justify-end border-b bg-background/95 p-4 backdrop-blur supports-backdrop-filter:bg-background/60 md:p-6">
+					<Link href={route("login")} className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
 						Sign in
 					</Link>
 				</div>
 
-				<div className="flex-1 px-4 pb-16 sm:px-8 lg:px-12">
+				<div className="flex-1 overflow-y-auto px-4 py-8 sm:px-8 lg:px-12">
 					<div className="mx-auto max-w-2xl">
 						<div className="mb-8 text-center lg:text-left">
 							<h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
