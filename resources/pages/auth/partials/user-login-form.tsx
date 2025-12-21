@@ -22,23 +22,19 @@ const loginSchema = z.object({
 
 export default function UserLoginForm({ className, ...props }: UserLoginFormProps) {
 	const page = usePage<{
-		url: string
 		githubOAuthEnabled: boolean
 		googleOAuthEnabled: boolean
 	}>()
-	const { url, githubOAuthEnabled, googleOAuthEnabled } = page.props
+	const { githubOAuthEnabled, googleOAuthEnabled } = page.props
 	const flash = page.flash as FlashMessages | undefined
 	const hasOAuthProviders = githubOAuthEnabled || googleOAuthEnabled
 
 	// Get error from URL query param (fallback when flash couldn't be set due to no session)
+	// Use window.location directly since Inertia's url prop may not include query params on sessionless redirects
 	const urlError = useMemo(() => {
-		try {
-			const urlObj = new URL(url, window.location.origin)
-			return urlObj.searchParams.get("error")
-		} catch {
-			return null
-		}
-	}, [url])
+		if (typeof window === "undefined") return null
+		return new URLSearchParams(window.location.search).get("error")
+	}, [])
 
 	// Combined error: prefer flash, fall back to URL param
 	const errorMessage = flash?.error?.length ? flash.error : urlError ? [urlError] : null
