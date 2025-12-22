@@ -12,6 +12,7 @@ from litestar_vite.inertia import InertiaRedirect, flash
 from app.db.models import TokenType
 from app.domain.accounts.dependencies import provide_email_token_service, provide_users_service
 from app.domain.accounts.services import EmailTokenService, UserService
+from app.domain.accounts.signals import UserInfo
 from app.lib.email import EmailService
 from app.lib.settings import get_settings
 
@@ -114,7 +115,8 @@ class EmailVerificationController(Controller):
 
         # Send verification email
         email_service = EmailService()
-        await email_service.send_verification_email(user, plain_token)
+        user_info = UserInfo(email=user.email, name=user.name)
+        await email_service.send_verification_email(user_info, plain_token)
 
         flash(request, "A new verification link has been sent to your email address.", category="success")
         return InertiaRedirect(request, request.url_for("verify-email"))

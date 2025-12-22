@@ -121,12 +121,12 @@ class AccessController(Controller):
 
         user = await users_service.get_one_or_none(
             email=user_id,
-            load=[undefer_group("authentication")],
+            load=[undefer_group("security_sensitive")],
         )
         if not user:
             raise PermissionDeniedException(_MSG_USER_NOT_FOUND)
 
-        if not user.password_hash or not crypt.verify_password(data.password, user.password_hash):
+        if not user.hashed_password or not crypt.verify_password(data.password, user.hashed_password):
             raise ValidationException(_MSG_INVALID_CREDENTIALS)
 
         # Set password confirmation timestamp in session
