@@ -84,7 +84,7 @@ get_app_url() {
     local app_url=""
     app_url=$(railway variables --kv 2>/dev/null | grep -E '^APP_URL=' | head -1 | cut -d'=' -f2- || true)
     if [ -z "${app_url}" ]; then
-        app_url=$(railway status --json 2>/dev/null | grep -o '"url":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
+        app_url=$(railway status --json 2>/dev/null | grep -o '"url": *"[^"]*"' | head -1 | cut -d'"' -f4 || true)
     fi
     echo "${app_url}"
 }
