@@ -37,6 +37,7 @@ export function TeamSwitcher({ className }: TeamSwitcherProps) {
 				toast({
 					title: "Team Created",
 					description: "Your new team has been created.",
+					variant: "success",
 				})
 			},
 		})

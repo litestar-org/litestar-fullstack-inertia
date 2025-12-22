@@ -49,7 +49,7 @@ export default function TeamInvitations({ team, invitations, permissions }: Prop
 			onSuccess: () => {
 				inviteForm.reset()
 				setShowInviteDialog(false)
-				toast({ description: "Invitation sent successfully." })
+				toast({ description: "Invitation sent successfully.", variant: "success" })
 			},
 		})
 	}
@@ -60,7 +60,7 @@ export default function TeamInvitations({ team, invitations, permissions }: Prop
 			preserveScroll: true,
 			onSuccess: () => {
 				setInvitationToCancel(null)
-				toast({ description: "Invitation cancelled." })
+				toast({ description: "Invitation cancelled.", variant: "warning" })
 			},
 		})
 	}

@@ -65,7 +65,11 @@ class MfaController(Controller):
         qr_code = generate_qr_code(secret, user.email)
 
         # Store secret temporarily (not confirmed yet)
-        await users_service.update(item_id=user.id, data={"totp_secret": secret, "is_two_factor_enabled": False})
+        await users_service.update(
+            item_id=user.id,
+            data={"totp_secret": secret, "is_two_factor_enabled": False},
+            load=[undefer_group("security_sensitive")],
+        )
 
         return MfaSetup(secret=secret, qr_code=qr_code)
 
@@ -110,6 +114,7 @@ class MfaController(Controller):
                 "two_factor_confirmed_at": datetime.now(UTC),
                 "backup_codes": hashed_codes,
             },
+            load=[undefer_group("security_sensitive")],
         )
 
         flash(request, "MFA has been enabled.", category="success")
@@ -151,6 +156,7 @@ class MfaController(Controller):
                 "two_factor_confirmed_at": None,
                 "backup_codes": None,
             },
+            load=[undefer_group("security_sensitive")],
         )
 
         flash(request, "MFA has been disabled.", category="info")
@@ -181,7 +187,11 @@ class MfaController(Controller):
         # Generate new backup codes
         plain_codes, hashed_codes = await generate_backup_codes()
 
-        await users_service.update(item_id=user.id, data={"backup_codes": hashed_codes})
+        await users_service.update(
+            item_id=user.id,
+            data={"backup_codes": hashed_codes},
+            load=[undefer_group("security_sensitive")],
+        )
 
         flash(request, "Backup codes have been regenerated.", category="success")
         return MfaBackupCodes(codes=plain_codes)

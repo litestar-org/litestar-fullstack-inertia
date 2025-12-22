@@ -78,6 +78,125 @@
 	}
 
 	--animate-star-drift: star-drift 22s linear infinite;
+
+	@keyframes orbit {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	@keyframes float-slow {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-12px);
+		}
+	}
+
+	@keyframes float-fast {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-18px);
+		}
+	}
+
+	@keyframes marquee {
+		0% {
+			transform: translateX(0);
+		}
+		100% {
+			transform: translateX(-50%);
+		}
+	}
+
+	@keyframes glow-pulse {
+		0%,
+		100% {
+			opacity: 0.6;
+		}
+		50% {
+			opacity: 1;
+		}
+	}
+
+	@keyframes flow {
+		0% {
+			transform: translateX(0);
+			opacity: 0;
+		}
+		15% {
+			opacity: 1;
+		}
+		85% {
+			opacity: 1;
+		}
+		100% {
+			transform: translateX(100%);
+			opacity: 0;
+		}
+	}
+
+	@keyframes starfield {
+		0% {
+			background-position: 0 0, 0 0, 0 0;
+		}
+		100% {
+			background-position: 0 280px, 0 180px, 0 120px;
+		}
+	}
+
+	@keyframes crawl {
+		0% {
+			transform: translateY(60%) scale(1);
+			opacity: 0;
+		}
+		15% {
+			opacity: 1;
+		}
+		100% {
+			transform: translateY(-140%) scale(0.7);
+			opacity: 0;
+		}
+	}
+
+	@keyframes twinkle {
+		0%,
+		100% {
+			opacity: 0.2;
+		}
+		50% {
+			opacity: 0.7;
+		}
+	}
+
+	@keyframes twinkle-fast {
+		0%,
+		100% {
+			opacity: 0.1;
+		}
+		50% {
+			opacity: 0.9;
+		}
+	}
+
+	--animate-orbit: orbit 28s linear infinite;
+	--animate-float-slow: float-slow 10s ease-in-out infinite;
+	--animate-float-fast: float-fast 7s ease-in-out infinite;
+	--animate-marquee: marquee 22s linear infinite;
+	--animate-glow-pulse: glow-pulse 4s ease-in-out infinite;
+	--animate-flow: flow 7s linear infinite;
+	--animate-starfield: starfield 22s linear infinite;
+	--animate-crawl: crawl 10s linear infinite;
+	--animate-twinkle: twinkle 6s ease-in-out infinite;
+	--animate-twinkle-fast: twinkle-fast 3.5s ease-in-out infinite;
 }
 
 /* Dark mode theme */
@@ -129,6 +248,7 @@
 	body {
 		@apply bg-background text-foreground;
 		font-family: var(--font-sans);
+		scrollbar-gutter: stable;
 	}
 }
 
@@ -139,6 +259,36 @@
 	}
 	.animate-star-drift {
 		animation: var(--animate-star-drift);
+	}
+	.animate-orbit {
+		animation: var(--animate-orbit);
+	}
+	.animate-float-slow {
+		animation: var(--animate-float-slow);
+	}
+	.animate-float-fast {
+		animation: var(--animate-float-fast);
+	}
+	.animate-marquee {
+		animation: var(--animate-marquee);
+	}
+	.animate-glow-pulse {
+		animation: var(--animate-glow-pulse);
+	}
+	.animate-flow {
+		animation: var(--animate-flow);
+	}
+	.animate-starfield {
+		animation: var(--animate-starfield);
+	}
+	.animate-crawl {
+		animation: var(--animate-crawl);
+	}
+	.animate-twinkle {
+		animation: var(--animate-twinkle);
+	}
+	.animate-twinkle-fast {
+		animation: var(--animate-twinkle-fast);
 	}
 	.heading-uppercase {
 		text-transform: uppercase;

@@ -31,7 +31,7 @@ export default function UpdatePasswordForm() {
 		// Only send fields the backend expects (not passwordConfirmation)
 		transform: ({ currentPassword, newPassword }) => ({ currentPassword, newPassword }),
 		onSuccess: () => {
-			toast({ description: "Your password has been updated." })
+			toast({ description: "Your password has been updated.", variant: "success" })
 			reset()
 		},
 	})

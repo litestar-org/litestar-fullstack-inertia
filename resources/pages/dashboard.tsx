@@ -19,12 +19,13 @@ export default function Dashboard() {
 					<CardContent>
 						Hi {auth?.user?.name}, you are now logged in.
 						<div className="mb-2 flex text-muted-foreground">
-							This python content of this page is rendered from the <span className="flex text-lime-600 dark:text-lime-400">`WebController`</span>
-							class in <span className="text-lime-600 dark:text-lime-400"> `app/domain/web/controller.py`</span>
+							This python content of this page is rendered from the{" "}
+							<span className="flex font-medium text-lime-700 dark:text-lime-400">`WebController`</span>
+							class in <span className="font-medium text-lime-700 dark:text-lime-400"> `app/domain/web/controller.py`</span>
 						</div>
 						<div className="mb-2 flex text-muted-foreground">
-							The React component is loaded by the <div className="text-lime-600 dark:text-lime-400">`component`</div> prop and points to
-							<div className="text-lime-600 dark:text-lime-400">"resources/pages/dashboard.tsx"</div>
+							The React component is loaded by the <div className="font-medium text-lime-700 dark:text-lime-400">`component`</div> prop and points to
+							<div className="font-medium text-lime-700 dark:text-lime-400">"resources/pages/dashboard.tsx"</div>
 						</div>
 					</CardContent>
 				</Card>
@@ -34,7 +35,7 @@ export default function Dashboard() {
 					</CardHeader>
 					<CardContent>
 						<div className="flex">
-							This app makes use of the InertiaJS integration <div className="text-lime-600 dark:text-lime-400">`litestar-vite`</div>.
+							This app makes use of the InertiaJS integration <div className="font-medium text-lime-700 dark:text-lime-400">`litestar-vite`</div>.
 						</div>
 					</CardContent>
 				</Card>

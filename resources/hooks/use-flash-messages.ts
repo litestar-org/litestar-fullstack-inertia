@@ -33,7 +33,14 @@ export function useFlashMessages() {
 		}
 
 		for (const { category, message } of messages) {
-			const variant = category === "error" ? "destructive" : "default"
+			const variant =
+				category === "success"
+					? "success"
+					: category === "warning"
+						? "warning"
+						: category === "error"
+							? "destructive"
+							: "default"
 			const title = category.charAt(0).toUpperCase() + category.slice(1)
 
 			toast({

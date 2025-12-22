@@ -22,7 +22,7 @@ export default function UpdateTeamNameForm({ team }: Props) {
 		patch(route("teams.edit", { team_slug: team.slug }), {
 			preserveScroll: true,
 			onSuccess: () => {
-				toast({ description: "Team name updated." })
+				toast({ description: "Team name updated.", variant: "success" })
 			},
 		})
 	}

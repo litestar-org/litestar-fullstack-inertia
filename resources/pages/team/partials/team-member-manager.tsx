@@ -67,7 +67,7 @@ export default function TeamMemberManager({ team, members, permissions }: Props)
 			})
 			addMemberForm.reset()
 			setShowAddMemberDialog(false)
-			toast({ description: "Team member added." })
+			toast({ description: "Team member added.", variant: "success" })
 			router.reload()
 		} catch (error) {
 			if (axios.isAxiosError(error)) {
@@ -96,7 +96,7 @@ export default function TeamMemberManager({ team, members, permissions }: Props)
 				userName: memberToRemove.email,
 			})
 			setMemberToRemove(null)
-			toast({ description: "Team member removed." })
+			toast({ description: "Team member removed.", variant: "success" })
 			router.reload()
 		} catch {
 			toast({ description: "Failed to remove team member. Please try again.", variant: "destructive" })

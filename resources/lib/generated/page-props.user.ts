@@ -13,6 +13,7 @@ import type { CurrentTeam } from "./api/types.gen"
  */
 export interface UserExtensions {
   avatarUrl?: string | null
+  isVerified?: boolean
   teams: CurrentTeam[]
 }
 

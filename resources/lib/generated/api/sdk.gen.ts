@@ -151,13 +151,17 @@ export const updateTag = <ThrowOnError extends boolean = false>(options: Options
 /**
  * AddMemberToTeam
  *
- * Add a member to a team.
+ * Add a member to a team, or send an invitation if the user doesn't exist.
+ *
+ * If the user exists in the system, they are added directly as a team member.
+ * If the user doesn't exist, an invitation email is sent to them to sign up
+ * and join the team.
  *
  * Returns:
- * Updated team data with new member.
+ * Updated team data (with new member if user existed).
  *
  * Raises:
- * IntegrityError: If the user is already a member of the team.
+ * ValidationException: If the user is already a member or has a pending invitation.
  */
 export const addMemberToTeam = <ThrowOnError extends boolean = false>(options: Options<AddMemberToTeamData, ThrowOnError>) => (options.client ?? client).post<AddMemberToTeamResponses, AddMemberToTeamErrors, ThrowOnError>({
     security: [{

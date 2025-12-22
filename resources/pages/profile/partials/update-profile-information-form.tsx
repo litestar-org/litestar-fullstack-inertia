@@ -27,7 +27,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status }: Pr
 		url: route("profile.update"),
 		method: "patch",
 		onSuccess: () => {
-			toast({ description: "Your profile information has been updated." })
+			toast({ description: "Your profile information has been updated.", variant: "success" })
 		},
 	})
 
@@ -69,9 +69,9 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status }: Pr
 							)}
 						/>
 
-						{mustVerifyEmail && auth?.user && !("verifiedAt" in auth.user && auth.user.verifiedAt) && (
-							<div className="rounded-md border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
-								<p className="text-sm text-amber-800 dark:text-amber-200">
+						{mustVerifyEmail && auth?.user && !auth.user.isVerified && (
+							<div className="rounded-md border border-[#EDB641]/40 bg-[#FFF4D6] p-4 text-[#202235] dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+								<p className="text-sm">
 									Your email address is unverified.{" "}
 									<Link href={route("verify-email")} className="underline hover:no-underline">
 										Click here to verify your email.

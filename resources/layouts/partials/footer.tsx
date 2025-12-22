@@ -1,6 +1,7 @@
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function Footer() {
+	const year = new Date().getFullYear()
 	return (
 		<footer className="border-t">
 			<h2 id="footer-heading" className="sr-only">
@@ -12,7 +13,7 @@ export default function Footer() {
 						<ThemeToggle />
 					</div>
 					<p className="mt-8 text-muted-foreground text-xs leading-5 md:order-1 md:mt-0">
-						&copy; 2024{" "}
+						&copy; {year}{" "}
 						<a href="https://litestar.dev/" className="font-semibold text-foreground">
 							Litestar
 						</a>

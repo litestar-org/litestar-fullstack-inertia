@@ -112,7 +112,7 @@ export default function MfaForm() {
 
 	const copyBackupCodes = () => {
 		navigator.clipboard.writeText(backupCodes.join("\n"))
-		toast({ description: "Backup codes copied to clipboard." })
+		toast({ description: "Backup codes copied to clipboard.", variant: "success" })
 	}
 
 	const closeSetup = () => {

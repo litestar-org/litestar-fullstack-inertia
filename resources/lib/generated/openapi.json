@@ -1880,7 +1880,7 @@
     "/api/teams/{team_slug}/members/add": {
       "post": {
         "deprecated": false,
-        "description": "Add a member to a team.\n\nReturns:\n    Updated team data with new member.\n\nRaises:\n    IntegrityError: If the user is already a member of the team.",
+        "description": "Add a member to a team, or send an invitation if the user doesn't exist.\n\nIf the user exists in the system, they are added directly as a team member.\nIf the user doesn't exist, an invitation email is sent to them to sign up\nand join the team.\n\nReturns:\n    Updated team data (with new member if user existed).\n\nRaises:\n    ValidationException: If the user is already a member or has a pending invitation.",
         "operationId": "AddMemberToTeam",
         "parameters": [
           {
