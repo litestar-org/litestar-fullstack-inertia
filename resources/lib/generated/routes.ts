@@ -42,6 +42,8 @@ export type RouteName =
   | 'mfa.enable'
   | 'mfa.regenerate-codes'
   | 'openapi.json'
+  | 'password.confirm'
+  | 'password.confirm.page'
   | 'password.update'
   | 'privacy-policy'
   | 'profile.avatar.delete'
@@ -78,6 +80,7 @@ export type RouteName =
   | 'users:list'
   | 'users:revoke-role'
   | 'users:update'
+  | 'verification.send'
   | 'verify-email'
   | 'vite';
 
@@ -116,6 +119,8 @@ export interface RoutePathParams {
   'mfa.enable': Record<string, never>;
   'mfa.regenerate-codes': Record<string, never>;
   'openapi.json': Record<string, never>;
+  'password.confirm': Record<string, never>;
+  'password.confirm.page': Record<string, never>;
   'password.update': Record<string, never>;
   'privacy-policy': Record<string, never>;
   'profile.avatar.delete': Record<string, never>;
@@ -189,6 +194,7 @@ export interface RoutePathParams {
   'users:update': {
     user_id: UUID;
   };
+  'verification.send': Record<string, never>;
   'verify-email': Record<string, never>;
   'vite': {
     file_path: any;
@@ -234,6 +240,8 @@ export interface RouteQueryParams {
   'mfa.enable': Record<string, never>;
   'mfa.regenerate-codes': Record<string, never>;
   'openapi.json': Record<string, never>;
+  'password.confirm': Record<string, never>;
+  'password.confirm.page': Record<string, never>;
   'password.update': Record<string, never>;
   'privacy-policy': Record<string, never>;
   'profile.avatar.delete': Record<string, never>;
@@ -309,6 +317,7 @@ export interface RouteQueryParams {
   };
   'users:revoke-role': Record<string, never>;
   'users:update': Record<string, never>;
+  'verification.send': Record<string, never>;
   'verify-email': {
     token?: string;
   };
@@ -523,6 +532,22 @@ export const routeDefinitions = {
     method: 'get',
     pathParams: [] as const,
     queryParams: [] as const,
+  },
+  'password.confirm': {
+    path: '/confirm-password',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: [] as const,
+    queryParams: [] as const,
+    component: 'auth/confirm-password',
+  },
+  'password.confirm.page': {
+    path: '/confirm-password',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: [] as const,
+    queryParams: [] as const,
+    component: 'auth/confirm-password',
   },
   'password.update': {
     path: '/profile/password-update',
@@ -790,6 +815,14 @@ export const routeDefinitions = {
     method: 'patch',
     pathParams: ['user_id'] as const,
     queryParams: [] as const,
+  },
+  'verification.send': {
+    path: '/verify-email/send',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: [] as const,
+    queryParams: [] as const,
+    component: 'auth/verify-email',
   },
   'verify-email': {
     path: '/verify-email',

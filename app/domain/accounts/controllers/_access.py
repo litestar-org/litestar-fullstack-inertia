@@ -2,18 +2,26 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Any
 
 from litestar import Controller, Request, get, post
 from litestar.di import Provide
+from litestar.exceptions import PermissionDeniedException, ValidationException
 from litestar_vite.inertia import InertiaRedirect, flash
+from sqlalchemy.orm import undefer_group
 
 from app.domain.accounts.dependencies import provide_users_service
-from app.domain.accounts.schemas import AccountLogin
+from app.domain.accounts.schemas import AccountLogin, PasswordConfirm
 from app.domain.accounts.services import UserService
+from app.lib import crypt
 from app.lib.schema import NoProps
 
 __all__ = ("AccessController",)
+
+_MSG_AUTH_REQUIRED = "Authentication required"
+_MSG_USER_NOT_FOUND = "User not found"
+_MSG_INVALID_CREDENTIALS = "The provided password is incorrect."
 
 
 class AccessController(Controller):
@@ -83,3 +91,50 @@ class AccessController(Controller):
         flash(request, "You have been logged out.", category="info")
         request.clear_session()
         return InertiaRedirect(request, request.url_for("login"))
+
+    @get(component="auth/confirm-password", name="password.confirm.page", path="/confirm-password/", exclude_from_auth=False)
+    async def show_confirm_password(self, request: Request) -> NoProps:
+        """Show the password confirmation page.
+
+        This is used before sensitive operations to verify the user's identity.
+
+        Returns:
+            Empty page props.
+        """
+        return NoProps()
+
+    @post(component="auth/confirm-password", name="password.confirm", path="/confirm-password/", exclude_from_auth=False)
+    async def confirm_password(
+        self,
+        request: Request,
+        users_service: UserService,
+        data: PasswordConfirm,
+    ) -> InertiaRedirect:
+        """Confirm user password before sensitive actions.
+
+        Returns:
+            Redirect to intended destination or dashboard.
+        """
+        user_id = request.session.get("user_id")
+        if not user_id:
+            raise PermissionDeniedException(_MSG_AUTH_REQUIRED)
+
+        user = await users_service.get_one_or_none(
+            email=user_id,
+            load=[undefer_group("security_sensitive")],
+        )
+        if not user:
+            raise PermissionDeniedException(_MSG_USER_NOT_FOUND)
+
+        if not user.hashed_password or not crypt.verify_password(data.password, user.hashed_password):
+            raise ValidationException(_MSG_INVALID_CREDENTIALS)
+
+        # Set password confirmation timestamp in session
+        request.session["password_confirmed_at"] = datetime.now(UTC).isoformat()
+
+        # Redirect to intended destination or dashboard
+        intended_url = request.session.pop("intended_url", None)
+        if intended_url:
+            return InertiaRedirect(request, intended_url)
+
+        return InertiaRedirect(request, request.url_for("dashboard"))

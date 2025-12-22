@@ -231,6 +231,22 @@
       ],
       "uri": "/schema/openapi.json"
     },
+    "password.confirm": {
+      "component": "auth/confirm-password",
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/confirm-password"
+    },
+    "password.confirm.page": {
+      "component": "auth/confirm-password",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/confirm-password"
+    },
     "password.update": {
       "component": "profile/edit",
       "method": "patch",
@@ -650,6 +666,14 @@
         "user_id"
       ],
       "uri": "/api/users/{user_id}"
+    },
+    "verification.send": {
+      "component": "auth/verify-email",
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/verify-email/send"
     },
     "verify-email": {
       "component": "auth/verify-email",
