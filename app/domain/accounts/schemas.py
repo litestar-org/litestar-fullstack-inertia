@@ -197,3 +197,9 @@ class MfaBackupCodes(CamelizedBaseStruct):
     """Response with backup codes for MFA recovery."""
 
     codes: list[str]
+
+
+class PasswordConfirm(CamelizedBaseStruct):
+    """Request to confirm password before sensitive actions."""
+
+    password: str

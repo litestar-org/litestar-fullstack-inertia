@@ -65,6 +65,7 @@ export type FullSharedProps = GeneratedSharedProps & SharedProps & { [key: strin
 /** Page props mapped by component name */
 export interface PageProps {
   "about": NoProps & FullSharedProps
+  "auth/confirm-password": NoProps & FullSharedProps
   "auth/forgot-password": NoProps & FullSharedProps
   "auth/login": NoProps & FullSharedProps
   "auth/mfa-challenge": NoProps & FullSharedProps

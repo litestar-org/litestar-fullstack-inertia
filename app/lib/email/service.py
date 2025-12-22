@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 import re
 from typing import Any, Protocol
+from urllib.parse import quote
 
 from app.lib.email.backends import get_backend
 from app.lib.email.base import EmailMultiAlternatives
@@ -216,7 +217,7 @@ class EmailService:
         Returns:
             True if email was sent successfully.
         """
-        reset_url = f"{self.base_url}/reset-password?token={token}"
+        reset_url = f"{self.base_url}/reset-password?token={token}&email={quote(user.email)}"
         expires_minutes = self._settings.email.PASSWORD_RESET_TOKEN_EXPIRES_MINUTES
 
         context = {

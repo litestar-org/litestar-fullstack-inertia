@@ -10,6 +10,15 @@
       "route": "/about",
       "tsType": "NoProps"
     },
+    "auth/confirm-password": {
+      "customTypes": [
+        "NoProps"
+      ],
+      "handler": "show_confirm_password",
+      "propsType": "NoProps",
+      "route": "/confirm-password",
+      "tsType": "NoProps"
+    },
     "auth/forgot-password": {
       "customTypes": [
         "NoProps"
