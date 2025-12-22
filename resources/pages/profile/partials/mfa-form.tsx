@@ -69,7 +69,6 @@ export default function MfaForm() {
 			})
 			setBackupCodes(data.codes)
 			setSetupStep("backup")
-			router.reload({ only: ["auth"] })
 		} catch (error) {
 			if (axios.isAxiosError(error) && error.response?.data?.detail) {
 				confirmForm.setError("code", error.response.data.detail)
@@ -120,6 +119,8 @@ export default function MfaForm() {
 		setSetupData(null)
 		setBackupCodes([])
 		confirmForm.reset()
+		// Reload auth state after user has seen backup codes
+		router.reload({ only: ["auth"] })
 	}
 
 	const isMfaEnabled = user.isTwoFactorEnabled

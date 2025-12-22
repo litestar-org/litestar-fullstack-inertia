@@ -13,7 +13,7 @@ export function GuestLayout({ description: _description = null, header: _header 
 	return (
 		<>
 			<Toaster />
-			<div className="container relative h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">{children}</div>
+			<div className="container relative flex min-h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">{children}</div>
 		</>
 	)
 }
