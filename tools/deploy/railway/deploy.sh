@@ -159,7 +159,7 @@ check_existing_project() {
     # Check if already linked to a Railway project
     if railway status &> /dev/null; then
         # Extract project name from status
-        PROJECT_NAME=$(railway status --json 2>/dev/null | grep -o '"name":"[^"]*"' | head -1 | cut -d'"' -f4 || echo "")
+        PROJECT_NAME=$(railway status --json 2>/dev/null | grep -o '"name": *"[^"]*"' | head -1 | cut -d'"' -f4 || echo "")
         if [ -n "${PROJECT_NAME}" ]; then
             log_success "Linked to project: ${PROJECT_NAME}"
             EXISTING_PROJECT=true
@@ -364,7 +364,7 @@ health_check() {
     cd "${PROJECT_ROOT}"
 
     # Get the deployment URL
-    DEPLOY_URL=$(railway status --json 2>/dev/null | grep -o '"url":"[^"]*"' | head -1 | cut -d'"' -f4 || echo "")
+    DEPLOY_URL=$(railway status --json 2>/dev/null | grep -o '"url": *"[^"]*"' | head -1 | cut -d'"' -f4 || echo "")
 
     if [ -z "${DEPLOY_URL}" ]; then
         log_warn "Could not determine deployment URL"
@@ -396,7 +396,7 @@ display_summary() {
     echo -e "${GREEN}Deployment Complete!${NC}"
     echo "=============================================="
     echo ""
-    echo "Project: ${PROJECT_NAME:-$(railway status --json 2>/dev/null | grep -o '"name":"[^"]*"' | head -1 | cut -d'"' -f4 || echo 'Unknown')}"
+    echo "Project: ${PROJECT_NAME:-$(railway status --json 2>/dev/null | grep -o '"name": *"[^"]*"' | head -1 | cut -d'"' -f4 || echo 'Unknown')}"
     echo ""
     echo "Configuration:"
     echo "  - PostgreSQL database with shared DATABASE_URL"
