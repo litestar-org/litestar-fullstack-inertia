@@ -15,6 +15,7 @@
 #   --detach          Don't wait for deployment to complete
 #   --skip-setup      Skip setup checks (assumes already configured)
 #   --email           Configure Resend email after deployment
+#   --github-oauth    Configure GitHub OAuth after deployment
 #
 # The script is fully idempotent - safe to run multiple times.
 # =============================================================================
@@ -32,6 +33,7 @@ NC='\033[0m' # No Color
 DETACH=false
 SKIP_SETUP=false
 CONFIGURE_EMAIL=false
+CONFIGURE_GITHUB_OAUTH=false
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 PROJECT_NAME=""
@@ -55,9 +57,13 @@ while [[ $# -gt 0 ]]; do
             CONFIGURE_EMAIL=true
             shift
             ;;
+        --github-oauth)
+            CONFIGURE_GITHUB_OAUTH=true
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: ./deploy.sh [--detach] [--skip-setup] [--email]"
+            echo "Usage: ./deploy.sh [--detach] [--skip-setup] [--email] [--github-oauth]"
             exit 1
             ;;
     esac
@@ -88,6 +94,10 @@ check_command() {
         return 1
     fi
     return 0
+}
+
+run_env_setup() {
+    "${SCRIPT_DIR}/env-setup.sh" "$@"
 }
 
 # -----------------------------------------------------------------------------
@@ -252,6 +262,12 @@ ensure_environment() {
             log_info "Updating PORT configuration..."
             railway variables --set "PORT=8080" --set "LITESTAR_PORT=8080" --skip-deploys
         fi
+
+        # Ensure SQLAlchemy logs are quiet by default
+        if ! railway variables --kv 2>/dev/null | grep -q "SQLALCHEMY_LOG_LEVEL="; then
+            log_info "Setting SQLALCHEMY_LOG_LEVEL=30 (WARNING)..."
+            railway variables --set "SQLALCHEMY_LOG_LEVEL=30" --skip-deploys
+        fi
         return 0
     fi
 
@@ -263,6 +279,7 @@ ensure_environment() {
         --set "LITESTAR_DEBUG=false" \
         --set "VITE_DEV_MODE=false" \
         --set "DATABASE_ECHO=false" \
+        --set "SQLALCHEMY_LOG_LEVEL=30" \
         --set "EMAIL_ENABLED=false" \
         --set "EMAIL_BACKEND=console" \
         --set "PORT=8080" \
@@ -292,35 +309,6 @@ enable_metal_builds() {
 
     railway variables --set "RAILWAY_USE_METAL_BUILDS=true" --skip-deploys
     log_success "Metal builds enabled"
-}
-
-# -----------------------------------------------------------------------------
-# Email Configuration (Optional)
-# -----------------------------------------------------------------------------
-
-configure_email() {
-    echo ""
-    echo "=============================================="
-    echo "Resend Email Configuration"
-    echo "=============================================="
-    echo ""
-    log_info "Resend provides 3,000 emails/month on the free tier"
-    log_info "Get your API key at: https://resend.com/api-keys"
-    echo ""
-
-    read -p "Enter Resend API key: " RESEND_API_KEY
-    read -p "Enter 'From' email address (must be verified in Resend): " EMAIL_FROM
-
-    log_info "Configuring Resend..."
-
-    cd "${PROJECT_ROOT}"
-
-    railway variables --set "EMAIL_ENABLED=true" \
-        --set "EMAIL_BACKEND=resend" \
-        --set "EMAIL_FROM=${EMAIL_FROM}" \
-        --set "RESEND_API_KEY=${RESEND_API_KEY}"
-
-    log_success "Resend configured successfully"
 }
 
 # -----------------------------------------------------------------------------
@@ -426,6 +414,13 @@ display_summary() {
     if [ "${CONFIGURE_EMAIL}" = false ]; then
         echo "To configure email:"
         echo "  ./deploy.sh --email"
+        echo "  ./env-setup.sh --email"
+        echo ""
+    fi
+    if [ "${CONFIGURE_GITHUB_OAUTH}" = false ]; then
+        echo "To configure GitHub OAuth:"
+        echo "  ./deploy.sh --github-oauth"
+        echo "  ./env-setup.sh --github-oauth"
         echo ""
     fi
     echo "=============================================="
@@ -468,9 +463,13 @@ main() {
         health_check
     fi
 
-    # Optional email config
+    # Optional configs
     if [ "${CONFIGURE_EMAIL}" = true ]; then
-        configure_email
+        run_env_setup --email
+    fi
+
+    if [ "${CONFIGURE_GITHUB_OAUTH}" = true ]; then
+        run_env_setup --github-oauth
     fi
 
     display_summary

@@ -8,6 +8,7 @@
 # Usage:
 #   ./env-setup.sh                    # Interactive menu
 #   ./env-setup.sh --email            # Configure Resend email
+#   ./env-setup.sh --github-oauth     # Configure GitHub OAuth
 #   ./env-setup.sh --from-file .env   # Load variables from file
 #   ./env-setup.sh --set KEY=VALUE    # Set a single variable
 # =============================================================================
@@ -23,6 +24,7 @@ NC='\033[0m' # No Color
 
 # Default values
 CONFIGURE_EMAIL=false
+CONFIGURE_GITHUB_OAUTH=false
 ENV_FILE=""
 SET_VAR=""
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -38,6 +40,10 @@ while [[ $# -gt 0 ]]; do
             CONFIGURE_EMAIL=true
             shift
             ;;
+        --github-oauth)
+            CONFIGURE_GITHUB_OAUTH=true
+            shift
+            ;;
         --from-file)
             ENV_FILE="$2"
             shift 2
@@ -48,7 +54,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: ./env-setup.sh [--email] [--from-file .env] [--set KEY=VALUE]"
+            echo "Usage: ./env-setup.sh [--email] [--github-oauth] [--from-file .env] [--set KEY=VALUE]"
             exit 1
             ;;
     esac
@@ -72,6 +78,15 @@ log_warn() {
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
+}
+
+get_app_url() {
+    local app_url=""
+    app_url=$(railway variables --kv 2>/dev/null | grep -E '^APP_URL=' | head -1 | cut -d'=' -f2- || true)
+    if [ -z "${app_url}" ]; then
+        app_url=$(railway status --json 2>/dev/null | grep -o '"url":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
+    fi
+    echo "${app_url}"
 }
 
 # -----------------------------------------------------------------------------
@@ -162,6 +177,79 @@ configure_email() {
 }
 
 # -----------------------------------------------------------------------------
+# GitHub OAuth Configuration
+# -----------------------------------------------------------------------------
+
+configure_github_oauth() {
+    echo ""
+    echo "=============================================="
+    echo "GitHub OAuth App Configuration"
+    echo "=============================================="
+    echo ""
+    log_info "GitHub OAuth Apps must be created manually."
+    log_info "We'll open the GitHub developer settings page and then set Railway vars."
+    echo ""
+
+    cd "${PROJECT_ROOT}"
+
+    local app_url=""
+    local callback_url=""
+    app_url="$(get_app_url)"
+    if [ -z "${app_url}" ]; then
+        read -p "Enter your public app URL (e.g. https://your-app.up.railway.app): " app_url
+    fi
+
+    app_url="${app_url%/}"
+    callback_url="${app_url}/o/github/complete"
+
+    echo ""
+    echo "Use these values when creating the OAuth App:"
+    echo "  Homepage URL: ${app_url}"
+    echo "  Authorization callback URL: ${callback_url}"
+    echo ""
+    echo "Create the app here:"
+    echo "  https://github.com/settings/developers"
+    echo ""
+
+    if command -v gh &> /dev/null; then
+        if ! gh auth status &> /dev/null; then
+            log_warn "GitHub CLI not authenticated."
+            read -p "Login with 'gh auth login -w'? [y/N]: " login_choice
+            if [[ "${login_choice}" =~ ^[Yy]$ ]]; then
+                gh auth login -w || true
+            fi
+        fi
+
+        read -p "Open GitHub developer settings in your browser now? [y/N]: " open_choice
+        if [[ "${open_choice}" =~ ^[Yy]$ ]]; then
+            if ! gh browse "https://github.com/settings/developers" &> /dev/null; then
+                log_warn "Could not open browser via gh. Open the URL manually."
+            fi
+        fi
+    else
+        log_warn "GitHub CLI (gh) not installed."
+        log_info "Install it from https://cli.github.com/ if you want browser integration."
+    fi
+
+    echo ""
+    read -p "Enter GitHub OAuth Client ID: " GITHUB_OAUTH2_CLIENT_ID
+    read -s -p "Enter GitHub OAuth Client Secret: " GITHUB_OAUTH2_CLIENT_SECRET
+    echo ""
+
+    if [ -z "${GITHUB_OAUTH2_CLIENT_ID}" ] || [ -z "${GITHUB_OAUTH2_CLIENT_SECRET}" ]; then
+        log_error "Client ID and Secret are required."
+        exit 1
+    fi
+
+    log_info "Saving GitHub OAuth credentials to Railway..."
+    railway variables --set "GITHUB_OAUTH2_CLIENT_ID=${GITHUB_OAUTH2_CLIENT_ID}" \
+        --set "GITHUB_OAUTH2_CLIENT_SECRET=${GITHUB_OAUTH2_CLIENT_SECRET}"
+
+    log_success "GitHub OAuth configured successfully"
+    log_info "Redeploy to apply changes: ./deploy.sh"
+}
+
+# -----------------------------------------------------------------------------
 # Set Single Variable
 # -----------------------------------------------------------------------------
 
@@ -205,12 +293,13 @@ main_menu() {
     echo "Options:"
     echo "  1. View current variables"
     echo "  2. Configure Resend for email"
-    echo "  3. Set custom variable"
-    echo "  4. Load from .env file"
-    echo "  5. Exit"
+    echo "  3. Configure GitHub OAuth"
+    echo "  4. Set custom variable"
+    echo "  5. Load from .env file"
+    echo "  6. Exit"
     echo ""
 
-    read -p "Select option (1-5): " choice
+    read -p "Select option (1-6): " choice
 
     cd "${PROJECT_ROOT}"
 
@@ -224,18 +313,22 @@ main_menu() {
             main_menu
             ;;
         3)
+            configure_github_oauth
+            main_menu
+            ;;
+        4)
             read -p "Variable (KEY=VALUE): " var_input
             railway variables --set "${var_input}"
             log_success "Variable set: ${var_input%%=*}"
             main_menu
             ;;
-        4)
+        5)
             read -p "Path to .env file: " env_path
             ENV_FILE="${env_path}"
             load_from_file
             main_menu
             ;;
-        5)
+        6)
             log_info "Exiting..."
             exit 0
             ;;
@@ -266,6 +359,11 @@ main() {
 
     if [ "${CONFIGURE_EMAIL}" = true ]; then
         configure_email
+        exit 0
+    fi
+
+    if [ "${CONFIGURE_GITHUB_OAUTH}" = true ]; then
+        configure_github_oauth
         exit 0
     fi
 
