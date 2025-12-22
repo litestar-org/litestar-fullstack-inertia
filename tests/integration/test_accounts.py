@@ -75,7 +75,7 @@ async def test_accounts_delete(client: "AsyncClient", superuser_token_headers: d
     assert response.status_code == 204
     # Ensure we didn't cascade delete the teams the user owned
     response = await client.get(
-        "/teams/97108ac1-ffcb-411d-8b1e-d9183399f63b",
+        "/teams/test-team/",
         headers=superuser_inertia_headers,
     )
     assert response.status_code == 200

@@ -13,6 +13,7 @@ from app.db.models import User as UserModel
 from app.domain.accounts.dependencies import provide_users_service
 from app.domain.accounts.schemas import User as UserSchema
 from app.lib.oauth import OAuth2AuthorizeCallback
+from app.lib.settings import get_settings
 
 if TYPE_CHECKING:
     from litestar.connection import ASGIConnection
@@ -22,10 +23,29 @@ if TYPE_CHECKING:
 __all__ = (
     "current_user_from_session",
     "requires_active_user",
+    "requires_registration_enabled",
     "requires_superuser",
     "requires_verified_user",
     "session_auth",
 )
+
+
+def requires_registration_enabled(connection: ASGIConnection, _: BaseRouteHandler) -> None:
+    """Request requires registration to be enabled.
+
+    Verifies that user registration is enabled in the application settings.
+
+    Args:
+        connection (ASGIConnection): HTTP Request
+        _ (BaseRouteHandler): Route handler
+
+    Raises:
+        PermissionDeniedException: If registration is disabled.
+    """
+    if get_settings().app.REGISTRATION_ENABLED:
+        return
+    msg = "Registration is currently disabled."
+    raise PermissionDeniedException(detail=msg)
 
 
 def requires_active_user(connection: ASGIConnection, _: BaseRouteHandler) -> None:
@@ -55,9 +75,6 @@ def requires_superuser(connection: ASGIConnection, _: BaseRouteHandler) -> None:
 
     Raises:
         PermissionDeniedException: Permission denied exception
-
-    Returns:
-        None: Returns None when successful
     """
     if connection.user.is_superuser:
         return
@@ -74,9 +91,6 @@ def requires_verified_user(connection: ASGIConnection, _: BaseRouteHandler) -> N
 
     Raises:
         PermissionDeniedException: Not authorized
-
-    Returns:
-        None: Returns None when successful
     """
     if connection.user.is_verified:
         return
@@ -85,8 +99,7 @@ def requires_verified_user(connection: ASGIConnection, _: BaseRouteHandler) -> N
 
 
 async def current_user_from_session(
-    session: dict[str, Any],
-    connection: ASGIConnection[Any, Any, Any, Any],
+    session: dict[str, Any], connection: ASGIConnection[Any, Any, Any, Any],
 ) -> UserModel | None:
     """Lookup current user from server session state.
 
@@ -96,7 +109,6 @@ async def current_user_from_session(
     Args:
         session (dict[str,Any]): Litestar session dictionary
         connection (ASGIConnection[Any, Any, Any, Any]): ASGI connection.
-
 
     Returns:
         User: User record mapped to the JWT identifier
@@ -117,13 +129,7 @@ async def current_user_from_session(
 session_auth = SessionAuth[UserModel, ServerSideSessionBackend](
     session_backend_config=session_config,
     retrieve_user_handler=current_user_from_session,
-    exclude=[
-        "^/schema",
-        "^/health",
-        "^/login",
-        "^/register",
-        "^/o/",
-    ],
+    exclude=["^/schema", "^/health", "^/login", "^/register", "^/forgot-password", "^/reset-password", "^/verify-email", "^/o/"],
 )
 github_oauth_callback = OAuth2AuthorizeCallback(github_oauth2_client, route_name="github.complete")
 google_oauth_callback = OAuth2AuthorizeCallback(google_oauth2_client, route_name="google.complete")

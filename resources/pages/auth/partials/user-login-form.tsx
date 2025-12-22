@@ -1,141 +1,130 @@
-import { zodResolver } from "@hookform/resolvers/zod"
 import { router, usePage } from "@inertiajs/react"
 import { AlertCircle } from "lucide-react"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { toast } from "sonner"
+import { useMemo } from "react"
 import { z } from "zod"
 import { Icons } from "@/components/icons"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { useInertiaForm } from "@/hooks/use-inertia-form"
+import type { FlashMessages } from "@/lib/generated/page-props"
 import { route } from "@/lib/generated/routes"
 import { cn } from "@/lib/utils"
-import type { FlashMessages } from "@/types"
 
 interface UserLoginFormProps extends React.HTMLAttributes<HTMLDivElement> {}
-const formSchema = z.object({
-	username: z.string().min(1, {
-		message: "Username is required.",
-	}),
+
+const loginSchema = z.object({
+	username: z.string().min(1, { message: "Username is required." }),
 	password: z.string().min(1, "Please enter a valid password."),
 	remember: z.boolean().default(false),
 })
 
-type FormProps = z.infer<typeof formSchema>
-
 export default function UserLoginForm({ className, ...props }: UserLoginFormProps) {
-	const { content, flash } = usePage<{
-		content: {
-			status_code: number
-			message: string
-		}
-		flash: FlashMessages
-	}>().props
-	const [isLoading, setIsLoading] = useState<boolean>(false)
-	const form = useForm<FormProps>({
-		resolver: zodResolver(formSchema),
-		defaultValues: {
-			username: "",
-			password: "",
-		},
+	const page = usePage<{
+		githubOAuthEnabled: boolean
+		googleOAuthEnabled: boolean
+	}>()
+	const { githubOAuthEnabled, googleOAuthEnabled } = page.props
+	const flash = page.flash as FlashMessages | undefined
+	const hasOAuthProviders = githubOAuthEnabled || googleOAuthEnabled
+
+	// Get error from URL query param (fallback when flash couldn't be set due to no session)
+	// Use window.location directly since Inertia's url prop may not include query params on sessionless redirects
+	const urlError = useMemo(() => {
+		if (typeof window === "undefined") return null
+		return new URLSearchParams(window.location.search).get("error")
+	}, [])
+
+	// Combined error: prefer flash, fall back to URL param
+	const errorMessage = flash?.error?.length ? flash.error : urlError ? [urlError] : null
+
+	const { form, isSubmitting, handleSubmit } = useInertiaForm({
+		schema: loginSchema,
+		defaultValues: { username: "", password: "", remember: false },
+		url: route("login"),
 	})
 
-	async function onSubmit(values: FormProps) {
-		try {
-			setIsLoading(true)
-			router.post(route("login"), values, {
-				onError: (err) => {
-					console.log(err)
-					if ("username" in err && typeof err.username === "string") {
-						form.setError("root", { message: err.username })
-					}
-				},
-			})
-		} catch (error: any) {
-			console.log(error)
-			toast(content?.message ?? error.response?.data?.detail ?? "There was an unexpected error logging in.")
-		} finally {
-			setIsLoading(false)
-		}
-	}
 	return (
 		<div className={cn("grid gap-6", className)} {...props}>
 			<Form {...form}>
-				<form onSubmit={form.handleSubmit(onSubmit)}>
+				<form onSubmit={handleSubmit}>
 					<div className="grid gap-2">
-						{flash?.error && (
+						{errorMessage && (
 							<Alert variant="destructive">
 								<AlertCircle className="h-4 w-4" />
 								<AlertTitle>Error</AlertTitle>
-								<AlertDescription>{flash.error.join("\n")}</AlertDescription>
+								<AlertDescription>{errorMessage.join("\n")}</AlertDescription>
 							</Alert>
 						)}
 
-						<div className="grid gap-1">
-							<FormField
-								control={form.control}
-								name="username"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel className="sr-only">Username</FormLabel>
-										<FormControl>
-											<Input placeholder="Enter your username." autoCapitalize="none" autoComplete="username" autoCorrect="off" {...field} disabled={isLoading} />
-										</FormControl>{" "}
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
+						<FormField
+							control={form.control}
+							name="username"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Email</FormLabel>
+									<FormControl>
+										<Input placeholder="name@example.com" autoCapitalize="none" autoComplete="username" autoCorrect="off" {...field} disabled={isSubmitting} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 
-						<div className="grid gap-1">
-							<FormField
-								control={form.control}
-								name="password"
-								render={({ field }) => (
-									<FormItem className="mt-4">
-										<FormLabel className="sr-only">Password</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Enter your current password."
-												type="password"
-												autoCapitalize="none"
-												autoCorrect="off"
-												autoComplete="current-password"
-												{...field}
-												disabled={isLoading}
-											/>
-										</FormControl>{" "}
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
+						<FormField
+							control={form.control}
+							name="password"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Password</FormLabel>
+									<FormControl>
+										<Input
+											placeholder="Enter your password"
+											type="password"
+											autoCapitalize="none"
+											autoCorrect="off"
+											autoComplete="current-password"
+											{...field}
+											disabled={isSubmitting}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 
-						<div className="mt-10 grid gap-1">
-							<Button type="submit" className="w-full" disabled={isLoading}>
-								{isLoading && <Icons.spinner className="mr-2 h-5 w-5" />}
-								Sign In
-							</Button>
-						</div>
+						<Button type="submit" className="mt-2 w-full" disabled={isSubmitting}>
+							{isSubmitting && <Icons.spinner className="mr-2 h-4 w-4" />}
+							Sign In
+						</Button>
 					</div>
 				</form>
 			</Form>
-			<div className="relative">
-				<div className="absolute inset-0 flex items-center">
-					<span className="w-full border-t" />
-				</div>
-				<div className="relative flex justify-center text-xs uppercase">
-					<span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-				</div>
-			</div>
-			<Button variant="outline" type="button" disabled={isLoading} onClick={() => router.post(route("github.register"))}>
-				{isLoading ? <Icons.spinner className="mr-2 h-5 w-5" /> : <Icons.gitHub className="mr-2 h-5 w-5" />} Sign in with Github
-			</Button>
-			<Button variant="outline" type="button" disabled={isLoading}>
-				{isLoading ? <Icons.spinner className="mr-2 h-5 w-5" /> : <Icons.google className="mr-2 h-5 w-5" />} Sign in with Google
-			</Button>
+			{hasOAuthProviders && (
+				<>
+					<div className="relative">
+						<div className="absolute inset-0 flex items-center">
+							<span className="w-full border-t" />
+						</div>
+						<div className="relative flex justify-center text-xs uppercase">
+							<span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+						</div>
+					</div>
+					{githubOAuthEnabled && (
+						<Button variant="outline" type="button" disabled={isSubmitting} onClick={() => router.post(route("github.register"))}>
+							{isSubmitting ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.gitHub className="mr-2 h-4 w-4" />}
+							Continue with GitHub
+						</Button>
+					)}
+					{googleOAuthEnabled && (
+						<Button variant="outline" type="button" disabled={isSubmitting} onClick={() => router.post(route("google.register"))}>
+							{isSubmitting ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.google className="mr-2 h-4 w-4" />}
+							Continue with Google
+						</Button>
+					)}
+				</>
+			)}
 		</div>
 	)
 }

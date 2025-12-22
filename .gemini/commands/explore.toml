@@ -1,0 +1,30 @@
+description = "Explore and understand the codebase structure"
+prompt = """
+Exploring: {topic}
+
+## Search Commands
+
+```bash
+# Find files
+find . -name "*{topic}*" -type f
+
+# Search content
+grep -r "{topic}" src/
+
+# Find classes
+grep -r "class.*{topic}" src/
+
+# Find functions
+grep -r "def.*{topic}" src/
+```
+
+## Exploration Guidelines
+
+1. Start with directory structure overview
+2. Identify entry points and main components
+3. Trace data flow through the system
+4. Document dependencies and relationships
+5. Note patterns and conventions used
+
+Explore the relevant files and explain the architecture.
+"""

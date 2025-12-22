@@ -1,17 +1,73 @@
-import { Head } from "@inertiajs/react"
+import { Head, Link } from "@inertiajs/react"
+import { Plus, Users } from "lucide-react"
 import type React from "react"
 import { Container } from "@/components/container"
 import { Header } from "@/components/header"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AppLayout } from "@/layouts/app-layout"
+import type { PagePropsFor } from "@/lib/generated/page-props"
+import { route } from "@/lib/generated/routes"
+import { cn } from "@/lib/utils"
 
-export default function TeamList({ about: _about }: { about: string }) {
+const roleStyles: Record<string, string> = {
+	owner: "bg-[#EDB641] text-[#202235] dark:bg-[#EDB641] dark:text-[#202235]",
+	admin: "bg-[#202235] text-white dark:bg-[#202235] dark:text-white",
+	editor: "bg-[#FFD480] text-[#202235] dark:bg-[#FFD480] dark:text-[#202235]",
+	member: "bg-[#DCDFE4] text-[#202235] dark:bg-[#2A2D45] dark:text-white",
+}
+
+export default function TeamList({ teams }: PagePropsFor<"team/list">) {
 	return (
 		<>
 			<Head title="Teams" />
-			<Header title="All Teams" />
+			<Header title="Teams">
+				<Link href={route("teams.create")}>
+					<Button>
+						<Plus className="mr-2 h-4 w-4" />
+						Create Team
+					</Button>
+				</Link>
+			</Header>
 			<Container>
-				{/* Your about page content goes here. */}
-				<div className="text-lime-600 dark:text-lime-400">"resources/pages/team/list.tsx"</div>
+				{teams.length === 0 ? (
+					<Card>
+						<CardContent className="flex flex-col items-center justify-center py-12">
+							<Users className="h-12 w-12 text-muted-foreground" />
+							<h3 className="mt-4 font-semibold text-lg">No teams yet</h3>
+							<p className="mt-2 text-muted-foreground text-sm">Create your first team to start collaborating.</p>
+							<Link href={route("teams.create")} className="mt-4">
+								<Button>
+									<Plus className="mr-2 h-4 w-4" />
+									Create Team
+								</Button>
+							</Link>
+						</CardContent>
+					</Card>
+				) : (
+					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+						{teams.map((team) => (
+							<Link key={team.id} href={route("teams.show", { team_slug: team.slug })}>
+								<Card className="transition-shadow hover:shadow-md">
+									<CardHeader>
+										<div className="flex items-start justify-between">
+											<CardTitle className="text-lg">{team.name}</CardTitle>
+											<Badge className={cn("capitalize", roleStyles[team.userRole])}>{team.userRole}</Badge>
+										</div>
+										{team.description && <CardDescription className="line-clamp-2">{team.description}</CardDescription>}
+									</CardHeader>
+									<CardContent>
+										<div className="flex items-center text-muted-foreground text-sm">
+											<Users className="mr-1 h-4 w-4" />
+											{team.memberCount} {team.memberCount === 1 ? "member" : "members"}
+										</div>
+									</CardContent>
+								</Card>
+							</Link>
+						))}
+					</div>
+				)}
 			</Container>
 		</>
 	)

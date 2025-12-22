@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import binascii
 import os
+import sys
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Any, Final
 
 from advanced_alchemy.utils.text import slugify
 from litestar.utils.module_loader import module_to_os_path
@@ -15,7 +16,15 @@ from app.utils.engine_factory import create_sqlalchemy_engine
 from app.utils.env import get_env
 
 if TYPE_CHECKING:
+    from advanced_alchemy.extensions.litestar import SQLAlchemyAsyncConfig
+    from litestar.config.compression import CompressionConfig
+    from litestar.config.cors import CORSConfig
+    from litestar.config.csrf import CSRFConfig
     from litestar.data_extractors import RequestExtractorField, ResponseExtractorField
+    from litestar.middleware.session.server_side import ServerSideSessionConfig
+    from litestar.plugins.structlog import StructlogConfig
+    from litestar.template import TemplateConfig
+    from litestar_vite import ViteConfig
 
 DEFAULT_MODULE_NAME = "app"
 BASE_DIR: Final[Path] = module_to_os_path(DEFAULT_MODULE_NAME)
@@ -65,6 +74,20 @@ class DatabaseSettings:
         self._engine_instance = create_sqlalchemy_engine(self)
         return self._engine_instance
 
+    def get_config(self) -> SQLAlchemyAsyncConfig:
+        from advanced_alchemy.extensions.litestar import AlembicAsyncConfig, AsyncSessionConfig, SQLAlchemyAsyncConfig
+
+        return SQLAlchemyAsyncConfig(
+            engine_instance=self.get_engine(),
+            before_send_handler="autocommit_include_redirects",
+            session_config=AsyncSessionConfig(expire_on_commit=False),
+            alembic_config=AlembicAsyncConfig(
+                version_table_name=self.MIGRATION_DDL_VERSION_TABLE,
+                script_config=self.MIGRATION_CONFIG,
+                script_location=self.MIGRATION_PATH,
+            ),
+        )
+
 
 @dataclass
 class ViteSettings:
@@ -77,6 +100,35 @@ class ViteSettings:
     """Start `vite` development server."""
     TEMPLATE_DIR: Path = field(default_factory=get_env("VITE_TEMPLATE_DIR", Path(f"{BASE_DIR.parent}/resources")))
     """Template directory."""
+
+    def get_config(self, app_settings: AppSettings) -> ViteConfig:
+        from litestar_vite import InertiaConfig, PathConfig, RuntimeConfig, TypeGenConfig, ViteConfig
+
+        from app.domain.teams.schemas import CurrentTeam
+
+        return ViteConfig(
+            dev_mode=self.DEV_MODE,
+            runtime=RuntimeConfig(executor="bun", trusted_proxies="*"),
+            paths=PathConfig(
+                root=BASE_DIR.parent,
+                bundle_dir=Path("app/domain/web/public"),
+                resource_dir=Path("resources"),
+            ),
+            inertia=InertiaConfig(
+                redirect_unauthorized_to="/login",
+                extra_static_page_props={
+                    "canResetPassword": True,
+                    "hasTermsAndPrivacyPolicyFeature": True,
+                    "mustVerifyEmail": True,
+                    "githubOAuthEnabled": app_settings.github_oauth_enabled,
+                    "googleOAuthEnabled": app_settings.google_oauth_enabled,
+                    "registrationEnabled": app_settings.REGISTRATION_ENABLED,
+                    "mfaEnabled": app_settings.MFA_ENABLED,
+                },
+                extra_session_page_props={"currentTeam": CurrentTeam},
+            ),
+            types=TypeGenConfig(output=BASE_DIR.parent / "resources" / "lib" / "generated"),
+        )
 
 
 @dataclass
@@ -118,19 +170,10 @@ class LogSettings:
     OBFUSCATE_HEADERS: set[str] = field(default_factory=lambda: {"Authorization", "X-API-KEY", "X-XSRF-TOKEN"})
     """Request header keys to obfuscate."""
     REQUEST_FIELDS: list[RequestExtractorField] = field(
-        default_factory=lambda: [
-            "path",
-            "method",
-            "query",
-            "path_params",
-        ],
+        default_factory=lambda: ["path", "method", "query", "path_params"],
     )
     """Attributes of the [Request][litestar.connection.request.Request] to be logged."""
-    RESPONSE_FIELDS: list[ResponseExtractorField] = field(
-        default_factory=lambda: [
-            "status_code",
-        ],
-    )
+    RESPONSE_FIELDS: list[ResponseExtractorField] = field(default_factory=lambda: ["status_code"])
     """Attributes of the [Response][litestar.response.Response] to be logged."""
     SQLALCHEMY_LEVEL: int = field(default_factory=get_env("SQLALCHEMY_LOG_LEVEL", 20))
     """Level to log SQLAlchemy logs."""
@@ -142,6 +185,230 @@ class LogSettings:
     """Level to log granian access logs."""
     GRANIAN_ERROR_LEVEL: int = field(default_factory=get_env("GRANIAN_ERROR_LOG_LEVEL", 20))
     """Level to log granian error logs."""
+
+    def get_structlog_config(self) -> StructlogConfig:
+        """Create the complete Litestar StructlogConfig.
+
+        Returns:
+            Configured StructlogConfig for Litestar application.
+        """
+        import logging
+
+        import structlog
+        from litestar.exceptions import NotAuthorizedException, NotFoundException, PermissionDeniedException
+        from litestar.logging.config import LoggingConfig, StructLoggingConfig, default_logger_factory
+        from litestar.middleware.logging import LoggingMiddlewareConfig
+        from litestar.plugins.structlog import StructlogConfig
+
+        from app.lib import log as log_conf
+
+        as_json = not log_conf.is_tty()
+        disable_stack_trace: set[Any] = {
+            404,
+            401,
+            403,
+            NotFoundException,
+            NotAuthorizedException,
+            PermissionDeniedException,
+        }
+
+        return StructlogConfig(
+            enable_middleware_logging=False,
+            structlog_logging_config=StructLoggingConfig(
+                log_exceptions="always",
+                processors=log_conf.structlog_processors(as_json=as_json),
+                logger_factory=default_logger_factory(as_json=as_json),
+                disable_stack_trace=disable_stack_trace,
+                standard_lib_logging_config=LoggingConfig(
+                    log_exceptions="always",
+                    disable_existing_loggers=True,
+                    disable_stack_trace=disable_stack_trace,
+                    root={"level": logging.getLevelName(self.LEVEL), "handlers": ["queue_listener"]},
+                    formatters={
+                        "standard": {
+                            "()": structlog.stdlib.ProcessorFormatter,
+                            "processors": log_conf.stdlib_logger_processors(as_json=as_json),
+                        },
+                    },
+                    loggers={
+                        "sqlalchemy.engine": {
+                            "propagate": False,
+                            "level": self.SQLALCHEMY_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "sqlalchemy.engine.Engine": {
+                            "propagate": False,
+                            "level": self.SQLALCHEMY_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "sqlalchemy.pool": {
+                            "propagate": False,
+                            "level": self.SQLALCHEMY_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "urllib3": {"propagate": False, "level": self.SQLALCHEMY_LEVEL, "handlers": ["queue_listener"]},
+                        "_granian": {
+                            "propagate": False,
+                            "level": self.GRANIAN_ERROR_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "granian.server": {
+                            "propagate": False,
+                            "level": self.GRANIAN_ERROR_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "granian.access": {
+                            "propagate": False,
+                            "level": self.GRANIAN_ACCESS_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "uvicorn.error": {
+                            "propagate": False,
+                            "level": self.UVICORN_ERROR_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "uvicorn.access": {
+                            "propagate": False,
+                            "level": self.UVICORN_ACCESS_LEVEL,
+                            "handlers": ["queue_listener"],
+                        },
+                        "httpx": {"propagate": False, "level": logging.WARNING, "handlers": ["queue_listener"]},
+                        "httpcore": {"propagate": False, "level": logging.WARNING, "handlers": ["queue_listener"]},
+                    },
+                ),
+            ),
+            middleware_logging_config=LoggingMiddlewareConfig(
+                request_log_fields=self.REQUEST_FIELDS, response_log_fields=self.RESPONSE_FIELDS,
+            ),
+        )
+
+
+@dataclass
+class EmailSettings:
+    """Email service configuration."""
+
+    ENABLED: bool = field(default_factory=get_env("EMAIL_ENABLED", False))
+    """Enable email sending. If False, emails are logged but not sent."""
+    BACKEND: str = field(default_factory=get_env("EMAIL_BACKEND", "console"))
+    """Email backend: 'smtp', 'console', or 'locmem'."""
+    FROM_EMAIL: str = field(default_factory=get_env("EMAIL_FROM", "noreply@example.com"))
+    """Default from email address."""
+
+    # SMTP Settings
+    SMTP_HOST: str = field(default_factory=get_env("EMAIL_SMTP_HOST", "localhost"))
+    """SMTP server hostname."""
+    SMTP_PORT: int = field(default_factory=get_env("EMAIL_SMTP_PORT", 587))
+    """SMTP server port."""
+    SMTP_USER: str = field(default_factory=get_env("EMAIL_SMTP_USER", ""))
+    """SMTP username for authentication."""
+    SMTP_PASSWORD: str = field(default_factory=get_env("EMAIL_SMTP_PASSWORD", ""))
+    """SMTP password for authentication."""
+    SMTP_USE_TLS: bool = field(default_factory=get_env("EMAIL_SMTP_USE_TLS", True))
+    """Use STARTTLS for SMTP connection."""
+    SMTP_USE_SSL: bool = field(default_factory=get_env("EMAIL_SMTP_USE_SSL", False))
+    """Use implicit SSL for SMTP connection."""
+    SMTP_TIMEOUT: int = field(default_factory=get_env("EMAIL_SMTP_TIMEOUT", 30))
+    """SMTP connection timeout in seconds."""
+
+    # Resend Settings
+    RESEND_API_KEY: str = field(default_factory=get_env("RESEND_API_KEY", ""))
+    """Resend API key for sending emails via Resend."""
+
+    # Token expiration settings
+    VERIFICATION_TOKEN_EXPIRES_HOURS: int = field(default_factory=get_env("EMAIL_VERIFICATION_TOKEN_EXPIRES_HOURS", 24))
+    """Hours until email verification token expires."""
+    PASSWORD_RESET_TOKEN_EXPIRES_MINUTES: int = field(
+        default_factory=get_env("EMAIL_PASSWORD_RESET_TOKEN_EXPIRES_MINUTES", 60),
+    )
+    """Minutes until password reset token expires."""
+    INVITATION_TOKEN_EXPIRES_DAYS: int = field(default_factory=get_env("EMAIL_INVITATION_TOKEN_EXPIRES_DAYS", 7))
+    """Days until team invitation token expires."""
+
+
+@dataclass
+class StorageSettings:
+    """File storage configuration."""
+
+    BACKEND: str = field(default_factory=get_env("STORAGE_BACKEND", "local"))
+    """Storage backend: 'local', 's3', 'gcs', or 'azure'."""
+    UPLOAD_DIR: Path = field(default_factory=get_env("STORAGE_UPLOAD_DIR", Path("uploads")))
+    """Directory for file uploads (local backend only)."""
+    BUCKET: str = field(default_factory=get_env("STORAGE_BUCKET", ""))
+    """Cloud storage bucket name (s3/gcs/azure)."""
+    SIGNED_URL_EXPIRY: int = field(default_factory=get_env("STORAGE_SIGNED_URL_EXPIRY", 3600))
+    """Signed URL expiry time in seconds."""
+
+    # AWS S3 settings
+    AWS_ACCESS_KEY_ID: str = field(default_factory=get_env("AWS_ACCESS_KEY_ID", ""))
+    """AWS access key ID."""
+    AWS_SECRET_ACCESS_KEY: str = field(default_factory=get_env("AWS_SECRET_ACCESS_KEY", ""))
+    """AWS secret access key."""
+    AWS_REGION: str = field(default_factory=get_env("AWS_REGION", "us-east-1"))
+    """AWS region."""
+    AWS_ENDPOINT: str = field(default_factory=get_env("AWS_ENDPOINT", ""))
+    """Custom S3 endpoint (for MinIO, etc.)."""
+
+    # GCS settings
+    GOOGLE_SERVICE_ACCOUNT: str = field(default_factory=get_env("GOOGLE_SERVICE_ACCOUNT", ""))
+    """Path to GCS service account JSON file."""
+
+    # Azure settings
+    AZURE_CONNECTION_STRING: str = field(default_factory=get_env("AZURE_STORAGE_CONNECTION_STRING", ""))
+    """Azure storage connection string."""
+
+    MAX_AVATAR_SIZE: int = field(default_factory=get_env("MAX_AVATAR_SIZE", 5 * 1024 * 1024))
+    """Maximum avatar file size in bytes (5MB)."""
+    ALLOWED_AVATAR_TYPES: tuple[str, ...] = ("image/jpeg", "image/png", "image/gif", "image/webp")
+    """Allowed MIME types for avatars."""
+
+    @property
+    def is_cloud_storage(self) -> bool:
+        """Check if using cloud storage backend."""
+        return self.BACKEND in {"s3", "gcs", "azure"}
+
+    def configure_storage(self) -> None:
+        """Configure file storage backends based on settings.
+
+        Raises:
+            ValueError: If an unsupported storage backend is configured.
+        """
+        from advanced_alchemy.types.file_object import storages
+        from advanced_alchemy.types.file_object.backends.obstore import ObstoreBackend
+
+        backend = self.BACKEND
+
+        if backend == "local":
+            storage_path = self.UPLOAD_DIR.absolute()
+            storage_path.mkdir(parents=True, exist_ok=True)
+            avatars_backend = ObstoreBackend(key="avatars", fs=f"file://{storage_path}/")
+        elif backend == "s3":
+            kwargs: dict[str, str] = {
+                "key": "avatars",
+                "fs": f"s3://{self.BUCKET}/",
+                "aws_region": self.AWS_REGION,
+            }
+            if self.AWS_ACCESS_KEY_ID:
+                kwargs["aws_access_key_id"] = self.AWS_ACCESS_KEY_ID
+                kwargs["aws_secret_access_key"] = self.AWS_SECRET_ACCESS_KEY
+            if self.AWS_ENDPOINT:
+                kwargs["aws_endpoint"] = self.AWS_ENDPOINT
+            avatars_backend = ObstoreBackend(**kwargs)
+        elif backend == "gcs":
+            kwargs = {"key": "avatars", "fs": f"gs://{self.BUCKET}/"}
+            if self.GOOGLE_SERVICE_ACCOUNT:
+                kwargs["google_service_account"] = self.GOOGLE_SERVICE_ACCOUNT
+            avatars_backend = ObstoreBackend(**kwargs)
+        elif backend == "azure":
+            avatars_backend = ObstoreBackend(
+                key="avatars",
+                fs=f"az://{self.BUCKET}/",
+                azure_storage_connection_string=self.AZURE_CONNECTION_STRING,
+            )
+        else:
+            msg = f"Unsupported storage backend: {backend}"
+            raise ValueError(msg)
+
+        storages.register_backend(avatars_backend)
 
 
 @dataclass
@@ -174,6 +441,10 @@ class AppSettings:
     """Google Client ID"""
     GOOGLE_OAUTH2_CLIENT_SECRET: str = field(default_factory=get_env("GOOGLE_OAUTH2_CLIENT_SECRET", ""))
     """Google Client Secret"""
+    REGISTRATION_ENABLED: bool = field(default_factory=get_env("REGISTRATION_ENABLED", True))
+    """Enable user registration. If False, only existing users can log in."""
+    MFA_ENABLED: bool = field(default_factory=get_env("MFA_ENABLED", False))
+    """Enable Multi-Factor Authentication (TOTP) support in the UI."""
 
     @property
     def slug(self) -> str:
@@ -184,11 +455,62 @@ class AppSettings:
         """
         return slugify(self.NAME)
 
+    @property
+    def github_oauth_enabled(self) -> bool:
+        """Check if GitHub OAuth is configured.
+
+        Returns:
+            True if both client ID and secret are set.
+        """
+        return bool(self.GITHUB_OAUTH2_CLIENT_ID and self.GITHUB_OAUTH2_CLIENT_SECRET)
+
+    @property
+    def google_oauth_enabled(self) -> bool:
+        """Check if Google OAuth is configured.
+
+        Returns:
+            True if both client ID and secret are set.
+        """
+        return bool(self.GOOGLE_OAUTH2_CLIENT_ID and self.GOOGLE_OAUTH2_CLIENT_SECRET)
+
+    def get_compression_config(self) -> CompressionConfig:
+        from litestar.config.compression import CompressionConfig
+
+        return CompressionConfig(backend="gzip")
+
+    def get_csrf_config(self) -> CSRFConfig:
+        from litestar.config.csrf import CSRFConfig
+
+        return CSRFConfig(
+            secret=self.SECRET_KEY,
+            cookie_secure=self.CSRF_COOKIE_SECURE,
+            cookie_name=self.CSRF_COOKIE_NAME,
+            header_name=self.CSRF_HEADER_NAME,
+        )
+
+    def get_cors_config(self) -> CORSConfig:
+        from litestar.config.cors import CORSConfig
+
+        return CORSConfig(allow_origins=self.ALLOWED_CORS_ORIGINS)
+
+    def get_session_config(self) -> ServerSideSessionConfig:
+        from litestar.middleware.session.server_side import ServerSideSessionConfig
+
+        return ServerSideSessionConfig(max_age=3600)
+
+    def get_template_config(self, template_dir: Path) -> TemplateConfig:
+        from litestar.contrib.jinja import JinjaTemplateEngine
+        from litestar.template import TemplateConfig
+
+        return TemplateConfig(engine=JinjaTemplateEngine(directory=template_dir))
+
 
 @dataclass
 class Settings:
     app: AppSettings = field(default_factory=AppSettings)
     db: DatabaseSettings = field(default_factory=DatabaseSettings)
+    email: EmailSettings = field(default_factory=EmailSettings)
+    storage: StorageSettings = field(default_factory=StorageSettings)
     vite: ViteSettings = field(default_factory=ViteSettings)
     server: ServerSettings = field(default_factory=ServerSettings)
     log: LogSettings = field(default_factory=LogSettings)
@@ -196,16 +518,26 @@ class Settings:
     @classmethod
     @lru_cache(maxsize=1, typed=True)
     def from_env(cls, dotenv_filename: str = ".env") -> Settings:
+        import structlog
+        from dotenv import load_dotenv
         from litestar.cli._utils import console
 
+        logger = structlog.get_logger()
         env_file = Path(f"{os.curdir}/{dotenv_filename}")
-        if env_file.is_file():
-            from dotenv import load_dotenv
-
+        env_file_exists = env_file.is_file()
+        original_env = os.environ.copy()
+        if env_file_exists:
             console.print(f"[yellow]Loading environment configuration from {dotenv_filename}[/]")
-
-            load_dotenv(env_file, override=True)
-        return Settings()
+            load_dotenv(env_file, override=False)
+        try:
+            settings = Settings()
+        except Exception as e:  # noqa: BLE001
+            logger.fatal("Could not load settings. %s", e)
+            sys.exit(1)
+        finally:
+            os.environ.clear()
+            os.environ.update(original_env)
+        return settings
 
 
 def get_settings(dotenv_filename: str = ".env") -> Settings:

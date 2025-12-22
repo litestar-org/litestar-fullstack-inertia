@@ -2,7 +2,7 @@ name: litestar-fullstack-inertia
 
 services:
   db:
-    image: postgres:17
+    image: postgres:18
     ports:
       - "15432:5432"
     hostname: db

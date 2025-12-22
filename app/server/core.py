@@ -4,10 +4,19 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID
 
+from litestar import get
 from litestar.di import Provide
 from litestar.openapi.config import OpenAPIConfig
 from litestar.openapi.plugins import ScalarRenderPlugin, SwaggerRenderPlugin
 from litestar.plugins import CLIPluginProtocol, InitPluginProtocol
+from litestar.static_files import create_static_files_router
+
+
+@get("/health", exclude_from_auth=True, include_in_schema=False)
+async def health_check() -> dict[str, str]:
+    """Health check endpoint for Railway and load balancers."""
+    return {"status": "ok"}
+
 
 if TYPE_CHECKING:
     from click import Group
@@ -40,7 +49,12 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
 
         Args:
             app_config: The :class:`AppConfig <.config.app.AppConfig>` instance.
+
+        Returns:
+            The modified :class:`AppConfig <.config.app.AppConfig>` instance.
         """
+
+        from advanced_alchemy.exceptions import IntegrityError, NotFoundError, RepositoryError
 
         from app import config
         from app.__metadata__ import __version__ as current_version
@@ -48,6 +62,10 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         from app.domain.accounts import signals as account_signals
         from app.domain.accounts.controllers import (
             AccessController,
+            EmailVerificationController,
+            MfaChallengeController,
+            MfaController,
+            PasswordResetController,
             ProfileController,
             RegistrationController,
             UserController,
@@ -57,9 +75,21 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         from app.domain.accounts.guards import session_auth
         from app.domain.tags.controllers import TagController
         from app.domain.teams import signals as team_signals
-        from app.domain.teams.controllers import TeamController, TeamMemberController
+        from app.domain.teams.controllers import (
+            InvitationAcceptController,
+            TeamController,
+            TeamInvitationController,
+            TeamMemberController,
+            UserInvitationsController,
+        )
         from app.domain.web.controllers import WebController
         from app.lib import log
+        from app.lib.exceptions import (
+            inertia_exception_handler,
+            integrity_error_handler,
+            not_found_error_handler,
+            repository_error_handler,
+        )
         from app.lib.settings import get_settings
         from app.server import plugins
 
@@ -79,45 +109,60 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         app_config.middleware.insert(0, log.StructlogMiddleware)
         app_config.after_exception.append(log.after_exception_hook_handler)
         app_config.before_send.append(log.BeforeSendHandler())
+        # Exception handlers for database errors (order matters - more specific first)
+        app_config.exception_handlers.update({
+            IntegrityError: integrity_error_handler,
+            NotFoundError: not_found_error_handler,
+            RepositoryError: repository_error_handler,
+            Exception: inertia_exception_handler,
+        })
         # security
         app_config.cors_config = config.cors
         app_config.csrf_config = config.csrf
         # templates
         app_config.template_config = config.templates
         # plugins
-        app_config.plugins.extend(
-            [
-                plugins.structlog,
-                plugins.granian,
-                plugins.alchemy,
-                plugins.vite,
-            ],
+        app_config.plugins.extend([plugins.structlog, plugins.granian, plugins.alchemy, plugins.vite])
+
+        # static files for uploads
+        uploads_router = create_static_files_router(
+            directories=[settings.storage.UPLOAD_DIR],
+            path="/uploads",
+            name="uploads",
         )
 
         # routes
-        app_config.route_handlers.extend(
-            [
-                AccessController,
-                ProfileController,
-                RegistrationController,
-                UserController,
-                TeamController,
-                UserRoleController,
-                #  TeamInvitationController,
-                TeamMemberController,
-                TagController,
-                WebController,
-            ],
-        )
+        app_config.route_handlers.extend([
+            health_check,
+            uploads_router,
+            AccessController,
+            EmailVerificationController,
+            MfaChallengeController,
+            MfaController,
+            PasswordResetController,
+            ProfileController,
+            RegistrationController,
+            UserController,
+            TeamController,
+            UserRoleController,
+            TeamInvitationController,
+            TeamMemberController,
+            InvitationAcceptController,
+            UserInvitationsController,
+            TagController,
+            WebController,
+        ])
         # signatures
-        app_config.signature_namespace.update({
-            "UserModel": UserModel,
-            "UUID": UUID,
-        })
+        app_config.signature_namespace.update({"UserModel": UserModel, "UUID": UUID})
         # dependencies
         app_config.dependencies.update({"current_user": Provide(provide_user)})
         # listeners
-        app_config.listeners.extend(
-            [account_signals.user_created_event_handler, team_signals.team_created_event_handler],
-        )
+        app_config.listeners.extend([
+            account_signals.user_created_event_handler,
+            account_signals.user_verified_event_handler,
+            account_signals.password_reset_requested_handler,
+            account_signals.password_reset_completed_handler,
+            team_signals.team_created_event_handler,
+            team_signals.team_invitation_created_handler,
+        ])
         return app_config

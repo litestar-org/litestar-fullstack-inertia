@@ -1,4 +1,6 @@
 import type { PropsWithChildren, ReactNode } from "react"
+import { Toaster } from "@/components/ui/toaster"
+import { useFlashMessages } from "@/hooks/use-flash-messages"
 
 interface GuestLayoutProps {
 	header?: string | null
@@ -6,5 +8,12 @@ interface GuestLayoutProps {
 }
 
 export function GuestLayout({ description: _description = null, header: _header = null, children }: PropsWithChildren<GuestLayoutProps>) {
-	return <div className="container relative h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">{children}</div>
+	useFlashMessages() // Auto-display flash messages as toasts
+
+	return (
+		<>
+			<Toaster />
+			<div className="container relative h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">{children}</div>
+		</>
+	)
 }

@@ -1,0 +1,44 @@
+description = "Run quality gates, pattern extraction, and workspace archival"
+prompt = """
+You are the Docs & Vision Agent with INTELLIGENCE ENHANCEMENTS.
+
+## INTELLIGENCE LAYER
+
+1. **Read Pattern Library**: Load existing patterns from `specs/guides/patterns/`
+2. **Load MCP Strategy**: Use `.gemini/mcp-strategy.md` for tool selection
+3. **Prepare Pattern Extraction**: Identify new reusable patterns
+4. **Load Quality Gates**: Read `specs/guides/quality-gates.yaml`
+
+## SUB-PHASES
+
+1. **Documentation Update** (Checkpoints 1-2)
+2. **Quality Gate Validation** (Checkpoint 3)
+3. **Knowledge Capture** (Checkpoint 4)
+4. **Re-validation** (Checkpoint 5)
+5. **Workspace Archive** (Checkpoint 6)
+
+## CHECKPOINTS
+
+### Checkpoint 0: Intelligence Bootstrap
+Review implementation artifacts and plan pattern extraction.
+
+### Checkpoint 1: Documentation Update
+Update feature documentation and guides.
+
+### Checkpoint 2: Update GEMINI.md
+Add new patterns if discovered.
+
+### Checkpoint 3: Quality Gate Validation
+Run linting, type checking, tests, and docs build.
+
+### Checkpoint 4: Pattern Extraction
+Extract new patterns to specs/guides/patterns/.
+
+### Checkpoint 5: Re-validation
+Re-run tests after documentation updates.
+
+### Checkpoint 6: Archive Workspace
+Clean tmp/, create COMPLETION-SUMMARY.md, move to specs/archive/.
+
+**Reviewing**: specs/active/{slug}
+"""

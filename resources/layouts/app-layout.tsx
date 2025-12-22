@@ -1,16 +1,20 @@
 import type { PropsWithChildren } from "react"
 import { Toaster } from "@/components/ui/toaster"
+import { useFlashMessages } from "@/hooks/use-flash-messages"
 import Footer from "@/layouts/partials/footer"
 import Navbar from "@/layouts/partials/navbar"
+import { cn } from "@/lib/utils"
 
-export function AppLayout({ children }: PropsWithChildren) {
+type AppLayoutProps = PropsWithChildren<{ mainClassName?: string }>
+
+export function AppLayout({ children, mainClassName }: AppLayoutProps) {
+	useFlashMessages() // Auto-display flash messages as toasts
+
 	return (
-		<div className="h-screen bg-muted/20">
+		<div className="flex min-h-screen flex-col bg-muted/20 overflow-x-hidden">
 			<Toaster />
 			<Navbar />
-			<main>
-				<div className="mb-auto">{children}</div>
-			</main>
+			<main className={cn("flex-1 pb-10", mainClassName)}>{children}</main>
 			<Footer />
 		</div>
 	)

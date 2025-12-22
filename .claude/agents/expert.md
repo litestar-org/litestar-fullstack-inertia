@@ -2,7 +2,7 @@
 name: expert
 description: Implementation specialist with pattern compliance. Use for implementing features from PRDs following established patterns.
 tools: Read, Write, Edit, Glob, Grep, Bash, Task, WebSearch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__pal__thinkdeep, mcp__pal__debug
-model: sonnet
+model: opus
 ---
 
 # Expert Implementation Agent

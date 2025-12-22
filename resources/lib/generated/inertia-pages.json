@@ -1,0 +1,260 @@
+{
+  "fallbackType": "unknown",
+  "pages": {
+    "about": {
+      "customTypes": [
+        "NoProps"
+      ],
+      "handler": "about",
+      "propsType": "NoProps",
+      "route": "/about",
+      "tsType": "NoProps"
+    },
+    "auth/forgot-password": {
+      "customTypes": [
+        "NoProps"
+      ],
+      "handler": "show_forgot_password",
+      "propsType": "NoProps",
+      "route": "/forgot-password",
+      "tsType": "NoProps"
+    },
+    "auth/login": {
+      "customTypes": [
+        "NoProps"
+      ],
+      "handler": "show_login",
+      "propsType": "NoProps",
+      "route": "/login",
+      "tsType": "NoProps"
+    },
+    "auth/mfa-challenge": {
+      "customTypes": [
+        "NoProps"
+      ],
+      "handler": "show_challenge",
+      "propsType": "NoProps",
+      "route": "/mfa-challenge",
+      "tsType": "NoProps"
+    },
+    "auth/register": {
+      "customTypes": [
+        "NoProps"
+      ],
+      "handler": "show_signup",
+      "propsType": "NoProps",
+      "route": "/register",
+      "tsType": "NoProps"
+    },
+    "auth/reset-password": {
+      "customTypes": [
+        "PasswordResetToken"
+      ],
+      "handler": "show_reset_password",
+      "propsType": "PasswordResetToken",
+      "route": "/reset-password",
+      "tsType": "PasswordResetToken"
+    },
+    "auth/verify-email": {
+      "handler": "verify_email",
+      "propsType": "any",
+      "route": "/verify-email"
+    },
+    "dashboard": {
+      "customTypes": [
+        "NoProps"
+      ],
+      "handler": "dashboard",
+      "propsType": "NoProps",
+      "route": "/dashboard",
+      "tsType": "NoProps"
+    },
+    "invitation/accept": {
+      "customTypes": [
+        "InvitationAcceptPage",
+        "TeamInvitationDetail"
+      ],
+      "handler": "get_invitation_page",
+      "propsType": "InvitationAcceptPage",
+      "route": "/invitations/{token}",
+      "schemaRef": "#/components/schemas/InvitationAcceptPage",
+      "tsType": "InvitationAcceptPage"
+    },
+    "invitation/list": {
+      "customTypes": [
+        "UserPendingInvitation",
+        "UserPendingInvitationsPage"
+      ],
+      "handler": "get_user_invitations",
+      "propsType": "UserPendingInvitationsPage",
+      "route": "/invitations",
+      "schemaRef": "#/components/schemas/UserPendingInvitationsPage",
+      "tsType": "UserPendingInvitationsPage"
+    },
+    "landing": {
+      "customTypes": [
+        "NoProps"
+      ],
+      "handler": "landing",
+      "propsType": "NoProps",
+      "route": "/landing",
+      "tsType": "NoProps"
+    },
+    "legal/privacy-policy": {
+      "customTypes": [
+        "NoProps"
+      ],
+      "handler": "privacy_policy",
+      "propsType": "NoProps",
+      "route": "/privacy-policy",
+      "tsType": "NoProps"
+    },
+    "legal/terms-of-service": {
+      "customTypes": [
+        "NoProps"
+      ],
+      "handler": "terms_of_service",
+      "propsType": "NoProps",
+      "route": "/terms-of-service",
+      "tsType": "NoProps"
+    },
+    "profile/edit": {
+      "customTypes": [
+        "Message"
+      ],
+      "handler": "profile",
+      "propsType": "Message",
+      "route": "/profile",
+      "tsType": "Message"
+    },
+    "team/create": {
+      "customTypes": [
+        "NoProps"
+      ],
+      "handler": "create_team_page",
+      "propsType": "NoProps",
+      "route": "/teams/create",
+      "schemaRef": "#/components/schemas/NoProps",
+      "tsType": "NoProps"
+    },
+    "team/edit": {
+      "customTypes": [
+        "Team",
+        "TeamMember",
+        "TeamTag"
+      ],
+      "handler": "update_team",
+      "propsType": "Team",
+      "route": "/teams/{team_slug}",
+      "schemaRef": "#/components/schemas/Team",
+      "tsType": "Team"
+    },
+    "team/invitations": {
+      "customTypes": [
+        "TeamDetail",
+        "TeamInvitationItem",
+        "TeamInvitationsPage",
+        "TeamPermissions"
+      ],
+      "handler": "get_team_invitations",
+      "propsType": "TeamInvitationsPage",
+      "route": "/teams/{team_slug}/invitations",
+      "schemaRef": "#/components/schemas/TeamInvitationsPage",
+      "tsType": "TeamInvitationsPage"
+    },
+    "team/list": {
+      "customTypes": [
+        "TeamListItem",
+        "TeamListPage"
+      ],
+      "handler": "list_teams",
+      "propsType": "TeamListPage",
+      "route": "/teams",
+      "schemaRef": "#/components/schemas/TeamListPage",
+      "tsType": "TeamListPage"
+    },
+    "team/settings": {
+      "customTypes": [
+        "TeamDetail",
+        "TeamDetailPage",
+        "TeamInvitationItem",
+        "TeamPageMember",
+        "TeamPermissions"
+      ],
+      "handler": "get_team_settings",
+      "propsType": "TeamDetailPage",
+      "route": "/teams/{team_slug}/settings",
+      "schemaRef": "#/components/schemas/TeamDetailPage",
+      "tsType": "TeamDetailPage"
+    },
+    "team/show": {
+      "customTypes": [
+        "TeamDetail",
+        "TeamDetailPage",
+        "TeamInvitationItem",
+        "TeamPageMember",
+        "TeamPermissions"
+      ],
+      "handler": "get_team",
+      "propsType": "TeamDetailPage",
+      "route": "/teams/{team_slug}",
+      "schemaRef": "#/components/schemas/TeamDetailPage",
+      "tsType": "TeamDetailPage"
+    }
+  },
+  "sharedProps": {
+    "auth": {
+      "optional": true,
+      "type": "AuthData"
+    },
+    "canResetPassword": {
+      "optional": true,
+      "type": "boolean"
+    },
+    "csrf_token": {
+      "optional": true,
+      "type": "string"
+    },
+    "currentTeam": {
+      "optional": true,
+      "type": "CurrentTeam"
+    },
+    "errors": {
+      "optional": true,
+      "type": "Record<string, string[]>"
+    },
+    "flash": {
+      "optional": true,
+      "type": "FlashMessages"
+    },
+    "githubOAuthEnabled": {
+      "optional": true,
+      "type": "boolean"
+    },
+    "googleOAuthEnabled": {
+      "optional": true,
+      "type": "boolean"
+    },
+    "hasTermsAndPrivacyPolicyFeature": {
+      "optional": true,
+      "type": "boolean"
+    },
+    "mfaEnabled": {
+      "optional": true,
+      "type": "boolean"
+    },
+    "mustVerifyEmail": {
+      "optional": true,
+      "type": "boolean"
+    },
+    "registrationEnabled": {
+      "optional": true,
+      "type": "boolean"
+    }
+  },
+  "typeGenConfig": {
+    "includeDefaultAuth": true,
+    "includeDefaultFlash": true
+  },
+  "typeImportPaths": {}
+}

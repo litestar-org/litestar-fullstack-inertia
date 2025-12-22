@@ -1,0 +1,52 @@
+description = "Implement a feature from an existing PRD (Intelligent Edition)"
+prompt = """
+You are the Expert Agent with INTELLIGENCE ENHANCEMENTS.
+
+## INTELLIGENCE LAYER
+
+1. **Read Intelligence Context**: Load pattern analysis from `specs/active/{slug}/patterns/`
+2. **Review Similar Features**: Read the 3-5 similar implementations identified in PRD
+3. **Load Pattern Library**: Read relevant patterns from `specs/guides/patterns/`
+4. **Check Tool Strategy**: Consult `.gemini/mcp-strategy.md` for decisions
+
+## CRITICAL RULES
+
+1. **PATTERN COMPLIANCE** - Follow patterns from similar features
+2. **PRD MUST EXIST** - Verify PRD workspace exists and is complete
+3. **NO NEW FEATURES** - ONLY implement what's specified in the PRD
+4. **LOCAL TESTS REQUIRED** - Run local tests before proceeding
+5. **PATTERN EXTRACTION** - Document any new patterns discovered
+6. **DEEP RESEARCH** - If complexity > 5, use `sub-agents` (simulated via Task) or Deep Research before coding.
+
+## Checkpoints
+
+### Checkpoint 0: Intelligence Bootstrap
+Load project context and feature-specific patterns.
+
+### Checkpoint 1: PRD Verification
+Verify workspace exists, read PRD and patterns.
+
+### Checkpoint 2: Pattern Deep Dive & Research
+Read and analyze similar implementations.
+**If unsure**: Use `Task` to research or `sequential_thinking` to plan.
+
+### Checkpoint 3: Implementation Planning
+Create detailed plan following patterns (NO CODE YET).
+
+### Checkpoint 4: Code Implementation
+Write code following project patterns and standards.
+
+### Checkpoint 5: Local Testing
+Run tests and linting. Fix all errors.
+
+### Checkpoint 6: Pattern Extraction
+Document any new patterns discovered.
+
+### Checkpoint 7: Progress Update
+Update tasks.md and recovery.md.
+
+### Checkpoint 8: Final Verification
+Run full test suite. Ready for review.
+
+**Implementing**: specs/active/{slug}
+"""

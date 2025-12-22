@@ -10,23 +10,30 @@
 # - Minimal runtime dependencies
 # - No unnecessary build tools in final image
 #
+# Optimization features:
+# - Cache mounts for faster rebuilds
+# - Bind mounts for dependency layer caching
+# - Bytecode compilation for faster startup
+#
 # Build: docker build -t app:latest .
 # =============================================================================
 
 # -----------------------------------------------------------------------------
 # Build Arguments
 # -----------------------------------------------------------------------------
-ARG PYTHON_VERSION=3.12
+ARG PYTHON_VERSION=3.13
 ARG DEBIAN_VERSION=bookworm
 ARG BUILDER_IMAGE=python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION}
 
 # =============================================================================
 # Stage 1: Python Base
 # =============================================================================
+# Minimal base image with essential runtime dependencies
+# =============================================================================
 FROM ${BUILDER_IMAGE} AS python-base
 
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+RUN --mount=type=cache,id=apt-cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=apt-lib,target=/var/lib/apt,sharing=locked \
     apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
@@ -36,6 +43,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && mkdir -p /workspace/app
 
 # Install uv (fast Python package installer)
+# Pin to specific version for reproducible builds
+# For SHA256 pinning: COPY --from=ghcr.io/astral-sh/uv@sha256:<digest> /uv /uvx /bin/
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Install bun (fast JavaScript runtime/bundler)
@@ -44,13 +53,15 @@ COPY --from=oven/bun:latest /usr/local/bin/bun /usr/local/bin/bun
 # =============================================================================
 # Stage 2: Builder
 # =============================================================================
+# Installs all dependencies and builds the application
+# =============================================================================
 FROM python-base AS builder
 
 ARG UV_INSTALL_ARGS="--no-dev"
 
+# Environment configuration for optimal builds
 ENV GRPC_PYTHON_BUILD_WITH_CYTHON=1 \
     UV_LINK_MODE=copy \
-    UV_NO_CACHE=1 \
     UV_COMPILE_BYTECODE=1 \
     UV_SYSTEM_PYTHON=1 \
     PATH="/workspace/app/.venv/bin:/usr/local/bin:$PATH" \
@@ -62,8 +73,8 @@ ENV GRPC_PYTHON_BUILD_WITH_CYTHON=1 \
     LC_ALL=C.UTF-8
 
 # Install build dependencies
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+RUN --mount=type=cache,id=apt-cache-builder,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=apt-lib-builder,target=/var/lib/apt,sharing=locked \
     apt-get install -y --no-install-recommends \
         build-essential \
         curl \
@@ -81,7 +92,9 @@ COPY components.json biome.json vite.config.ts tsconfig.json ./
 RUN bun install --frozen-lockfile
 
 # Create virtual environment and install Python dependencies
-RUN uv venv \
+# Using cache mounts for faster rebuilds
+RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
+    uv venv \
     && uv sync ${UV_INSTALL_ARGS} --frozen --no-install-project --no-editable \
     && uv export ${UV_INSTALL_ARGS} --frozen --no-hashes --no-emit-project --output-file=requirements.txt
 
@@ -90,13 +103,20 @@ COPY tools ./tools/
 COPY resources ./resources/
 COPY app ./app/
 
+# Create public directory first (required for hatchling force-include before any uv sync)
+RUN mkdir -p app/domain/web/public
+
 # Build frontend assets and create wheel
-RUN uv run python tools/build.py --executor bun \
+RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
+    uv run app assets build \
+    && cp resources/index.html app/domain/web/public/index.html \
     && uv sync ${UV_INSTALL_ARGS} --frozen --no-editable \
     && uv build
 
 # =============================================================================
 # Stage 3: Runtime
+# =============================================================================
+# Minimal production image with only runtime dependencies
 # =============================================================================
 FROM python-base AS runtime
 
@@ -125,7 +145,8 @@ COPY --from=builder --chown=65532:65532 /workspace/app/dist/*.whl /tmp/
 
 WORKDIR /workspace/app
 
-RUN uv pip install --quiet --disable-pip-version-check --no-cache-dir /tmp/*.whl \
+RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
+    uv pip install --quiet --disable-pip-version-check --no-cache-dir /tmp/*.whl \
     && rm -rf /tmp/* \
     && chown -R nonroot:nonroot /workspace/app
 

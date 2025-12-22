@@ -2,7 +2,7 @@
 name: prd
 description: PRD specialist with pattern recognition. Use for creating comprehensive product requirements documents with learned patterns.
 tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking, mcp__pal__planner
-model: sonnet
+model: opus
 ---
 
 # PRD Specialist Agent

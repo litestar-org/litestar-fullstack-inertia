@@ -1,58 +1,26 @@
-# Pattern Library
+# Project Patterns
 
-This directory contains reusable patterns extracted from completed features.
+Auto-extracted patterns from codebase for agent guidance.
 
-## How Patterns Are Captured
+## Architectural Patterns
 
-1. During implementation, new patterns are documented in `tmp/new-patterns.md`
-2. During review, patterns are extracted to this directory
-3. Future PRD phases consult this library first
+- **Plugin Pattern**: `app.server.plugins` configures Litestar plugins (Vite, SQLAlchemy, Granian).
+- **Domain-Driven Design**: Feature logic isolated in `app/domain/{feature}/` (controllers, services, repositories).
+- **Inertia Controller**: Controllers return `InertiaRedirect` or dicts for Inertia pages.
 
-## Pattern Categories
+## Code Patterns
 
-### Architectural Patterns
-- **Plugin patterns**: See `app/server/core.py` for `ApplicationCore` plugin
-- **Service patterns**: Extend `SQLAlchemyAsyncRepositoryService` from advanced-alchemy
-- **Controller patterns**: Domain-organized controllers in `app/domain/{feature}/controllers.py`
+- **Service Layer**: Inherit from `SQLAlchemyAsyncRepositoryService` for DB operations.
+- **Repository Layer**: Inherit from `SQLAlchemyAsyncRepository`.
+- **Dependency Injection**: Use `litestar.di.Provide` for services in controllers.
+- **Signals**: Use `litestar.events` for decoupled logic (e.g., `user_created` event).
 
-### Litestar Patterns
-- **Inertia.js integration**: Controllers return Inertia responses, not JSON
-- **Session auth**: Configured through `session_auth` guard
-- **Dependency injection**: Use `Provide()` for service injection
+## Testing Patterns
 
-### Type Handling Patterns
-- Use `from __future__ import annotations` in all files
-- Prefer `T | None` over `Optional[T]` (PEP 604)
-- Use `TYPE_CHECKING` for import-only types
+- **Fixture-Based**: Use `conftest.py` fixtures for setup.
+- **Async Testing**: `pytest.mark.anyio` for async tests.
+- **Settings Patching**: `_patch_settings` fixture in `conftest.py` ensures test isolation.
 
-### Testing Patterns
-- Function-based tests with pytest
-- Async tests with `pytest-asyncio`
-- Parallel execution with `pytest-xdist`
-- Database fixtures with `pytest-databases`
+---
 
-### Frontend Patterns (React/Inertia)
-- Pages in `resources/pages/` receive typed props
-- Components use shadcn/ui from `resources/components/ui/`
-- Layouts in `resources/layouts/`
-- Use `router.visit()` for navigation
-
-## Using Patterns
-
-When starting a new feature:
-
-1. Search this directory for similar patterns
-2. Read pattern documentation before implementation
-3. Follow established conventions
-4. Add new patterns during review phase
-
-## Key Files to Reference
-
-| Pattern | Reference File |
-|---------|---------------|
-| Service layer | `app/domain/accounts/services.py` |
-| Controllers | `app/domain/accounts/controllers.py` |
-| Repositories | `app/domain/accounts/repositories.py` |
-| Inertia pages | `resources/pages/dashboard.tsx` |
-| React components | `resources/components/ui/*.tsx` |
-| App configuration | `app/config.py` |
+*This index is maintained automatically by agents during feature development.*

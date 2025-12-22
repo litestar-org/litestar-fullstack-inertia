@@ -1,13 +1,18 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
+from advanced_alchemy.exceptions import IntegrityError, NotFoundError, RepositoryError
+from litestar.exceptions import HTTPException
+from litestar.response import Response
+from litestar.status_codes import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from litestar_vite.inertia import flash
+from litestar_vite.inertia.exception_handler import create_inertia_exception_response as inertia_exception_handler
+from litestar_vite.inertia.response import InertiaBack
 
 if TYPE_CHECKING:
-    from typing import Any
-
-
-if TYPE_CHECKING:
-    from typing import Any
+    from litestar.connection import Request
+    from litestar.connection.base import AuthT, StateT, UserT
 
 
 __all__ = (
@@ -16,6 +21,10 @@ __all__ = (
     "AuthorizationError",
     "HealthCheckConfigurationError",
     "MissingDependencyError",
+    "inertia_exception_handler",
+    "integrity_error_handler",
+    "not_found_error_handler",
+    "repository_error_handler",
 )
 
 
@@ -66,3 +75,37 @@ class AuthorizationError(ApplicationClientError):
 
 class HealthCheckConfigurationError(ApplicationError):
     """An error occurred while registering an health check."""
+
+
+def integrity_error_handler(request: "Request[UserT, AuthT, StateT]", exc: IntegrityError) -> "Response[Any]":
+    """Handle database integrity errors (constraint violations) as validation errors.
+
+    Returns:
+        an Inertia-compatible error response with a flash message and redirect back.
+    """
+    detail = exc.detail if hasattr(exc, "detail") and exc.detail else str(exc)
+    flash(request, detail, category="error")
+    return InertiaBack(request, status_code=HTTP_400_BAD_REQUEST)
+
+
+def not_found_error_handler(request: "Request[UserT, AuthT, StateT]", exc: NotFoundError) -> "Response[Any]":
+    """Handle repository not found errors as 404 responses.
+
+    Returns:
+        an Inertia-compatible 404 error response.
+    """
+    detail = exc.detail if hasattr(exc, "detail") and exc.detail else "Resource not found"
+    # Use the Inertia exception handler which knows how to create proper error pages
+    http_exc = HTTPException(status_code=HTTP_404_NOT_FOUND, detail=detail)
+    return inertia_exception_handler(request, http_exc)
+
+
+def repository_error_handler(request: "Request[UserT, AuthT, StateT]", exc: RepositoryError) -> "Response[Any]":
+    """Handle general repository errors as validation errors.
+
+    Returns:
+        an Inertia-compatible error response with a flash message and redirect back.
+    """
+    detail = exc.detail if hasattr(exc, "detail") and exc.detail else "An error occurred processing your request"
+    flash(request, detail, category="error")
+    return InertiaBack(request, status_code=HTTP_400_BAD_REQUEST)

@@ -2,7 +2,7 @@
 name: testing
 description: Test creation specialist targeting 90%+ coverage. Use for creating comprehensive test suites with proper patterns.
 tools: Read, Write, Edit, Glob, Grep, Bash, mcp__pal__debug
-model: sonnet
+model: opus
 ---
 
 # Testing Specialist Agent

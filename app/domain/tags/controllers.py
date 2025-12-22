@@ -9,15 +9,14 @@ from advanced_alchemy.extensions.litestar.providers import create_service_depend
 from litestar import Controller, delete, get, patch, post
 from litestar.params import Dependency, Parameter
 
-from app.db.models import Tag
+from app.db.models import Tag as TagModel
 from app.domain.accounts.guards import requires_active_user, requires_superuser
-from app.domain.tags.dtos import TagCreateDTO, TagDTO, TagUpdateDTO
+from app.domain.tags.schemas import Tag, TagCreate, TagUpdate
 from app.domain.tags.services import TagService
 
 if TYPE_CHECKING:
     from advanced_alchemy.filters import FilterTypes
     from advanced_alchemy.service import OffsetPagination
-    from litestar.dto import DTOData
 
 
 class TagController(Controller):
@@ -27,7 +26,7 @@ class TagController(Controller):
     dependencies = create_service_dependencies(
         TagService,
         key="tags_service",
-        load=[Tag.teams],
+        load=[TagModel.teams],
         filters={
             "id_filter": UUID,
             "created_at": True,
@@ -38,9 +37,8 @@ class TagController(Controller):
             "pagination_size": 20,
         },
     )
-    signature_namespace = {"TagService": TagService, "Tag": Tag}
+    signature_namespace = {"TagService": TagService, "TagCreate": TagCreate, "TagUpdate": TagUpdate}
     tags = ["Tags"]
-    return_dto = TagDTO
 
     @get(
         operation_id="ListTags",
@@ -54,9 +52,13 @@ class TagController(Controller):
         tags_service: TagService,
         filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
     ) -> OffsetPagination[Tag]:
-        """List tags."""
+        """List tags.
+
+        Returns:
+            Paginated list of tags.
+        """
         results, total = await tags_service.list_and_count(*filters)
-        return tags_service.to_schema(data=results, total=total, filters=filters)
+        return tags_service.to_schema(schema_type=Tag, data=results, total=total, filters=filters)
 
     @get(
         operation_id="GetTag",
@@ -69,9 +71,13 @@ class TagController(Controller):
         tags_service: TagService,
         tag_id: Annotated[UUID, Parameter(title="Tag ID", description="The tag to retrieve.")],
     ) -> Tag:
-        """Get a tag."""
+        """Get a tag.
+
+        Returns:
+            Tag data for the requested tag.
+        """
         db_obj = await tags_service.get(tag_id)
-        return tags_service.to_schema(db_obj)
+        return tags_service.to_schema(schema_type=Tag, data=db_obj)
 
     @post(
         operation_id="CreateTag",
@@ -81,33 +87,39 @@ class TagController(Controller):
         description="A tag is a place where you can upload and group collections of databases.",
         guards=[requires_superuser],
         path="/api/tags",
-        dto=TagCreateDTO,
     )
     async def create_tag(
         self,
         tags_service: TagService,
-        data: DTOData[Tag],
+        data: TagCreate,
     ) -> Tag:
-        """Create a new tag."""
-        db_obj = await tags_service.create(data)  # pyright: ignore[reportArgumentType]
-        return tags_service.to_schema(db_obj)
+        """Create a new tag.
+
+        Returns:
+            Newly created tag data.
+        """
+        db_obj = await tags_service.create(data.to_dict())
+        return tags_service.to_schema(schema_type=Tag, data=db_obj)
 
     @patch(
         operation_id="UpdateTag",
         name="tags:update",
         path="/api/tags/{tag_id:uuid}",
         guards=[requires_superuser],
-        dto=TagUpdateDTO,
     )
     async def update_tag(
         self,
         tags_service: TagService,
-        data: DTOData[Tag],
+        data: TagUpdate,
         tag_id: Annotated[UUID, Parameter(title="Tag ID", description="The tag to update.")],
     ) -> Tag:
-        """Update a tag."""
-        db_obj = await tags_service.update(item_id=tag_id, data=data)
-        return tags_service.to_schema(db_obj)
+        """Update a tag.
+
+        Returns:
+            Updated tag data.
+        """
+        db_obj = await tags_service.update(item_id=tag_id, data=data.to_dict())
+        return tags_service.to_schema(schema_type=Tag, data=db_obj)
 
     @delete(
         operation_id="DeleteTag",
@@ -116,7 +128,6 @@ class TagController(Controller):
         summary="Remove Tag",
         description="Removes a tag and its associations",
         guards=[requires_superuser],
-        return_dto=None,
     )
     async def delete_tag(
         self,

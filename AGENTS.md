@@ -1,124 +1,294 @@
-# CLAUDE.md
+# AI Agent Guidelines for Litestar Fullstack Inertia
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+**Version**: 2.1 (Intelligent Edition) | **Updated**: 2025-12-16
 
-## Essential Commands
+A modern Litestar fullstack application built with Inertia.js, React 19, and shadcn/ui providing a seamless SPA experience.
 
-### Development Environment Setup
+---
+
+## Intelligence Layer
+
+This project uses an **intelligent agent system** that:
+
+1. **Learns from codebase** before making changes
+2. **Adapts workflow depth** based on feature complexity
+3. **Accumulates knowledge** in pattern library
+4. **Selects tools** based on task requirements
+
+### Pattern Library
+
+Reusable patterns in `specs/guides/patterns/`:
+- Consult before implementing similar features
+- Add new patterns during review phase
+
+### Complexity-Based Checkpoints
+
+| Complexity | Checkpoints | Triggers |
+|------------|-------------|----------|
+| Simple | 6 | CRUD, config change, single file |
+| Medium | 8 | New service, API endpoint, 2-3 files |
+| Complex | 10+ | Architecture change, new domain module |
+
+---
+
+## Quick Reference
+
+### Technology Stack
+
+| Backend | Frontend |
+|---------|----------|
+| Litestar 2.8+ | React 19 |
+| SQLAlchemy 2.0 | Inertia.js |
+| advanced-alchemy | shadcn/ui |
+| litestar-granian | Tailwind CSS |
+| pytest | Vite |
+| | Biome |
+
+### Essential Commands
+
 ```bash
-make install          # Install project dependencies and setup environment
-uv sync --all-extras --dev  # Alternative dependency installation
+make install        # Install all dependencies
+make test           # Run pytest test suite
+make lint           # Run all linting (pre-commit + type-check + slotscheck)
+make pre-commit     # Run pre-commit hooks (ruff, codespell)
+make type-check     # Run mypy and pyright
+make coverage       # Run tests with coverage
+make start-infra    # Start Docker containers (PostgreSQL, Redis)
+make stop-infra     # Stop Docker containers
+
+# Frontend
+npm run dev         # Start Vite dev server
+npm run build       # Build production assets
+npx biome check resources/  # Lint frontend
+
+# Database
+uv run app database upgrade         # Apply migrations
+uv run app database make-migrations # Create migration
+
+# Run application
+uv run app run      # Start server with Granian
 ```
 
-### Running the Application
-```bash
-uv run app run         # Start the Litestar application server
-make start-infra       # Start local Docker containers (PostgreSQL, Redis)
-make stop-infra        # Stop local Docker containers
+---
+
+## Code Standards
+
+### Python
+
+| Rule | Standard |
+|------|----------|
+| Type hints | Use `T \| None` (PEP 604), not `Optional[T]` |
+| Future annotations | `from __future__ import annotations` in all files |
+| Docstrings | Google style |
+| Tests | Function-based pytest (not class-based) |
+| Line length | 120 characters |
+| Datetime | Always timezone-aware: `datetime.now(timezone.utc)` |
+
+### TypeScript/React
+
+| Rule | Standard |
+|------|----------|
+| Linting | Biome |
+| Components | Functional with TypeScript interfaces |
+| Styling | Tailwind CSS with shadcn/ui |
+| State | Inertia.js `useForm`, `usePage` |
+
+---
+
+## Slash Commands
+
+| Command | Description |
+|---------|-------------|
+| `/prd [feature]` | Create PRD with pattern learning |
+| `/implement [slug]` | Pattern-guided implementation |
+| `/test [slug]` | Testing with 90%+ coverage |
+| `/review [slug]` | Quality gate and pattern extraction |
+| `/explore [topic]` | Explore codebase |
+| `/fix-issue [#]` | Fix GitHub issue |
+
+---
+
+## Subagents
+
+| Agent | Mission |
+|-------|---------|
+| `prd` | PRD creation with pattern recognition |
+| `expert` | Implementation with pattern compliance |
+| `testing` | Test creation (90%+ coverage) |
+| `docs-vision` | Quality gates and pattern extraction |
+
+---
+
+## Architecture
+
+### Backend Structure
+
+```
+app/
+├── domain/           # Domain modules
+│   ├── accounts/     # User auth & profiles
+│   │   ├── controllers.py
+│   │   ├── services.py
+│   │   ├── repositories.py
+│   │   └── schemas.py
+│   ├── teams/        # Multi-tenant teams
+│   ├── tags/         # Tagging system
+│   └── web/          # Inertia page controllers
+├── db/
+│   └── models/       # SQLAlchemy models
+├── lib/              # Shared utilities
+├── server/
+│   ├── core.py       # ApplicationCore plugin
+│   └── plugins.py    # Plugin instances
+└── config.py         # Configuration
 ```
 
-### Frontend Development
-```bash
-npm run dev           # Start Vite development server for React frontend
-npm run build         # Build frontend assets for production
-npm run watch         # Watch mode for frontend builds
+### Frontend Structure
+
+```
+resources/
+├── pages/            # Inertia pages
+│   ├── dashboard.tsx
+│   ├── auth/
+│   └── profile/
+├── components/
+│   └── ui/           # shadcn/ui components
+├── layouts/
+│   ├── app-layout.tsx
+│   └── guest-layout.tsx
+└── main.tsx          # Entry point
 ```
 
-### Testing & Quality Assurance
-```bash
-make test             # Run pytest test suite
-make test-all         # Run all tests including marked tests
-make coverage         # Run tests with coverage reporting
-make lint             # Run all linting (pre-commit, type-check, slotscheck)
-make pre-commit       # Run pre-commit hooks (ruff, codespell)
-make type-check       # Run mypy and pyright type checking
+---
+
+## Key Patterns
+
+### Inertia Page Controller (Preferred Style)
+
+Use `component` kwarg in route decorator:
+
+```python
+from litestar import Controller, get, post
+from litestar_vite.inertia import InertiaRedirect
+
+class FeatureController(Controller):
+    path = "/feature"
+
+    @get(component="feature/list", path="/", name="feature.list")
+    async def list(self, service: FeatureService) -> dict:
+        items = await service.list()
+        return {"items": items}
+
+    @post(component="feature/create", path="/", name="feature.create")
+    async def create(self, request: Request, data: CreateSchema, service: FeatureService) -> InertiaRedirect:
+        await service.create(data.to_dict())
+        return InertiaRedirect(request, request.url_for("feature.list"))
 ```
 
-### Database Operations
-```bash
-uv run app database upgrade        # Apply database migrations
-uv run app database make-migrations # Create new migration
-uv run app database downgrade      # Rollback database migrations
+### Service Pattern
+
+```python
+from advanced_alchemy.service import SQLAlchemyAsyncRepositoryService
+from app.db.models import FeatureModel
+from app.domain.feature.repositories import FeatureRepository
+
+class FeatureService(SQLAlchemyAsyncRepositoryService[FeatureModel]):
+    repository_type = FeatureRepository
 ```
 
-### Background Workers
-```bash
-uv run app worker run             # Start SAQ background workers
+### Inertia React Page
+
+```tsx
+import { Head } from '@inertiajs/react'
+import AppLayout from '@/layouts/app-layout'
+
+interface Props {
+  items: Item[]
+}
+
+export default function List({ items }: Props) {
+  return (
+    <AppLayout>
+      <Head title="Feature List" />
+      {/* Content using shadcn/ui */}
+    </AppLayout>
+  )
+}
 ```
 
-### Documentation
-```bash
-make docs             # Build Sphinx documentation
-make docs-serve       # Serve docs locally with auto-reload
+---
+
+## Quality Gates
+
+All code must pass:
+- [ ] `make test` passes
+- [ ] `make lint` passes (includes type-check)
+- [ ] `npx biome check resources/` passes
+- [ ] 90%+ coverage for modified modules
+
+---
+
+## MCP Tools
+
+### Context7 (Library Docs)
+
+```python
+mcp__context7__get-library-docs(
+    context7CompatibleLibraryID="/litestar-org/litestar",
+    topic="controllers",
+    mode="code"
+)
 ```
 
-## Project Architecture
+### Available Library IDs
+- Litestar: `/litestar-org/litestar`
+- SQLAlchemy: `/sqlalchemy/sqlalchemy`
+- React: `/facebook/react`
+- Inertia.js: `/inertiajs/inertia`
 
-This is a modern Litestar fullstack application built with **Inertia.js**, **React**, and **shadcn/ui**, providing a seamless SPA experience without API endpoints.
+### Tool Selection
 
-### Core Litestar Stack
-- **Litestar SAQ**: Background job processing with Redis queue integration (`litestar-saq` plugin)
-- **Litestar Granian**: High-performance ASGI server with HTTP/2 support (`litestar-granian` plugin)
-- **Litestar Vite**: Frontend asset bundling with hot module replacement (`litestar-vite` plugin)
-- **Litestar Inertia**: Server-side rendering with SPA navigation (via `litestar-vite.inertia`)
+Consult `.claude/mcp-strategy.md` for task-based tool selection.
 
-### Backend Architecture (Python/Litestar)
-- **Domain-Driven Design**: Business logic organized in `app/domain/` with separate modules for accounts, teams, tags, and web
-- **Plugin-Based Configuration**: Core functionality configured through `ApplicationCore` plugin in `app/server/core.py`
-- **Repository Pattern**: Data access abstracted through services and repositories
-- **Database**: SQLAlchemy 2.0 with Alembic migrations, supports PostgreSQL
-- **Background Jobs**: Litestar SAQ integration with Redis backend for async task processing
-- **ASGI Server**: Litestar Granian for production-grade HTTP/1.1 and HTTP/2 support
-- **Authentication**: Session-based auth with OAuth2 support (Google, GitHub)
-- **Caching**: Redis-backed response caching and session storage
+---
 
-### Frontend Architecture (TypeScript/React + Inertia.js)
-- **Inertia.js Integration**: Server-side rendering without traditional API endpoints - pages are React components rendered server-side
-- **React 18**: Modern React with TypeScript for component development
-- **shadcn/ui**: Comprehensive UI component library built on Radix UI primitives
-- **Litestar Vite Plugin**: Seamless asset bundling with HMR, handles React JSX compilation and CSS processing
-- **Tailwind CSS**: Utility-first CSS framework with custom design system
-- **Resources Directory**: Frontend code in `resources/` with components, layouts, pages structure matching Inertia.js conventions
+## Anti-Patterns (Must Avoid)
 
-### Key Configuration Files
-- `app/config/_app.py`: Core Litestar plugin configurations (SAQ, Vite, Granian, Inertia)
-- `app/server/core.py`: Main application plugin with routes and middleware setup
-- `vite.config.ts`: Litestar-Vite plugin configuration with React and Inertia.js setup
-- `pyproject.toml`: Python dependencies including all Litestar plugins
-- `Makefile`: Development workflow automation
-- `components.json`: shadcn/ui component configuration and aliases
+| Pattern | Use Instead |
+|---------|-------------|
+| `Optional[T]` | `T \| None` |
+| `datetime.now()` | `datetime.now(timezone.utc)` |
+| `class TestFoo:` | Function-based tests |
+| Direct InertiaResponse | `component` kwarg in decorator |
+| Missing type hints | Always use type hints |
 
-### Domain Structure
-- `app/domain/accounts/`: User management, authentication, profiles
-- `app/domain/teams/`: Multi-tenant team functionality with invitations and roles
-- `app/domain/tags/`: Tagging system for resources
-- `app/domain/web/`: Inertia.js page controllers and compiled Vite assets
-
-### Environment Configuration
-- Copy `.env.local.example` to `.env` for local development
-- Database runs on port 15432, Redis on 16379 in development
-- Litestar-Vite dev server runs on port 5173, Litestar+Granian API on port 8089
-- Inertia.js automatically handles page routing between frontend and backend
+---
 
 ## Development Workflow
 
-1. **Environment Setup**: `make install` followed by `. .venv/bin/activate`
-2. **Infrastructure**: `make start-infra` to start databases
-3. **Database**: `uv run app database upgrade` to apply migrations
-4. **Development**: `uv run app run` starts Litestar+Granian server with integrated Vite dev server
-5. **Testing**: `make test` and `make lint` before committing changes
+### For New Features
 
-## Inertia.js Development Notes
+1. **PRD**: `/prd [feature]` - Pattern analysis first
+2. **Implement**: `/implement [slug]` - Follow patterns
+3. **Test**: Auto-invoked - 90%+ coverage
+4. **Review**: Auto-invoked - Pattern extraction
 
-- Pages are React components in `resources/pages/` that receive props from Litestar controllers
-- No API endpoints needed - data flows directly from Python controllers to React components
-- Use Inertia's `router.visit()` for navigation instead of traditional HTTP requests
-- Form submissions handled through Inertia's form helpers with CSRF protection
-- Shared data (like user info) configured in Inertia plugin settings
+### Quick Tasks
 
-## Testing Strategy
+1. Search pattern library first
+2. Read 3-5 similar implementations
+3. Follow existing patterns
+4. Run quality gates before committing
 
-- Unit tests in `tests/unit/` for business logic and utilities
-- Integration tests in `tests/integration/` for API endpoints and database operations
-- Use pytest with asyncio support for async operations
-- Test databases isolated using pytest-databases plugin
+---
+
+## Key Configuration Files
+
+| File | Purpose |
+|------|---------|
+| `app/server/core.py` | ApplicationCore plugin, route registration |
+| `app/config.py` | All configuration (Inertia, Alchemy) |
+| `pyproject.toml` | Python dependencies, tool configs |
+| `package.json` | Frontend dependencies |
+| `vite.config.ts` | Vite + litestar-vite-plugin config |
+| `components.json` | shadcn/ui configuration |

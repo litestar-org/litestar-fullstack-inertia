@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import type { FullSharedProps } from "@/lib/generated/page-props"
 import { route } from "@/lib/generated/routes"
 import { cn, getInitials } from "@/lib/utils"
 import { InputError } from "./input-error"
@@ -18,7 +19,7 @@ type PopoverTriggerProps = ComponentPropsWithoutRef<typeof PopoverTrigger>
 interface TeamSwitcherProps extends PopoverTriggerProps {}
 
 export function TeamSwitcher({ className }: TeamSwitcherProps) {
-	const { auth, currentTeam } = usePage<InertiaProps>().props
+	const { auth, currentTeam } = usePage<FullSharedProps>().props
 	const [open, setOpen] = useState(false)
 	const [showNewTeamDialog, setShowNewTeamDialog] = useState(false)
 	const { data, setData, post, reset, errors, processing } = useForm({
@@ -36,14 +37,15 @@ export function TeamSwitcher({ className }: TeamSwitcherProps) {
 				toast({
 					title: "Team Created",
 					description: "Your new team has been created.",
+					variant: "success",
 				})
 			},
 		})
 	}
-	async function showTeam(teamId: string) {
+	async function showTeam(teamSlug: string) {
 		try {
 			setOpen(false)
-			router.get(route("teams.show", teamId))
+			router.get(route("teams.show", { team_slug: teamSlug }))
 		} catch (error: any) {
 			console.log(error)
 		}
@@ -89,7 +91,7 @@ export function TeamSwitcher({ className }: TeamSwitcherProps) {
 										key={team.teamId}
 										value={team.teamName}
 										onSelect={() => {
-											showTeam(team.teamId)
+											showTeam(team.teamSlug)
 											setOpen(false)
 											console.log("click")
 										}}

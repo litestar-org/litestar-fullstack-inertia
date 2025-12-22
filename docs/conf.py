@@ -46,7 +46,6 @@ intersphinx_mapping = {
     "structlog": ("https://www.structlog.org/en/stable/", None),
     "litestar": ("https://docs.litestar.dev/latest/", None),
     "msgspec": ("https://jcristharif.com/msgspec/", None),
-    "saq": ("https://saq-py.readthedocs.io/en/latest/", None),
     "advanced-alchemy": ("https://docs.advanced-alchemy.jolt.rs/latest/", None),
 }
 

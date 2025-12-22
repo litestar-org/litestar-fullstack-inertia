@@ -1,0 +1,63 @@
+workflow_name: "Intelligent Feature Development"
+version: "2.0"
+adaptive: true
+
+phases:
+  - name: "context_analysis"
+    duration: "auto"
+    agent: "prd"
+    steps:
+      - name: "load_project_context"
+        description: "Read GEMINI.md, existing guides, codebase patterns"
+        outputs:
+          - "Context understanding document"
+
+      - name: "identify_similar_features"
+        description: "Find similar implementations to learn from"
+        tools: ["grep", "find", "read"]
+        outputs:
+          - "Pattern analysis"
+
+      - name: "assess_complexity"
+        description: "Determine feature complexity level"
+        criteria:
+          - "Lines of code impacted"
+          - "Number of components affected"
+          - "Integration points"
+          - "Database schema changes"
+        outputs:
+          - "Complexity: simple|medium|complex"
+
+      - name: "adapt_workflow"
+        description: "Adjust checkpoint count based on complexity"
+        adaptive_rules:
+          simple: "6 checkpoints"
+          medium: "8 checkpoints"
+          complex: "10+ checkpoints"
+
+  - name: "planning"
+    agent: "prd"
+    gemini_command: "/prd {feature-description}"
+    adaptive_checkpoints: true
+    quality_gates:
+      - "context_loaded"
+      - "research_complete"
+      - "patterns_identified"
+
+  - name: "implementation"
+    agent: "expert"
+    auto_trigger: false
+    adaptive: true
+    quality_gates:
+      - "local_tests_pass"
+      - "linting_clean"
+      - "follows_project_patterns"
+
+  - name: "knowledge_capture"
+    agent: "docs-vision"
+    auto_trigger: true
+    description: "Extract and document new patterns"
+    outputs:
+      - "specs/guides/patterns/{pattern-name}.md"
+      - "specs/guides/examples/{example-name}.py"
+      - "Updated GEMINI.md"

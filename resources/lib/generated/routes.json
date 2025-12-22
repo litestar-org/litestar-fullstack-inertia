@@ -1,0 +1,679 @@
+{
+  "litestar_version": "Version(major=2, minor=19, patch=0, release_level='final', serial=0)",
+  "routes": {
+    "about": {
+      "component": "about",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/about"
+    },
+    "account.remove": {
+      "method": "delete",
+      "methods": [
+        "DELETE"
+      ],
+      "uri": "/profile"
+    },
+    "dashboard": {
+      "component": "dashboard",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/dashboard"
+    },
+    "favicon": {
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/favicon.ico"
+    },
+    "forgot-password": {
+      "component": "auth/forgot-password",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/forgot-password"
+    },
+    "forgot-password.send": {
+      "component": "auth/forgot-password",
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/forgot-password"
+    },
+    "github.complete": {
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "code": "string | undefined",
+        "code_verifier": "string | undefined",
+        "error": "string | undefined",
+        "state": "string | undefined"
+      },
+      "uri": "/o/github/complete"
+    },
+    "github.register": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/register/github"
+    },
+    "google.complete": {
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "code": "string | undefined",
+        "code_verifier": "string | undefined",
+        "error": "string | undefined",
+        "state": "string | undefined"
+      },
+      "uri": "/o/google/complete"
+    },
+    "google.register": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/register/google"
+    },
+    "health_check": {
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/health"
+    },
+    "home": {
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/"
+    },
+    "invitation.accept": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "token": "string"
+      },
+      "parameters": [
+        "token"
+      ],
+      "uri": "/invitations/{token}/accept"
+    },
+    "invitation.accept.page": {
+      "component": "invitation/accept",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "token": "string"
+      },
+      "parameters": [
+        "token"
+      ],
+      "uri": "/invitations/{token}"
+    },
+    "invitation.decline": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "token": "string"
+      },
+      "parameters": [
+        "token"
+      ],
+      "uri": "/invitations/{token}/decline"
+    },
+    "invitations.list": {
+      "component": "invitation/list",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/invitations"
+    },
+    "landing": {
+      "component": "landing",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/landing"
+    },
+    "login": {
+      "component": "auth/login",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/login"
+    },
+    "login.check": {
+      "component": "auth/login",
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/login"
+    },
+    "logout": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/logout"
+    },
+    "mfa-challenge": {
+      "component": "auth/mfa-challenge",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/mfa-challenge"
+    },
+    "mfa-challenge.verify": {
+      "component": "auth/mfa-challenge",
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/mfa-challenge"
+    },
+    "mfa.confirm": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/mfa/confirm"
+    },
+    "mfa.disable": {
+      "method": "delete",
+      "methods": [
+        "DELETE"
+      ],
+      "uri": "/mfa/disable"
+    },
+    "mfa.enable": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/mfa/enable"
+    },
+    "mfa.regenerate-codes": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/mfa/regenerate-codes"
+    },
+    "openapi.json": {
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/schema/openapi.json"
+    },
+    "password.update": {
+      "component": "profile/edit",
+      "method": "patch",
+      "methods": [
+        "PATCH"
+      ],
+      "uri": "/profile/password-update"
+    },
+    "privacy-policy": {
+      "component": "legal/privacy-policy",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/privacy-policy"
+    },
+    "profile.avatar.delete": {
+      "method": "delete",
+      "methods": [
+        "DELETE"
+      ],
+      "uri": "/profile/avatar"
+    },
+    "profile.avatar.upload": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/profile/avatar"
+    },
+    "profile.show": {
+      "component": "profile/edit",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/profile"
+    },
+    "profile.update": {
+      "component": "profile/edit",
+      "method": "patch",
+      "methods": [
+        "PATCH"
+      ],
+      "uri": "/profile"
+    },
+    "register": {
+      "component": "auth/register",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/register"
+    },
+    "register.add": {
+      "component": "auth/register",
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/register"
+    },
+    "reset-password": {
+      "component": "auth/reset-password",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "email": "string | undefined",
+        "token": "string | undefined"
+      },
+      "uri": "/reset-password"
+    },
+    "reset-password.update": {
+      "component": "auth/reset-password",
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/reset-password"
+    },
+    "tags:create": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/api/tags"
+    },
+    "tags:delete": {
+      "method": "delete",
+      "methods": [
+        "DELETE"
+      ],
+      "parameterTypes": {
+        "tag_id": "UUID"
+      },
+      "parameters": [
+        "tag_id"
+      ],
+      "uri": "/api/tags/{tag_id}"
+    },
+    "tags:get": {
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "tag_id": "UUID"
+      },
+      "parameters": [
+        "tag_id"
+      ],
+      "uri": "/api/tags/{tag_id}"
+    },
+    "tags:list": {
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "createdAfter": "DateTime | undefined",
+        "createdBefore": "DateTime | undefined",
+        "currentPage": "number | undefined",
+        "ids": "string[] | undefined",
+        "orderBy": "string | undefined",
+        "pageSize": "number | undefined",
+        "searchIgnoreCase": "boolean | undefined",
+        "searchString": "string | undefined",
+        "sortOrder": "\"asc\" | \"desc\" | undefined",
+        "updatedAfter": "DateTime | undefined",
+        "updatedBefore": "DateTime | undefined"
+      },
+      "uri": "/api/tags"
+    },
+    "tags:update": {
+      "method": "patch",
+      "methods": [
+        "PATCH"
+      ],
+      "parameterTypes": {
+        "tag_id": "UUID"
+      },
+      "parameters": [
+        "tag_id"
+      ],
+      "uri": "/api/tags/{tag_id}"
+    },
+    "teams.add": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/teams"
+    },
+    "teams.create": {
+      "component": "team/create",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/teams/create"
+    },
+    "teams.edit": {
+      "component": "team/edit",
+      "method": "patch",
+      "methods": [
+        "PATCH"
+      ],
+      "parameterTypes": {
+        "team_slug": "string"
+      },
+      "parameters": [
+        "team_slug"
+      ],
+      "uri": "/teams/{team_slug}"
+    },
+    "teams.invitation.cancel": {
+      "method": "delete",
+      "methods": [
+        "DELETE"
+      ],
+      "parameterTypes": {
+        "invitation_id": "UUID",
+        "team_slug": "string"
+      },
+      "parameters": [
+        "invitation_id",
+        "team_slug"
+      ],
+      "uri": "/teams/{team_slug}/invitations/{invitation_id}"
+    },
+    "teams.invitations": {
+      "component": "team/invitations",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "team_slug": "string"
+      },
+      "parameters": [
+        "team_slug"
+      ],
+      "uri": "/teams/{team_slug}/invitations"
+    },
+    "teams.invite": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "team_slug": "string"
+      },
+      "parameters": [
+        "team_slug"
+      ],
+      "uri": "/teams/{team_slug}/invitations"
+    },
+    "teams.list": {
+      "component": "team/list",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "createdAfter": "DateTime | undefined",
+        "createdBefore": "DateTime | undefined",
+        "currentPage": "number | undefined",
+        "ids": "string[] | undefined",
+        "orderBy": "string | undefined",
+        "pageSize": "number | undefined",
+        "searchIgnoreCase": "boolean | undefined",
+        "searchString": "string | undefined",
+        "sortOrder": "\"asc\" | \"desc\" | undefined",
+        "updatedAfter": "DateTime | undefined",
+        "updatedBefore": "DateTime | undefined"
+      },
+      "uri": "/teams"
+    },
+    "teams.remove": {
+      "method": "delete",
+      "methods": [
+        "DELETE"
+      ],
+      "parameterTypes": {
+        "team_slug": "string"
+      },
+      "parameters": [
+        "team_slug"
+      ],
+      "uri": "/teams/{team_slug}"
+    },
+    "teams.settings": {
+      "component": "team/settings",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "team_slug": "string"
+      },
+      "parameters": [
+        "team_slug"
+      ],
+      "uri": "/teams/{team_slug}/settings"
+    },
+    "teams.show": {
+      "component": "team/show",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "team_slug": "string"
+      },
+      "parameters": [
+        "team_slug"
+      ],
+      "uri": "/teams/{team_slug}"
+    },
+    "teams:add-member": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "team_slug": "string"
+      },
+      "parameters": [
+        "team_slug"
+      ],
+      "uri": "/api/teams/{team_slug}/members/add"
+    },
+    "teams:remove-member": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "team_slug": "string"
+      },
+      "parameters": [
+        "team_slug"
+      ],
+      "uri": "/api/teams/{team_slug}/members/remove"
+    },
+    "terms-of-service": {
+      "component": "legal/terms-of-service",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/terms-of-service"
+    },
+    "uploads": {
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "file_path": "any"
+      },
+      "parameters": [
+        "file_path"
+      ],
+      "uri": "/uploads/{file_path}"
+    },
+    "users:assign-role": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "role_slug": "string"
+      },
+      "parameters": [
+        "role_slug"
+      ],
+      "uri": "/api/roles/{role_slug}/assign"
+    },
+    "users:create": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/api/users"
+    },
+    "users:delete": {
+      "method": "delete",
+      "methods": [
+        "DELETE"
+      ],
+      "parameterTypes": {
+        "user_id": "UUID"
+      },
+      "parameters": [
+        "user_id"
+      ],
+      "uri": "/api/users/{user_id}"
+    },
+    "users:get": {
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "user_id": "UUID"
+      },
+      "parameters": [
+        "user_id"
+      ],
+      "uri": "/api/users/{user_id}"
+    },
+    "users:list": {
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "createdAfter": "DateTime | undefined",
+        "createdBefore": "DateTime | undefined",
+        "currentPage": "number | undefined",
+        "ids": "string[] | undefined",
+        "orderBy": "string | undefined",
+        "pageSize": "number | undefined",
+        "searchIgnoreCase": "boolean | undefined",
+        "searchString": "string | undefined",
+        "sortOrder": "\"asc\" | \"desc\" | undefined",
+        "updatedAfter": "DateTime | undefined",
+        "updatedBefore": "DateTime | undefined"
+      },
+      "uri": "/api/users"
+    },
+    "users:revoke-role": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "role_slug": "string"
+      },
+      "parameters": [
+        "role_slug"
+      ],
+      "uri": "/api/roles/{role_slug}/revoke"
+    },
+    "users:update": {
+      "method": "patch",
+      "methods": [
+        "PATCH"
+      ],
+      "parameterTypes": {
+        "user_id": "UUID"
+      },
+      "parameters": [
+        "user_id"
+      ],
+      "uri": "/api/users/{user_id}"
+    },
+    "verify-email": {
+      "component": "auth/verify-email",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "token": "string | undefined"
+      },
+      "uri": "/verify-email"
+    },
+    "vite": {
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "file_path": "any"
+      },
+      "parameters": [
+        "file_path"
+      ],
+      "uri": "/static/{file_path}"
+    }
+  }
+}

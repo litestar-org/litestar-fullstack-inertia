@@ -6,11 +6,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import ResponsiveNavbar from "@/layouts/partials/responsive-navbar"
-import { route } from "@/lib/generated/routes"
+import type { FullSharedProps } from "@/lib/generated/page-props"
+import { isCurrentRoute, route } from "@/lib/generated/routes"
 import { cn, getGravatarUrl, getInitials } from "@/lib/utils"
 
 export default function Navbar() {
-	const { auth } = usePage<InertiaProps>().props
+	const { auth } = usePage<FullSharedProps>().props
 
 	return (
 		<>
