@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 from advanced_alchemy.exceptions import IntegrityError, NotFoundError, RepositoryError
 from litestar.exceptions import HTTPException
 from litestar.response import Response
-from litestar.status_codes import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from litestar.status_codes import HTTP_404_NOT_FOUND
 from litestar_vite.inertia import flash
 from litestar_vite.inertia.exception_handler import create_inertia_exception_response as inertia_exception_handler
 from litestar_vite.inertia.response import InertiaBack
@@ -85,7 +85,7 @@ def integrity_error_handler(request: "Request[UserT, AuthT, StateT]", exc: Integ
     """
     detail = exc.detail if hasattr(exc, "detail") and exc.detail else str(exc)
     flash(request, detail, category="error")
-    return InertiaBack(request, status_code=HTTP_400_BAD_REQUEST)
+    return InertiaBack(request)
 
 
 def not_found_error_handler(request: "Request[UserT, AuthT, StateT]", exc: NotFoundError) -> "Response[Any]":
@@ -108,4 +108,4 @@ def repository_error_handler(request: "Request[UserT, AuthT, StateT]", exc: Repo
     """
     detail = exc.detail if hasattr(exc, "detail") and exc.detail else "An error occurred processing your request"
     flash(request, detail, category="error")
-    return InertiaBack(request, status_code=HTTP_400_BAD_REQUEST)
+    return InertiaBack(request)

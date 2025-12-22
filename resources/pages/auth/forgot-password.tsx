@@ -19,7 +19,7 @@ export default function ForgotPassword({ status }: ForgotPasswordProps) {
 
 	const submit = (e: React.FormEvent) => {
 		e.preventDefault()
-		post(route("password.email"))
+		post(route("forgot-password.send"))
 	}
 
 	return (
