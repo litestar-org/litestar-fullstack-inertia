@@ -165,8 +165,9 @@ tmp/
 temp/
 
 # built files from the web UI
-app/domain/web/public
+app/domain/web/public/*
 app/domain/web/public/hot
+!app/domain/web/public/.gitkeep
 .vite
 app/domain/web/static
 public/hot
