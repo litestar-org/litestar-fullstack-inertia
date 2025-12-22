@@ -34,6 +34,7 @@ import TeamMemberManager from "@/pages/team/partials/team-member-manager"
 import UpdateTeamNameForm from "@/pages/team/partials/update-team-name-form"
 
 type Props = TeamDetailPage
+type PendingInvitation = TeamInvitationItem & { inviteeExists?: boolean }
 
 const getSidebarItems = (permissions: Props["permissions"]): SettingsSidebarItem[] => {
 	const items: SettingsSidebarItem[] = []
@@ -76,6 +77,7 @@ const getSidebarItems = (permissions: Props["permissions"]): SettingsSidebarItem
 }
 
 export default function TeamSettings({ team, members, permissions, pendingInvitations = [] }: Props) {
+	const invitations = pendingInvitations as PendingInvitation[]
 	const sidebarItems = getSidebarItems(permissions)
 	const [activeSection, setActiveSection] = useState(() => sidebarItems[0]?.id ?? "team-members")
 	const [showInviteDialog, setShowInviteDialog] = useState(false)
@@ -95,7 +97,6 @@ export default function TeamSettings({ team, members, permissions, pendingInvita
 			onSuccess: () => {
 				inviteForm.reset()
 				setShowInviteDialog(false)
-				toast({ description: "Invitation sent successfully.", variant: "success" })
 			},
 		})
 	}
@@ -145,9 +146,7 @@ export default function TeamSettings({ team, members, permissions, pendingInvita
 											<div>
 												<CardTitle>Pending Invitations</CardTitle>
 												<CardDescription>
-													{pendingInvitations.length === 0
-														? "No pending invitations"
-														: `${pendingInvitations.length} pending invitation${pendingInvitations.length !== 1 ? "s" : ""}`}
+													{pendingInvitations.length === 0 ? "No pending invitations" : `${invitations.length} pending invitation${invitations.length !== 1 ? "s" : ""}`}
 												</CardDescription>
 											</div>
 											<Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
@@ -206,14 +205,14 @@ export default function TeamSettings({ team, members, permissions, pendingInvita
 										</div>
 									</CardHeader>
 									<CardContent>
-										{pendingInvitations.length === 0 ? (
+										{invitations.length === 0 ? (
 											<div className="flex flex-col items-center justify-center py-6 text-center">
 												<Mail className="h-10 w-10 text-muted-foreground" />
 												<p className="mt-3 text-muted-foreground text-sm">No pending invitations. Invite team members to start collaborating.</p>
 											</div>
 										) : (
 											<div className="space-y-3">
-												{pendingInvitations.map((invitation) => (
+												{invitations.map((invitation) => (
 													<div key={invitation.id} className="flex items-center justify-between rounded-lg border p-3">
 														<div className="flex items-center gap-3">
 															<div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
@@ -224,6 +223,9 @@ export default function TeamSettings({ team, members, permissions, pendingInvita
 																	<span className="font-medium text-sm">{invitation.email}</span>
 																	<Badge variant="secondary" className="text-xs capitalize">
 																		{invitation.role}
+																	</Badge>
+																	<Badge variant="outline" className="text-xs">
+																		{invitation.inviteeExists ? "Existing user" : "Invite to sign up"}
 																	</Badge>
 																	{invitation.isExpired && (
 																		<Badge variant="destructive" className="text-xs">

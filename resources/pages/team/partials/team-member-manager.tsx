@@ -62,12 +62,12 @@ export default function TeamMemberManager({ team, members, permissions }: Props)
 		setIsAdding(true)
 		addMemberForm.clearErrors()
 		try {
-			await axios.post(route("teams:add-member", { team_slug: team.slug }), {
+			const { data } = await axios.post<{ message?: string }>(route("teams:add-member", { team_slug: team.slug }), {
 				userName: addMemberForm.data.userName,
 			})
 			addMemberForm.reset()
 			setShowAddMemberDialog(false)
-			toast({ description: "Team member added.", variant: "success" })
+			toast({ description: data.message ?? "Team member added.", variant: "success" })
 			router.reload()
 		} catch (error) {
 			if (axios.isAxiosError(error)) {

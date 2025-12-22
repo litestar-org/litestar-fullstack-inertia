@@ -90,9 +90,7 @@ export default function Landing() {
 									<Icons.gitHub className="h-6 w-6 group-hover:text-foreground" />
 									<span className="font-semibold">Litestar</span>
 								</div>
-								<p className="mt-3 text-sm text-muted-foreground group-hover:text-foreground/80">
-									High-performance Python web framework. Contribute on GitHub.
-								</p>
+								<p className="mt-3 text-sm text-muted-foreground group-hover:text-foreground/80">High-performance Python web framework. Contribute on GitHub.</p>
 							</a>
 
 							<a
@@ -105,9 +103,7 @@ export default function Landing() {
 									<Icons.inertia className="h-6 w-6 group-hover:text-foreground" />
 									<span className="font-semibold">Inertia.js</span>
 								</div>
-								<p className="mt-3 text-sm text-muted-foreground group-hover:text-foreground/80">
-									Modern SPA experience with classic server-side routing.
-								</p>
+								<p className="mt-3 text-sm text-muted-foreground group-hover:text-foreground/80">Modern SPA experience with classic server-side routing.</p>
 							</a>
 
 							<a
@@ -120,24 +116,15 @@ export default function Landing() {
 									<BeakerIcon className="h-6 w-6 group-hover:text-foreground" />
 									<span className="font-semibold">Advanced Alchemy</span>
 								</div>
-								<p className="mt-3 text-sm text-muted-foreground group-hover:text-foreground/80">
-									Optimized SQLAlchemy companion library.
-								</p>
+								<p className="mt-3 text-sm text-muted-foreground group-hover:text-foreground/80">Optimized SQLAlchemy companion library.</p>
 							</a>
 
-							<a
-								href="https://react.dev/"
-								className="group rounded-xl border bg-card p-6 transition-colors hover:bg-accent hover:text-foreground"
-								target="_blank"
-								rel="noreferrer"
-							>
+							<a href="https://react.dev/" className="group rounded-xl border bg-card p-6 transition-colors hover:bg-accent hover:text-foreground" target="_blank" rel="noreferrer">
 								<div className="flex items-center gap-3">
 									<Icons.react className="h-6 w-6 group-hover:text-foreground" />
 									<span className="font-semibold">React 19</span>
 								</div>
-								<p className="mt-3 text-sm text-muted-foreground group-hover:text-foreground/80">
-									Modern UI with the latest React features.
-								</p>
+								<p className="mt-3 text-sm text-muted-foreground group-hover:text-foreground/80">Modern UI with the latest React features.</p>
 							</a>
 						</div>
 

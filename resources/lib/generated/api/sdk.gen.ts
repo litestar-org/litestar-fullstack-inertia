@@ -158,7 +158,7 @@ export const updateTag = <ThrowOnError extends boolean = false>(options: Options
  * and join the team.
  *
  * Returns:
- * Updated team data (with new member if user existed).
+ * Message describing whether the user was added or invited.
  *
  * Raises:
  * ValidationException: If the user is already a member or has a pending invitation.
@@ -520,6 +520,9 @@ export const createTeamInvitation = <ThrowOnError extends boolean = false>(optio
  * CancelInvitation
  *
  * Cancel a pending invitation.
+ *
+ * Raises:
+ * PermissionDeniedException: If the invitation does not belong to the team.
  *
  * Returns:
  * Redirect to invitations page.

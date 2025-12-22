@@ -13,7 +13,7 @@ from advanced_alchemy.service import (
     is_dict_without_field,
     schema_dump,
 )
-from sqlalchemy import ColumnElement, or_
+from sqlalchemy import ColumnElement, func, or_
 
 from app.db.models import Team, TeamInvitation, TeamMember, TeamRoles
 from app.db.models.user import User  # noqa: TC001
@@ -54,7 +54,7 @@ class TeamInvitationService(SQLAlchemyAsyncRepositoryService[TeamInvitation]):
         Returns:
             Column expression filtering for invitations with no expiry or future expiry.
         """
-        return or_(TeamInvitation.expires_at.is_(None), TeamInvitation.expires_at > datetime.now(UTC))
+        return or_(TeamInvitation.expires_at.is_(None), TeamInvitation.expires_at > func.now())
 
     async def to_model_on_create(self, data: ModelDictT[TeamInvitation]) -> ModelDictT[TeamInvitation]:
         """Set defaults for new invitations.

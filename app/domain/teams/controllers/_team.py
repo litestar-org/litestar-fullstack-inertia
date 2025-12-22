@@ -7,6 +7,7 @@ from uuid import UUID
 
 from advanced_alchemy.extensions.litestar.providers import create_service_dependencies, create_service_provider
 from litestar import Controller, Request, delete, get, patch, post
+from litestar.di import Provide
 from litestar.params import Dependency, Parameter
 from litestar_vite.inertia import InertiaRedirect, flash
 from sqlalchemy import select
@@ -16,7 +17,9 @@ from app.db.models import Team as TeamModel
 from app.db.models import TeamMember, TeamRoles
 from app.db.models import User as UserModel
 from app.db.models.team_member import TeamMember as TeamMemberModel
+from app.domain.accounts.dependencies import provide_users_service
 from app.domain.accounts.guards import requires_active_user
+from app.domain.accounts.services import UserService
 from app.domain.teams.guards import requires_team_admin, requires_team_membership, requires_team_ownership
 from app.domain.teams.schemas import (
     CurrentTeam,
@@ -31,7 +34,7 @@ from app.domain.teams.schemas import (
     TeamPermissions,
     TeamUpdate,
 )
-from app.domain.teams.services import TeamService
+from app.domain.teams.services import TeamInvitationService, TeamService
 from app.lib.schema import NoProps
 
 if TYPE_CHECKING:
@@ -66,9 +69,11 @@ class TeamController(Controller):
     )
     guards = [requires_active_user]
     signature_namespace = {
+        "TeamInvitationService": TeamInvitationService,
         "TeamService": TeamService,
         "TeamUpdate": TeamUpdate,
         "TeamCreate": TeamCreate,
+        "UserService": UserService,
     }
 
     @get(
@@ -213,15 +218,18 @@ class TeamController(Controller):
                 load=[
                     selectinload(TeamModel.tags),
                     selectinload(TeamModel.members).options(joinedload(TeamMember.user, innerjoin=True)),
-                    selectinload(TeamModel.pending_invitations),
                 ],
             ),
+            "team_invitations_service": create_service_provider(TeamInvitationService),
+            "users_service": Provide(provide_users_service),
         },
     )
     async def get_team_settings(
         self,
         request: Request,
         teams_service: TeamService,
+        team_invitations_service: TeamInvitationService,
+        users_service: UserService,
         current_user: UserModel,
         team_slug: Annotated[str, Parameter(title="Team Slug", description="The team slug.")],
     ) -> TeamDetailPage:
@@ -236,6 +244,16 @@ class TeamController(Controller):
         membership = next((m for m in db_obj.members if m.user_id == current_user.id), None)
         is_owner = bool(membership and membership.is_owner)
         is_admin = is_owner or bool(membership and membership.role == TeamRoles.ADMIN)
+
+        invitations = await team_invitations_service.get_pending_for_team(db_obj.id)
+        invitee_flags: dict[str, bool] = {}
+        if invitations:
+            emails = {inv.email for inv in invitations}
+            result = await users_service.repository.session.execute(
+                select(UserModel.email).where(UserModel.email.in_(emails)),
+            )
+            existing_emails = {row[0] for row in result}
+            invitee_flags = {email: email in existing_emails for email in emails}
 
         return TeamDetailPage(
             team=TeamDetail(
@@ -264,8 +282,9 @@ class TeamController(Controller):
                     created_at=inv.created_at,
                     expires_at=inv.expires_at,
                     is_expired=inv.is_expired,
+                    invitee_exists=invitee_flags.get(inv.email, False),
                 )
-                for inv in db_obj.pending_invitations
+                for inv in invitations
             ],
             permissions=TeamPermissions(
                 can_add_team_members=is_admin,

@@ -489,6 +489,10 @@ export const TeamInvitationItemSchema = {
         invitedByEmail: {
             type: 'string'
         },
+        inviteeExists: {
+            default: false,
+            type: 'boolean'
+        },
         isExpired: {
             default: false,
             type: 'boolean'

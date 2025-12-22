@@ -30,8 +30,10 @@ import type { TeamInvitationItem, TeamInvitationsPage } from "@/lib/generated/ap
 import { route } from "@/lib/generated/routes"
 
 type Props = TeamInvitationsPage
+type PendingInvitation = TeamInvitationItem & { inviteeExists?: boolean }
 
 export default function TeamInvitations({ team, invitations, permissions }: Props) {
+	const pendingInvitations = invitations as PendingInvitation[]
 	const [showInviteDialog, setShowInviteDialog] = useState(false)
 	const [invitationToCancel, setInvitationToCancel] = useState<TeamInvitationItem | null>(null)
 
@@ -49,7 +51,6 @@ export default function TeamInvitations({ team, invitations, permissions }: Prop
 			onSuccess: () => {
 				inviteForm.reset()
 				setShowInviteDialog(false)
-				toast({ description: "Invitation sent successfully.", variant: "success" })
 			},
 		})
 	}
@@ -143,7 +144,7 @@ export default function TeamInvitations({ team, invitations, permissions }: Prop
 							</div>
 						</CardHeader>
 						<CardContent>
-							{invitations.length === 0 ? (
+							{pendingInvitations.length === 0 ? (
 								<div className="flex flex-col items-center justify-center py-8 text-center">
 									<Mail className="h-12 w-12 text-muted-foreground" />
 									<h3 className="mt-4 font-semibold text-lg">No pending invitations</h3>
@@ -151,7 +152,7 @@ export default function TeamInvitations({ team, invitations, permissions }: Prop
 								</div>
 							) : (
 								<div className="space-y-4">
-									{invitations.map((invitation) => (
+									{pendingInvitations.map((invitation) => (
 										<div key={invitation.id} className="flex items-center justify-between rounded-lg border p-4">
 											<div className="flex items-center gap-4">
 												<div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
@@ -163,6 +164,7 @@ export default function TeamInvitations({ team, invitations, permissions }: Prop
 														<Badge variant="secondary" className="capitalize">
 															{invitation.role}
 														</Badge>
+														<Badge variant="outline">{invitation.inviteeExists ? "Existing user" : "Invite to sign up"}</Badge>
 														{invitation.isExpired && <Badge variant="destructive">Expired</Badge>}
 													</div>
 													<div className="flex items-center gap-2 text-muted-foreground text-sm">

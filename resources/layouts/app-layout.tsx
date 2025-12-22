@@ -1,9 +1,9 @@
 import type { PropsWithChildren } from "react"
-import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/toaster"
 import { useFlashMessages } from "@/hooks/use-flash-messages"
 import Footer from "@/layouts/partials/footer"
 import Navbar from "@/layouts/partials/navbar"
+import { cn } from "@/lib/utils"
 
 type AppLayoutProps = PropsWithChildren<{ mainClassName?: string }>
 

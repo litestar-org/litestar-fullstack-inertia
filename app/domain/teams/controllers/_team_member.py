@@ -21,6 +21,7 @@ from app.domain.accounts.services import UserService
 from app.domain.teams.guards import requires_team_admin
 from app.domain.teams.schemas import Team, TeamMemberModify
 from app.domain.teams.services import TeamInvitationService, TeamMemberService, TeamService
+from app.lib.schema import Message
 
 __all__ = ("TeamMemberController",)
 
@@ -62,6 +63,7 @@ class TeamMemberController(Controller):
         "UserService": UserService,
         "TeamMemberService": TeamMemberService,
         "TeamInvitationService": TeamInvitationService,
+        "Team": Team,
     }
 
     @post(operation_id="AddMemberToTeam", name="teams:add-member", path="/api/teams/{team_slug:str}/members/add")
@@ -75,7 +77,7 @@ class TeamMemberController(Controller):
         current_user: UserModel,
         data: TeamMemberModify,
         team_slug: Annotated[str, Parameter(title="Team Slug", description="The team slug.")],
-    ) -> Team:
+    ) -> Message:
         """Add a member to a team, or send an invitation if the user doesn't exist.
 
         If the user exists in the system, they are added directly as a team member.
@@ -83,7 +85,7 @@ class TeamMemberController(Controller):
         and join the team.
 
         Returns:
-            Updated team data (with new member if user existed).
+            Message describing whether the user was added or invited.
 
         Raises:
             ValidationException: If the user is already a member or has a pending invitation.
@@ -100,6 +102,7 @@ class TeamMemberController(Controller):
                 "user_id": user_obj.id,
                 "role": TeamRoles.MEMBER,
             })
+            message = f"{data.user_name} is already registered and was added to {team_obj.name}."
         else:
             # User doesn't exist - create an invitation
             # Check if invitation already pending
@@ -116,9 +119,9 @@ class TeamMemberController(Controller):
                 team_name=team_obj.name,
                 token=token,
             )
+            message = f"{data.user_name} was invited to sign up and join {team_obj.name}."
 
-        team_obj = await teams_service.get_one(slug=team_slug)
-        return teams_service.to_schema(schema_type=Team, data=team_obj)
+        return Message(message=message)
 
     @post(
         operation_id="RemoveMemberFromTeam",

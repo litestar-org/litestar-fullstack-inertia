@@ -165,6 +165,7 @@ export type TeamInvitationItem = {
     expiresAt?: string | null;
     id: string;
     invitedByEmail: string;
+    inviteeExists?: boolean;
     isExpired?: boolean;
     role: string;
 };
@@ -692,7 +693,7 @@ export type AddMemberToTeamResponses = {
     /**
      * Document created, URL follows
      */
-    201: Team;
+    201: Message;
 };
 
 export type AddMemberToTeamResponse = AddMemberToTeamResponses[keyof AddMemberToTeamResponses];

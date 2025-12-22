@@ -19,8 +19,7 @@ export default function Dashboard() {
 					<CardContent>
 						Hi {auth?.user?.name}, you are now logged in.
 						<div className="mb-2 flex text-muted-foreground">
-							This python content of this page is rendered from the{" "}
-							<span className="flex font-medium text-lime-700 dark:text-lime-400">`WebController`</span>
+							This python content of this page is rendered from the <span className="flex font-medium text-lime-700 dark:text-lime-400">`WebController`</span>
 							class in <span className="font-medium text-lime-700 dark:text-lime-400"> `app/domain/web/controller.py`</span>
 						</div>
 						<div className="mb-2 flex text-muted-foreground">

@@ -138,6 +138,7 @@ class TeamInvitationItem(CamelizedBaseStruct):
     created_at: datetime
     expires_at: datetime | None = None
     is_expired: bool = False
+    invitee_exists: bool = False
 
 
 class TeamInvitationDetail(CamelizedBaseStruct):

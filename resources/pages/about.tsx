@@ -10,12 +10,12 @@ export default function About({ about: _about }: { about: string }) {
 				<div
 					className="absolute inset-0 animate-starfield motion-reduce:animate-none"
 					style={{
-							backgroundImage: [
-								"radial-gradient(1px 1px at 20% 30%, rgba(32,34,53,0.25) 0, transparent 60%)",
-								"radial-gradient(1px 1px at 70% 20%, rgba(32,34,53,0.2) 0, transparent 60%)",
-								"radial-gradient(1.5px 1.5px at 40% 60%, rgba(32,34,53,0.18) 0, transparent 60%)",
-								"radial-gradient(1px 1px at 80% 75%, rgba(32,34,53,0.2) 0, transparent 60%)",
-								"radial-gradient(1.5px 1.5px at 55% 85%, rgba(32,34,53,0.22) 0, transparent 60%)",
+						backgroundImage: [
+							"radial-gradient(1px 1px at 20% 30%, rgba(32,34,53,0.25) 0, transparent 60%)",
+							"radial-gradient(1px 1px at 70% 20%, rgba(32,34,53,0.2) 0, transparent 60%)",
+							"radial-gradient(1.5px 1.5px at 40% 60%, rgba(32,34,53,0.18) 0, transparent 60%)",
+							"radial-gradient(1px 1px at 80% 75%, rgba(32,34,53,0.2) 0, transparent 60%)",
+							"radial-gradient(1.5px 1.5px at 55% 85%, rgba(32,34,53,0.22) 0, transparent 60%)",
 						].join(","),
 					}}
 				/>
@@ -59,9 +59,7 @@ export default function About({ about: _about }: { about: string }) {
 					}}
 				/>
 				<div className="absolute inset-0 flex items-center justify-center">
-					<div className="text-center text-sm font-semibold uppercase tracking-[0.3em] text-foreground/70">
-						Made by the Litestar team
-					</div>
+					<div className="text-center text-sm font-semibold uppercase tracking-[0.3em] text-foreground/70">Made by the Litestar team</div>
 				</div>
 			</section>
 		</>
