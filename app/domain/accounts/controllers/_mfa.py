@@ -160,7 +160,7 @@ class MfaController(Controller):
         )
 
         flash(request, "MFA has been disabled.", category="info")
-        return InertiaRedirect(request, request.url_for("profile.edit"))
+        return InertiaRedirect(request, request.url_for("profile.show"))
 
     @post(path="/regenerate-codes", name="mfa.regenerate-codes")
     async def regenerate_backup_codes(self, request: Request, users_service: UserService) -> MfaBackupCodes:
