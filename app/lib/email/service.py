@@ -272,7 +272,7 @@ class EmailService:
         Returns:
             True if email was sent successfully.
         """
-        invitation_url = f"{self.base_url}/invitations/{token}/accept"
+        invitation_url = f"{self.base_url}/invitations/{token}/"
 
         context = {
             "APP_NAME": self.app_name,
