@@ -997,6 +997,9 @@
       "methods": [
         "POST"
       ],
+      "queryParameters": {
+        "dotenv_filename": "string | undefined"
+      },
       "uri": "/verify-email/send"
     },
     "verify-email": {

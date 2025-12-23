@@ -461,7 +461,9 @@ export interface RouteQueryParams {
   };
   'users:revoke-role': Record<string, never>;
   'users:update': Record<string, never>;
-  'verification.send': Record<string, never>;
+  'verification.send': {
+    dotenv_filename?: string;
+  };
   'verify-email': {
     token?: string;
   };
@@ -1140,7 +1142,7 @@ export const routeDefinitions = {
     methods: ['POST'] as const,
     method: 'post',
     pathParams: [] as const,
-    queryParams: [] as const,
+    queryParams: ['dotenv_filename'] as const,
     component: 'auth/verify-email',
   },
   'verify-email': {

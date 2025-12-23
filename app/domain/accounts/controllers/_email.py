@@ -14,10 +14,10 @@ from app.db.models import TokenType
 from app.domain.accounts.dependencies import provide_email_token_service, provide_users_service
 from app.domain.accounts.signals import UserInfo
 from app.lib.email import EmailService
-from app.lib.settings import get_settings
 
 if TYPE_CHECKING:
     from app.domain.accounts.services import EmailTokenService, UserService
+    from app.lib.settings import Settings
 
 __all__ = ("EmailVerificationController",)
 
@@ -76,7 +76,7 @@ class EmailVerificationController(Controller):
 
     @post(component="auth/verify-email", name="verification.send", path="/verify-email/send")
     async def resend_verification_email(
-        self, request: Request, users_service: UserService, email_token_service: EmailTokenService,
+        self, request: Request, settings: Settings, users_service: UserService, email_token_service: EmailTokenService,
     ) -> InertiaRedirect:
         """Resend verification email to the current user.
 
@@ -101,7 +101,6 @@ class EmailVerificationController(Controller):
             return InertiaRedirect(request, request.url_for("dashboard"))
 
         await email_token_service.invalidate_existing_tokens(email=user.email, token_type=TokenType.EMAIL_VERIFICATION)
-        settings = get_settings()
         expires_delta = timedelta(hours=settings.email.VERIFICATION_TOKEN_EXPIRES_HOURS)
         _, plain_token = await email_token_service.create_token(
             email=user.email,
