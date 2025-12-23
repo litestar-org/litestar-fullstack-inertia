@@ -1,8 +1,8 @@
-"""User, teams, and registration with avatar
+"""Users, teams, and registrations
 
-Revision ID: 01520cfcb2de
-Revises:
-Create Date: 2025-12-20 23:14:20.933736+00:00
+Revision ID: a95204b0bf5c
+Revises: 
+Create Date: 2025-12-23 21:46:18.249653+00:00
 
 """
 
@@ -33,7 +33,7 @@ sa.FernetBackend = FernetBackend
 sa.PGCryptoBackend = PGCryptoBackend
 
 # revision identifiers, used by Alembic.
-revision = '01520cfcb2de'
+revision = 'a95204b0bf5c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -107,7 +107,7 @@ def schema_upgrades() -> None:
     sa.Column('email', sa.String(), nullable=False),
     sa.Column('name', sa.String(), nullable=True),
     sa.Column('hashed_password', sa.String(length=255), nullable=True),
-    sa.Column('avatar', sa.StoredObject(backend='local'), nullable=True),
+    sa.Column('avatar', sa.StoredObject(backend='avatars'), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('is_superuser', sa.Boolean(), nullable=False),
     sa.Column('is_verified', sa.Boolean(), nullable=False),
@@ -124,6 +124,29 @@ def schema_upgrades() -> None:
     )
     with op.batch_alter_table('user_account', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_user_account_email'), ['email'], unique=True)
+
+    op.create_table('audit_log',
+    sa.Column('id', sa.GUID(length=16), nullable=False),
+    sa.Column('actor_id', sa.GUID(length=16), nullable=True),
+    sa.Column('actor_email', sa.String(length=255), nullable=False),
+    sa.Column('action', sa.String(length=100), nullable=False),
+    sa.Column('target_type', sa.String(length=50), nullable=False),
+    sa.Column('target_id', sa.GUID(length=16), nullable=False),
+    sa.Column('target_label', sa.String(length=255), nullable=True),
+    sa.Column('details', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
+    sa.Column('ip_address', sa.String(length=45), nullable=True),
+    sa.Column('user_agent', sa.Text(), nullable=True),
+    sa.Column('sa_orm_sentinel', sa.Integer(), nullable=True),
+    sa.Column('created_at', sa.DateTimeUTC(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTimeUTC(timezone=True), nullable=False),
+    sa.ForeignKeyConstraint(['actor_id'], ['user_account.id'], name=op.f('fk_audit_log_actor_id_user_account'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_audit_log'))
+    )
+    with op.batch_alter_table('audit_log', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_audit_log_action'), ['action'], unique=False)
+        batch_op.create_index(batch_op.f('ix_audit_log_actor_id'), ['actor_id'], unique=False)
+        batch_op.create_index(batch_op.f('ix_audit_log_target_id'), ['target_id'], unique=False)
+        batch_op.create_index(batch_op.f('ix_audit_log_target_type'), ['target_type'], unique=False)
 
     op.create_table('email_token',
     sa.Column('id', sa.GUID(length=16), nullable=False),
@@ -253,6 +276,13 @@ def schema_downgrades() -> None:
         batch_op.drop_index('ix_email_token_email_type')
 
     op.drop_table('email_token')
+    with op.batch_alter_table('audit_log', schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f('ix_audit_log_target_type'))
+        batch_op.drop_index(batch_op.f('ix_audit_log_target_id'))
+        batch_op.drop_index(batch_op.f('ix_audit_log_actor_id'))
+        batch_op.drop_index(batch_op.f('ix_audit_log_action'))
+
+    op.drop_table('audit_log')
     with op.batch_alter_table('user_account', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_user_account_email'))
 

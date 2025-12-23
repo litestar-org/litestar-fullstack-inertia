@@ -73,6 +73,12 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         )
         from app.domain.accounts.dependencies import provide_user
         from app.domain.accounts.guards import session_auth
+        from app.domain.admin.controllers import (
+            AdminAuditController,
+            AdminDashboardController,
+            AdminTeamController,
+            AdminUserController,
+        )
         from app.domain.tags.controllers import TagController
         from app.domain.teams import signals as team_signals
         from app.domain.teams.controllers import (
@@ -151,6 +157,11 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             UserInvitationsController,
             TagController,
             WebController,
+            # Admin controllers
+            AdminDashboardController,
+            AdminUserController,
+            AdminTeamController,
+            AdminAuditController,
         ])
         # signatures
         app_config.signature_namespace.update({"UserModel": UserModel, "UUID": UUID})

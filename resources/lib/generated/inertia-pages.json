@@ -10,6 +10,86 @@
       "route": "/about",
       "tsType": "NoProps"
     },
+    "admin/audit/list": {
+      "customTypes": [
+        "AuditLogItem",
+        "AuditLogPage"
+      ],
+      "handler": "list_audit_logs",
+      "propsType": "AuditLogPage",
+      "route": "/admin/audit",
+      "schemaRef": "#/components/schemas/AuditLogPage",
+      "tsType": "AuditLogPage"
+    },
+    "admin/dashboard": {
+      "customTypes": [
+        "AdminDashboardPage",
+        "AdminStats",
+        "AuditLogItem"
+      ],
+      "handler": "dashboard",
+      "propsType": "AdminDashboardPage",
+      "route": "/admin",
+      "schemaRef": "#/components/schemas/AdminDashboardPage",
+      "tsType": "AdminDashboardPage"
+    },
+    "admin/teams/detail": {
+      "customTypes": [
+        "AdminTeamDetail",
+        "AdminTeamDetailPage"
+      ],
+      "handler": "get_team",
+      "propsType": "AdminTeamDetailPage",
+      "route": "/admin/teams/{team_id}",
+      "schemaRef": "#/components/schemas/AdminTeamDetailPage",
+      "tsType": "AdminTeamDetailPage"
+    },
+    "admin/teams/list": {
+      "customTypes": [
+        "AdminTeamListItem",
+        "AdminTeamListPage"
+      ],
+      "handler": "list_teams",
+      "propsType": "AdminTeamListPage",
+      "route": "/admin/teams",
+      "schemaRef": "#/components/schemas/AdminTeamListPage",
+      "tsType": "AdminTeamListPage"
+    },
+    "admin/users/create": {
+      "customTypes": [
+        "AdminUserCreatePage",
+        "RoleOption"
+      ],
+      "handler": "create_user_page",
+      "propsType": "AdminUserCreatePage",
+      "route": "/admin/users/create",
+      "schemaRef": "#/components/schemas/AdminUserCreatePage",
+      "tsType": "AdminUserCreatePage"
+    },
+    "admin/users/detail": {
+      "customTypes": [
+        "AdminUserDetail",
+        "AdminUserDetailPage",
+        "RoleOption"
+      ],
+      "handler": "get_user",
+      "propsType": "AdminUserDetailPage",
+      "route": "/admin/users/{user_id}",
+      "schemaRef": "#/components/schemas/AdminUserDetailPage",
+      "tsType": "AdminUserDetailPage"
+    },
+    "admin/users/list": {
+      "customTypes": [
+        "AdminUserListItem",
+        "AdminUserListPage",
+        "RoleOption"
+      ],
+      "handler": "list_users",
+      "propsType": "AdminUserListPage",
+      "route": "/admin/users",
+      "schemaRef": "#/components/schemas/AdminUserListPage",
+      "tsType": "AdminUserListPage"
+    },
     "auth/confirm-password": {
       "customTypes": [
         "NoProps"

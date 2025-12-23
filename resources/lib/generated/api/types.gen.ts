@@ -5,6 +5,206 @@ export type ClientOptions = {
 };
 
 /**
+ * AdminDashboardPage
+ */
+export type AdminDashboardPage = {
+    recentLogs?: Array<AuditLogItem>;
+    stats: AdminStats;
+};
+
+/**
+ * AdminStats
+ */
+export type AdminStats = {
+    activeUsers?: number;
+    recentSignups?: number;
+    totalTeams?: number;
+    totalUsers?: number;
+    verifiedUsers?: number;
+};
+
+/**
+ * AdminTeamDetail
+ */
+export type AdminTeamDetail = {
+    createdAt?: string | null;
+    description?: string | null;
+    id: string;
+    isActive?: boolean;
+    members?: Array<TeamMemberInfo>;
+    name: string;
+    slug: string;
+    updatedAt?: string | null;
+};
+
+/**
+ * AdminTeamDetailPage
+ */
+export type AdminTeamDetailPage = {
+    team: AdminTeamDetail;
+};
+
+/**
+ * AdminTeamListItem
+ */
+export type AdminTeamListItem = {
+    createdAt?: string | null;
+    description?: string | null;
+    id: string;
+    isActive?: boolean;
+    memberCount?: number;
+    name: string;
+    ownerEmail?: string | null;
+    slug: string;
+};
+
+/**
+ * AdminTeamListPage
+ */
+export type AdminTeamListPage = {
+    page?: number;
+    pageSize?: number;
+    teams: Array<AdminTeamListItem>;
+    total: number;
+};
+
+/**
+ * AdminTeamMemberAdd
+ */
+export type AdminTeamMemberAdd = {
+    role?: TeamRoles;
+    userId: string;
+};
+
+/**
+ * AdminTeamUpdate
+ */
+export type AdminTeamUpdate = {
+    description?: string | null;
+    isActive?: boolean | null;
+    name?: string | null;
+};
+
+/**
+ * AdminUserCreate
+ */
+export type AdminUserCreate = {
+    email: string;
+    isActive?: boolean;
+    isSuperuser?: boolean;
+    isVerified?: boolean;
+    name?: string | null;
+    password: string;
+};
+
+/**
+ * AdminUserCreatePage
+ */
+export type AdminUserCreatePage = {
+    availableRoles?: Array<RoleOption>;
+};
+
+/**
+ * AdminUserDetail
+ */
+export type AdminUserDetail = {
+    avatarUrl?: string | null;
+    createdAt?: string | null;
+    email: string;
+    hasPassword?: boolean;
+    id: string;
+    isActive?: boolean;
+    isSuperuser?: boolean;
+    isTwoFactorEnabled?: boolean;
+    isVerified?: boolean;
+    name?: string | null;
+    roles?: Array<UserRoleInfo>;
+    teams?: Array<UserTeamInfo>;
+    updatedAt?: string | null;
+};
+
+/**
+ * AdminUserDetailPage
+ */
+export type AdminUserDetailPage = {
+    availableRoles?: Array<RoleOption>;
+    user: AdminUserDetail;
+};
+
+/**
+ * AdminUserListItem
+ */
+export type AdminUserListItem = {
+    avatarUrl?: string | null;
+    createdAt?: string | null;
+    email: string;
+    id: string;
+    isActive?: boolean;
+    isSuperuser?: boolean;
+    isTwoFactorEnabled?: boolean;
+    isVerified?: boolean;
+    name?: string | null;
+    roleNames?: Array<string>;
+    teamCount?: number;
+};
+
+/**
+ * AdminUserListPage
+ */
+export type AdminUserListPage = {
+    page?: number;
+    pageSize?: number;
+    roles?: Array<RoleOption>;
+    total: number;
+    users: Array<AdminUserListItem>;
+};
+
+/**
+ * AdminUserRoleAssign
+ */
+export type AdminUserRoleAssign = {
+    roleId: string;
+};
+
+/**
+ * AdminUserUpdate
+ */
+export type AdminUserUpdate = {
+    email?: string | null;
+    isActive?: boolean | null;
+    isSuperuser?: boolean | null;
+    isVerified?: boolean | null;
+    name?: string | null;
+};
+
+/**
+ * AuditLogItem
+ */
+export type AuditLogItem = {
+    action: string;
+    actorEmail: string;
+    createdAt: string;
+    details?: {
+        [key: string]: unknown;
+    } | null;
+    id: string;
+    ipAddress?: string | null;
+    targetId: string;
+    targetLabel?: string | null;
+    targetType: string;
+};
+
+/**
+ * AuditLogPage
+ */
+export type AuditLogPage = {
+    logs: Array<AuditLogItem>;
+    page?: number;
+    pageSize?: number;
+    total: number;
+};
+
+/**
  * CurrentTeam
  */
 export type CurrentTeam = {
@@ -65,6 +265,15 @@ export type OauthAccount = {
 export type PasswordResetToken = {
     email: string;
     token: string;
+};
+
+/**
+ * RoleOption
+ */
+export type RoleOption = {
+    id: string;
+    name: string;
+    slug: string;
 };
 
 /**
@@ -213,6 +422,19 @@ export type TeamMember = {
 };
 
 /**
+ * TeamMemberInfo
+ */
+export type TeamMemberInfo = {
+    avatarUrl?: string | null;
+    email: string;
+    id: string;
+    isOwner?: boolean;
+    name?: string | null;
+    role?: TeamRoles;
+    userId: string;
+};
+
+/**
  * TeamMemberModify
  */
 export type TeamMemberModify = {
@@ -341,6 +563,17 @@ export type UserRoleAdd = {
 };
 
 /**
+ * UserRoleInfo
+ */
+export type UserRoleInfo = {
+    assignedAt: string;
+    id: string;
+    roleId: string;
+    roleName: string;
+    roleSlug: string;
+};
+
+/**
  * UserRoleRevoke
  */
 export type UserRoleRevoke = {
@@ -359,6 +592,17 @@ export type UserTeam = {
 };
 
 /**
+ * UserTeamInfo
+ */
+export type UserTeamInfo = {
+    isOwner?: boolean;
+    role?: TeamRoles;
+    teamId: string;
+    teamName: string;
+    teamSlug: string;
+};
+
+/**
  * UserUpdate
  */
 export type UserUpdate = {
@@ -368,6 +612,722 @@ export type UserUpdate = {
     isVerified?: boolean | null;
     name?: string | null;
     password?: string | null;
+};
+
+export type AdminDashboardData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin';
+};
+
+export type AdminDashboardResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: AdminDashboardPage;
+};
+
+export type AdminDashboardResponse = AdminDashboardResponses[keyof AdminDashboardResponses];
+
+export type AdminListAuditLogsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        ids?: Array<string> | null;
+        createdBefore?: string | null;
+        createdAfter?: string | null;
+        /**
+         * Field to search
+         */
+        searchString?: string | null;
+        /**
+         * Search should be case sensitive
+         */
+        searchIgnoreCase?: boolean | null;
+        currentPage?: number;
+        pageSize?: number;
+        /**
+         * Order by field
+         */
+        orderBy?: string | null;
+        /**
+         * Field to search
+         */
+        sortOrder?: 'asc' | 'desc' | null;
+    };
+    url: '/admin/audit';
+};
+
+export type AdminListAuditLogsErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminListAuditLogsError = AdminListAuditLogsErrors[keyof AdminListAuditLogsErrors];
+
+export type AdminListAuditLogsResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: AuditLogPage;
+};
+
+export type AdminListAuditLogsResponse = AdminListAuditLogsResponses[keyof AdminListAuditLogsResponses];
+
+export type AdminListTeamsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        ids?: Array<string> | null;
+        createdBefore?: string | null;
+        createdAfter?: string | null;
+        updatedBefore?: string | null;
+        updatedAfter?: string | null;
+        /**
+         * Field to search
+         */
+        searchString?: string | null;
+        /**
+         * Search should be case sensitive
+         */
+        searchIgnoreCase?: boolean | null;
+        currentPage?: number;
+        pageSize?: number;
+        /**
+         * Order by field
+         */
+        orderBy?: string | null;
+        /**
+         * Field to search
+         */
+        sortOrder?: 'asc' | 'desc' | null;
+    };
+    url: '/admin/teams';
+};
+
+export type AdminListTeamsErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminListTeamsError = AdminListTeamsErrors[keyof AdminListTeamsErrors];
+
+export type AdminListTeamsResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: AdminTeamListPage;
+};
+
+export type AdminListTeamsResponse = AdminListTeamsResponses[keyof AdminListTeamsResponses];
+
+export type AdminDeleteTeamData = {
+    body?: never;
+    path: {
+        /**
+         * Team ID
+         *
+         * The team ID.
+         */
+        team_id: string;
+    };
+    query?: never;
+    url: '/admin/teams/{team_id}';
+};
+
+export type AdminDeleteTeamErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminDeleteTeamError = AdminDeleteTeamErrors[keyof AdminDeleteTeamErrors];
+
+export type AdminGetTeamData = {
+    body?: never;
+    path: {
+        /**
+         * Team ID
+         *
+         * The team ID.
+         */
+        team_id: string;
+    };
+    query?: never;
+    url: '/admin/teams/{team_id}';
+};
+
+export type AdminGetTeamErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminGetTeamError = AdminGetTeamErrors[keyof AdminGetTeamErrors];
+
+export type AdminGetTeamResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: AdminTeamDetailPage;
+};
+
+export type AdminGetTeamResponse = AdminGetTeamResponses[keyof AdminGetTeamResponses];
+
+export type AdminUpdateTeamData = {
+    body: AdminTeamUpdate;
+    path: {
+        /**
+         * Team ID
+         *
+         * The team ID.
+         */
+        team_id: string;
+    };
+    query?: never;
+    url: '/admin/teams/{team_id}';
+};
+
+export type AdminUpdateTeamErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminUpdateTeamError = AdminUpdateTeamErrors[keyof AdminUpdateTeamErrors];
+
+export type AdminUpdateTeamResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: unknown;
+};
+
+export type AdminAddTeamMemberData = {
+    body: AdminTeamMemberAdd;
+    path: {
+        /**
+         * Team ID
+         *
+         * The team ID.
+         */
+        team_id: string;
+    };
+    query?: never;
+    url: '/admin/teams/{team_id}/members';
+};
+
+export type AdminAddTeamMemberErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminAddTeamMemberError = AdminAddTeamMemberErrors[keyof AdminAddTeamMemberErrors];
+
+export type AdminAddTeamMemberResponses = {
+    /**
+     * Document created, URL follows
+     */
+    201: unknown;
+};
+
+export type AdminRemoveTeamMemberData = {
+    body?: never;
+    path: {
+        /**
+         * Team ID
+         *
+         * The team ID.
+         */
+        team_id: string;
+        /**
+         * Member ID
+         *
+         * The team member ID.
+         */
+        member_id: string;
+    };
+    query?: never;
+    url: '/admin/teams/{team_id}/members/{member_id}';
+};
+
+export type AdminRemoveTeamMemberErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminRemoveTeamMemberError = AdminRemoveTeamMemberErrors[keyof AdminRemoveTeamMemberErrors];
+
+export type AdminListUsersData = {
+    body?: never;
+    path?: never;
+    query?: {
+        ids?: Array<string> | null;
+        createdBefore?: string | null;
+        createdAfter?: string | null;
+        updatedBefore?: string | null;
+        updatedAfter?: string | null;
+        /**
+         * Field to search
+         */
+        searchString?: string | null;
+        /**
+         * Search should be case sensitive
+         */
+        searchIgnoreCase?: boolean | null;
+        currentPage?: number;
+        pageSize?: number;
+        /**
+         * Order by field
+         */
+        orderBy?: string | null;
+        /**
+         * Field to search
+         */
+        sortOrder?: 'asc' | 'desc' | null;
+    };
+    url: '/admin/users';
+};
+
+export type AdminListUsersErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminListUsersError = AdminListUsersErrors[keyof AdminListUsersErrors];
+
+export type AdminListUsersResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: AdminUserListPage;
+};
+
+export type AdminListUsersResponse = AdminListUsersResponses[keyof AdminListUsersResponses];
+
+export type AdminCreateUserData = {
+    body: AdminUserCreate;
+    path?: never;
+    query?: never;
+    url: '/admin/users';
+};
+
+export type AdminCreateUserErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminCreateUserError = AdminCreateUserErrors[keyof AdminCreateUserErrors];
+
+export type AdminCreateUserResponses = {
+    /**
+     * Document created, URL follows
+     */
+    201: unknown;
+};
+
+export type AdminCreateUserPageData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/users/create';
+};
+
+export type AdminCreateUserPageResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: AdminUserCreatePage;
+};
+
+export type AdminCreateUserPageResponse = AdminCreateUserPageResponses[keyof AdminCreateUserPageResponses];
+
+export type AdminDeleteUserData = {
+    body?: never;
+    path: {
+        /**
+         * User ID
+         *
+         * The user ID.
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/admin/users/{user_id}';
+};
+
+export type AdminDeleteUserErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminDeleteUserError = AdminDeleteUserErrors[keyof AdminDeleteUserErrors];
+
+export type AdminGetUserData = {
+    body?: never;
+    path: {
+        /**
+         * User ID
+         *
+         * The user ID.
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/admin/users/{user_id}';
+};
+
+export type AdminGetUserErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminGetUserError = AdminGetUserErrors[keyof AdminGetUserErrors];
+
+export type AdminGetUserResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: AdminUserDetailPage;
+};
+
+export type AdminGetUserResponse = AdminGetUserResponses[keyof AdminGetUserResponses];
+
+export type AdminUpdateUserData = {
+    body: AdminUserUpdate;
+    path: {
+        /**
+         * User ID
+         *
+         * The user ID.
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/admin/users/{user_id}';
+};
+
+export type AdminUpdateUserErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminUpdateUserError = AdminUpdateUserErrors[keyof AdminUpdateUserErrors];
+
+export type AdminUpdateUserResponses = {
+    /**
+     * Request fulfilled, document follows
+     */
+    200: unknown;
+};
+
+export type AdminLockUserData = {
+    body?: never;
+    path: {
+        /**
+         * User ID
+         *
+         * The user ID.
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/admin/users/{user_id}/lock';
+};
+
+export type AdminLockUserErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminLockUserError = AdminLockUserErrors[keyof AdminLockUserErrors];
+
+export type AdminLockUserResponses = {
+    /**
+     * Document created, URL follows
+     */
+    201: unknown;
+};
+
+export type AdminAssignRoleData = {
+    body: AdminUserRoleAssign;
+    path: {
+        /**
+         * User ID
+         *
+         * The user ID.
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/admin/users/{user_id}/roles';
+};
+
+export type AdminAssignRoleErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminAssignRoleError = AdminAssignRoleErrors[keyof AdminAssignRoleErrors];
+
+export type AdminAssignRoleResponses = {
+    /**
+     * Document created, URL follows
+     */
+    201: unknown;
+};
+
+export type AdminRevokeRoleData = {
+    body?: never;
+    path: {
+        /**
+         * User ID
+         *
+         * The user ID.
+         */
+        user_id: string;
+        /**
+         * User Role ID
+         *
+         * The user-role assignment ID.
+         */
+        user_role_id: string;
+    };
+    query?: never;
+    url: '/admin/users/{user_id}/roles/{user_role_id}';
+};
+
+export type AdminRevokeRoleErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminRevokeRoleError = AdminRevokeRoleErrors[keyof AdminRevokeRoleErrors];
+
+export type AdminUnlockUserData = {
+    body?: never;
+    path: {
+        /**
+         * User ID
+         *
+         * The user ID.
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/admin/users/{user_id}/unlock';
+};
+
+export type AdminUnlockUserErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminUnlockUserError = AdminUnlockUserErrors[keyof AdminUnlockUserErrors];
+
+export type AdminUnlockUserResponses = {
+    /**
+     * Document created, URL follows
+     */
+    201: unknown;
+};
+
+export type AdminUnverifyUserData = {
+    body?: never;
+    path: {
+        /**
+         * User ID
+         *
+         * The user ID.
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/admin/users/{user_id}/unverify';
+};
+
+export type AdminUnverifyUserErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminUnverifyUserError = AdminUnverifyUserErrors[keyof AdminUnverifyUserErrors];
+
+export type AdminUnverifyUserResponses = {
+    /**
+     * Document created, URL follows
+     */
+    201: unknown;
+};
+
+export type AdminVerifyUserData = {
+    body?: never;
+    path: {
+        /**
+         * User ID
+         *
+         * The user ID.
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/admin/users/{user_id}/verify';
+};
+
+export type AdminVerifyUserErrors = {
+    /**
+     * Validation Exception
+     */
+    400: {
+        detail: string;
+        extra?: null | {
+            [key: string]: unknown;
+        } | Array<unknown>;
+        status_code: number;
+    };
+};
+
+export type AdminVerifyUserError = AdminVerifyUserErrors[keyof AdminVerifyUserErrors];
+
+export type AdminVerifyUserResponses = {
+    /**
+     * Document created, URL follows
+     */
+    201: unknown;
 };
 
 export type AssignUserRoleData = {

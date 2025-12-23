@@ -16,6 +16,278 @@
       ],
       "uri": "/profile"
     },
+    "admin.audit.list": {
+      "component": "admin/audit/list",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "createdAfter": "DateTime | undefined",
+        "createdBefore": "DateTime | undefined",
+        "currentPage": "number | undefined",
+        "ids": "string[] | undefined",
+        "orderBy": "string | undefined",
+        "pageSize": "number | undefined",
+        "searchIgnoreCase": "boolean | undefined",
+        "searchString": "string | undefined",
+        "sortOrder": "\"asc\" | \"desc\" | undefined"
+      },
+      "uri": "/admin/audit"
+    },
+    "admin.dashboard": {
+      "component": "admin/dashboard",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/admin"
+    },
+    "admin.teams.delete": {
+      "method": "delete",
+      "methods": [
+        "DELETE"
+      ],
+      "parameterTypes": {
+        "team_id": "UUID"
+      },
+      "parameters": [
+        "team_id"
+      ],
+      "uri": "/admin/teams/{team_id}"
+    },
+    "admin.teams.detail": {
+      "component": "admin/teams/detail",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "team_id": "UUID"
+      },
+      "parameters": [
+        "team_id"
+      ],
+      "uri": "/admin/teams/{team_id}"
+    },
+    "admin.teams.list": {
+      "component": "admin/teams/list",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "createdAfter": "DateTime | undefined",
+        "createdBefore": "DateTime | undefined",
+        "currentPage": "number | undefined",
+        "ids": "string[] | undefined",
+        "orderBy": "string | undefined",
+        "pageSize": "number | undefined",
+        "searchIgnoreCase": "boolean | undefined",
+        "searchString": "string | undefined",
+        "sortOrder": "\"asc\" | \"desc\" | undefined",
+        "updatedAfter": "DateTime | undefined",
+        "updatedBefore": "DateTime | undefined"
+      },
+      "uri": "/admin/teams"
+    },
+    "admin.teams.members.add": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "team_id": "UUID"
+      },
+      "parameters": [
+        "team_id"
+      ],
+      "uri": "/admin/teams/{team_id}/members"
+    },
+    "admin.teams.members.remove": {
+      "method": "delete",
+      "methods": [
+        "DELETE"
+      ],
+      "parameterTypes": {
+        "member_id": "UUID",
+        "team_id": "UUID"
+      },
+      "parameters": [
+        "member_id",
+        "team_id"
+      ],
+      "uri": "/admin/teams/{team_id}/members/{member_id}"
+    },
+    "admin.teams.update": {
+      "method": "patch",
+      "methods": [
+        "PATCH"
+      ],
+      "parameterTypes": {
+        "team_id": "UUID"
+      },
+      "parameters": [
+        "team_id"
+      ],
+      "uri": "/admin/teams/{team_id}"
+    },
+    "admin.users.create": {
+      "component": "admin/users/create",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "uri": "/admin/users/create"
+    },
+    "admin.users.delete": {
+      "method": "delete",
+      "methods": [
+        "DELETE"
+      ],
+      "parameterTypes": {
+        "user_id": "UUID"
+      },
+      "parameters": [
+        "user_id"
+      ],
+      "uri": "/admin/users/{user_id}"
+    },
+    "admin.users.detail": {
+      "component": "admin/users/detail",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "user_id": "UUID"
+      },
+      "parameters": [
+        "user_id"
+      ],
+      "uri": "/admin/users/{user_id}"
+    },
+    "admin.users.list": {
+      "component": "admin/users/list",
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "queryParameters": {
+        "createdAfter": "DateTime | undefined",
+        "createdBefore": "DateTime | undefined",
+        "currentPage": "number | undefined",
+        "ids": "string[] | undefined",
+        "orderBy": "string | undefined",
+        "pageSize": "number | undefined",
+        "searchIgnoreCase": "boolean | undefined",
+        "searchString": "string | undefined",
+        "sortOrder": "\"asc\" | \"desc\" | undefined",
+        "updatedAfter": "DateTime | undefined",
+        "updatedBefore": "DateTime | undefined"
+      },
+      "uri": "/admin/users"
+    },
+    "admin.users.lock": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "user_id": "UUID"
+      },
+      "parameters": [
+        "user_id"
+      ],
+      "uri": "/admin/users/{user_id}/lock"
+    },
+    "admin.users.roles.assign": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "user_id": "UUID"
+      },
+      "parameters": [
+        "user_id"
+      ],
+      "uri": "/admin/users/{user_id}/roles"
+    },
+    "admin.users.roles.revoke": {
+      "method": "delete",
+      "methods": [
+        "DELETE"
+      ],
+      "parameterTypes": {
+        "user_id": "UUID",
+        "user_role_id": "UUID"
+      },
+      "parameters": [
+        "user_id",
+        "user_role_id"
+      ],
+      "uri": "/admin/users/{user_id}/roles/{user_role_id}"
+    },
+    "admin.users.store": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "uri": "/admin/users"
+    },
+    "admin.users.unlock": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "user_id": "UUID"
+      },
+      "parameters": [
+        "user_id"
+      ],
+      "uri": "/admin/users/{user_id}/unlock"
+    },
+    "admin.users.unverify": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "user_id": "UUID"
+      },
+      "parameters": [
+        "user_id"
+      ],
+      "uri": "/admin/users/{user_id}/unverify"
+    },
+    "admin.users.update": {
+      "method": "patch",
+      "methods": [
+        "PATCH"
+      ],
+      "parameterTypes": {
+        "user_id": "UUID"
+      },
+      "parameters": [
+        "user_id"
+      ],
+      "uri": "/admin/users/{user_id}"
+    },
+    "admin.users.verify": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "user_id": "UUID"
+      },
+      "parameters": [
+        "user_id"
+      ],
+      "uri": "/admin/users/{user_id}/verify"
+    },
     "dashboard": {
       "component": "dashboard",
       "method": "get",

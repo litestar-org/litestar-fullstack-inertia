@@ -4,7 +4,7 @@
 // Import user-defined type extensions (edit page-props.user.ts to customize)
 import type { UserExtensions, SharedPropsExtensions } from "./page-props.user"
 
-import type { CurrentTeam, InvitationAcceptPage, Message, NoProps, PasswordResetToken, Team, TeamDetail, TeamDetailPage, TeamInvitationDetail, TeamInvitationItem, TeamInvitationsPage, TeamListItem, TeamListPage, TeamMember, TeamPageMember, TeamPermissions, TeamTag, UserPendingInvitation, UserPendingInvitationsPage } from "./api/types.gen"
+import type { AdminDashboardPage, AdminStats, AdminTeamDetail, AdminTeamDetailPage, AdminTeamListItem, AdminTeamListPage, AdminUserCreatePage, AdminUserDetail, AdminUserDetailPage, AdminUserListItem, AdminUserListPage, AuditLogItem, AuditLogPage, CurrentTeam, InvitationAcceptPage, Message, NoProps, PasswordResetToken, RoleOption, Team, TeamDetail, TeamDetailPage, TeamInvitationDetail, TeamInvitationItem, TeamInvitationsPage, TeamListItem, TeamListPage, TeamMember, TeamPageMember, TeamPermissions, TeamTag, UserPendingInvitation, UserPendingInvitationsPage } from "./api/types.gen"
 
 /**
  * Default User interface - minimal baseline for common auth patterns.
@@ -65,6 +65,13 @@ export type FullSharedProps = GeneratedSharedProps & SharedProps & { [key: strin
 /** Page props mapped by component name */
 export interface PageProps {
   "about": NoProps & FullSharedProps
+  "admin/audit/list": AuditLogPage & FullSharedProps
+  "admin/dashboard": AdminDashboardPage & FullSharedProps
+  "admin/teams/detail": AdminTeamDetailPage & FullSharedProps
+  "admin/teams/list": AdminTeamListPage & FullSharedProps
+  "admin/users/create": AdminUserCreatePage & FullSharedProps
+  "admin/users/detail": AdminUserDetailPage & FullSharedProps
+  "admin/users/list": AdminUserListPage & FullSharedProps
   "auth/confirm-password": NoProps & FullSharedProps
   "auth/forgot-password": NoProps & FullSharedProps
   "auth/login": NoProps & FullSharedProps
