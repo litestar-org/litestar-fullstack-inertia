@@ -61,6 +61,10 @@ export type RouteName =
   | 'mfa.disable'
   | 'mfa.enable'
   | 'mfa.regenerate-codes'
+  | 'oauth.link.complete'
+  | 'oauth.link.start'
+  | 'oauth.unlink'
+  | 'oauth.upgrade_scopes'
   | 'openapi.json'
   | 'password.confirm'
   | 'password.confirm.page'
@@ -188,6 +192,18 @@ export interface RoutePathParams {
   'mfa.disable': Record<string, never>;
   'mfa.enable': Record<string, never>;
   'mfa.regenerate-codes': Record<string, never>;
+  'oauth.link.complete': {
+    provider: string;
+  };
+  'oauth.link.start': {
+    provider: string;
+  };
+  'oauth.unlink': {
+    provider: string;
+  };
+  'oauth.upgrade_scopes': {
+    provider: string;
+  };
   'openapi.json': Record<string, never>;
   'password.confirm': Record<string, never>;
   'password.confirm.page': Record<string, never>;
@@ -363,6 +379,10 @@ export interface RouteQueryParams {
   'mfa.disable': Record<string, never>;
   'mfa.enable': Record<string, never>;
   'mfa.regenerate-codes': Record<string, never>;
+  'oauth.link.complete': Record<string, never>;
+  'oauth.link.start': Record<string, never>;
+  'oauth.unlink': Record<string, never>;
+  'oauth.upgrade_scopes': Record<string, never>;
   'openapi.json': Record<string, never>;
   'password.confirm': Record<string, never>;
   'password.confirm.page': Record<string, never>;
@@ -795,6 +815,34 @@ export const routeDefinitions = {
     methods: ['POST'] as const,
     method: 'post',
     pathParams: [] as const,
+    queryParams: [] as const,
+  },
+  'oauth.link.complete': {
+    path: '/profile/oauth/{provider}/complete',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: ['provider'] as const,
+    queryParams: [] as const,
+  },
+  'oauth.link.start': {
+    path: '/profile/oauth/{provider}/link',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: ['provider'] as const,
+    queryParams: [] as const,
+  },
+  'oauth.unlink': {
+    path: '/profile/oauth/{provider}',
+    methods: ['DELETE'] as const,
+    method: 'delete',
+    pathParams: ['provider'] as const,
+    queryParams: [] as const,
+  },
+  'oauth.upgrade_scopes': {
+    path: '/profile/oauth/{provider}/upgrade-scopes',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: ['provider'] as const,
     queryParams: [] as const,
   },
   'openapi.json': {

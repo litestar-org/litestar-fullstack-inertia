@@ -792,24 +792,11 @@
       },
       "OauthAccount": {
         "properties": {
-          "accessToken": {
-            "type": "string"
-          },
           "accountEmail": {
             "type": "string"
           },
           "accountId": {
             "type": "string"
-          },
-          "expiresAt": {
-            "oneOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "id": {
             "format": "uuid",
@@ -818,10 +805,13 @@
           "oauthName": {
             "type": "string"
           },
-          "refreshToken": {
+          "scopes": {
             "oneOf": [
               {
-                "type": "string"
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
               },
               {
                 "type": "null"
@@ -830,7 +820,6 @@
           }
         },
         "required": [
-          "accessToken",
           "accountEmail",
           "accountId",
           "id",

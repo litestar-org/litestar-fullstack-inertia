@@ -1,8 +1,8 @@
-"""Users, teams, and registrations
+"""Users, teams, invitations and admin
 
-Revision ID: a95204b0bf5c
-Revises: 
-Create Date: 2025-12-23 21:46:18.249653+00:00
+Revision ID: 386593b41af9
+Revises:
+Create Date: 2025-12-23 22:51:28.500359+00:00
 
 """
 
@@ -33,7 +33,7 @@ sa.FernetBackend = FernetBackend
 sa.PGCryptoBackend = PGCryptoBackend
 
 # revision identifiers, used by Alembic.
-revision = 'a95204b0bf5c'
+revision = '386593b41af9'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -226,6 +226,7 @@ def schema_upgrades() -> None:
     sa.Column('refresh_token', sa.String(length=1024), nullable=True),
     sa.Column('account_id', sa.String(length=320), nullable=False),
     sa.Column('account_email', sa.String(length=320), nullable=False),
+    sa.Column('scopes', postgresql.JSONB(astext_type=sa.Text()), nullable=True, comment='OAuth scopes granted by the provider'),
     sa.Column('sa_orm_sentinel', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTimeUTC(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTimeUTC(timezone=True), nullable=False),

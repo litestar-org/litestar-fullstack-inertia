@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
 from advanced_alchemy.filters import LimitOffset
 from litestar import Controller, get
@@ -14,7 +15,9 @@ from app.db.models import User as UserModel
 from app.domain.accounts.guards import requires_superuser
 from app.domain.admin.dependencies import provide_audit_service
 from app.domain.admin.schemas import AdminDashboardPage, AdminStats, AuditLogItem
-from app.domain.admin.services import AuditLogService
+
+if TYPE_CHECKING:
+    from app.domain.admin.services import AuditLogService
 
 __all__ = ("AdminDashboardController",)
 
@@ -42,7 +45,7 @@ class AdminDashboardController(Controller):
                 func.count(UserModel.id).label("total"),
                 func.sum(func.cast(UserModel.is_active, Integer)).label("active"),
                 func.sum(func.cast(UserModel.is_verified, Integer)).label("verified"),
-            )
+            ),
         )
         user_row = user_stats.one()
 
@@ -53,7 +56,7 @@ class AdminDashboardController(Controller):
         # Get recent signups (last 7 days)
         week_ago = datetime.now(UTC) - timedelta(days=7)
         recent_signups_result = await session.execute(
-            select(func.count(UserModel.id)).where(UserModel.created_at >= week_ago)
+            select(func.count(UserModel.id)).where(UserModel.created_at >= week_ago),
         )
         recent_signups = recent_signups_result.scalar() or 0
 

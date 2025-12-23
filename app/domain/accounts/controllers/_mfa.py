@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 import pyotp
 from litestar import Controller, Request, delete, post
@@ -13,8 +14,11 @@ from sqlalchemy.orm import undefer_group
 
 from app.domain.accounts.dependencies import provide_users_service
 from app.domain.accounts.schemas import MfaBackupCodes, MfaConfirm, MfaDisable, MfaSetup
-from app.domain.accounts.services import UserService, generate_backup_codes, generate_qr_code
+from app.domain.accounts.services import generate_backup_codes, generate_qr_code
 from app.lib import crypt
+
+if TYPE_CHECKING:
+    from app.domain.accounts.services import UserService
 
 __all__ = ("MfaController",)
 
@@ -35,7 +39,6 @@ class MfaController(Controller):
     path = "/mfa"
     include_in_schema = False
     dependencies = {"users_service": Provide(provide_users_service)}
-    signature_namespace = {"UserService": UserService}
     cache = False
 
     @post(path="/enable", name="mfa.enable")
@@ -60,11 +63,8 @@ class MfaController(Controller):
         if user.is_two_factor_enabled:
             raise ValidationException(_MSG_MFA_ALREADY_ENABLED)
 
-        # Generate new TOTP secret
         secret = pyotp.random_base32()
         qr_code = generate_qr_code(secret, user.email)
-
-        # Store secret temporarily (not confirmed yet)
         await users_service.update(
             item_id=user.id,
             data={"totp_secret": secret, "is_two_factor_enabled": False},
@@ -88,7 +88,6 @@ class MfaController(Controller):
         if not user_id:
             raise PermissionDeniedException(_MSG_AUTH_REQUIRED)
 
-        # Need credentials to access totp_secret
         user = await users_service.get_one_or_none(email=user_id, load=[undefer_group("security_sensitive")])
         if not user:
             raise PermissionDeniedException(_MSG_USER_NOT_FOUND)
@@ -99,14 +98,10 @@ class MfaController(Controller):
         if user.is_two_factor_enabled:
             raise ValidationException(_MSG_MFA_ALREADY_CONFIRMED)
 
-        # Verify the TOTP code
         if not await crypt.verify_totp_code(user.totp_secret, data.code):
             raise ValidationException(_MSG_INVALID_CODE)
 
-        # Generate backup codes
         plain_codes, hashed_codes = await generate_backup_codes()
-
-        # Enable MFA
         await users_service.update(
             item_id=user.id,
             data={
@@ -135,7 +130,6 @@ class MfaController(Controller):
         if not user_id:
             raise PermissionDeniedException(_MSG_AUTH_REQUIRED)
 
-        # Need credentials to verify password
         user = await users_service.get_one_or_none(email=user_id, load=[undefer_group("security_sensitive")])
         if not user:
             raise PermissionDeniedException(_MSG_USER_NOT_FOUND)
@@ -143,11 +137,9 @@ class MfaController(Controller):
         if not user.is_two_factor_enabled:
             raise ValidationException(_MSG_MFA_NOT_ENABLED)
 
-        # Verify password
         if not user.hashed_password or not await crypt.verify_password(data.password, user.hashed_password):
             raise ValidationException(_MSG_INVALID_CREDENTIALS)
 
-        # Disable MFA
         await users_service.update(
             item_id=user.id,
             data={
@@ -184,7 +176,6 @@ class MfaController(Controller):
         if not user.is_two_factor_enabled:
             raise ValidationException(_MSG_MFA_NOT_ENABLED)
 
-        # Generate new backup codes
         plain_codes, hashed_codes = await generate_backup_codes()
 
         await users_service.update(

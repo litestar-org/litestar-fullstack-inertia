@@ -1,11 +1,12 @@
 import { Head } from "@inertiajs/react"
-import { ImageIcon, KeyRound, Shield, Trash2, User } from "lucide-react"
+import { ImageIcon, KeyRound, Link2, Shield, Trash2, User } from "lucide-react"
 import { useState } from "react"
 import { Container } from "@/components/container"
 import { Header } from "@/components/header"
 import { SettingsSidebar, type SettingsSidebarItem } from "@/components/settings-sidebar"
 import { AppLayout } from "@/layouts/app-layout"
 import AvatarForm from "@/pages/profile/partials/avatar-form"
+import ConnectedAccountsForm from "@/pages/profile/partials/connected-accounts-form"
 import DeleteUserForm from "@/pages/profile/partials/delete-user-form"
 import MfaForm from "@/pages/profile/partials/mfa-form"
 import UpdatePasswordForm from "@/pages/profile/partials/update-password-form"
@@ -42,6 +43,12 @@ const sidebarItems: SettingsSidebarItem[] = [
 		description: "Secure your account with MFA",
 	},
 	{
+		id: "connected-accounts",
+		label: "Connected Accounts",
+		icon: Link2,
+		description: "Manage OAuth providers",
+	},
+	{
 		id: "delete-account",
 		label: "Delete Account",
 		icon: Trash2,
@@ -72,6 +79,9 @@ export default function Edit({ mustVerifyEmail, status }: Props) {
 						</div>
 						<div id="mfa">
 							<MfaForm />
+						</div>
+						<div id="connected-accounts">
+							<ConnectedAccountsForm />
 						</div>
 						<div id="delete-account">
 							<DeleteUserForm />

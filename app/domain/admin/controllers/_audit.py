@@ -41,7 +41,7 @@ class AdminAuditController(Controller):
 
     @get(component="admin/audit/list", name="admin.audit.list", operation_id="AdminListAuditLogs", path="/")
     async def list_audit_logs(
-        self, audit_service: AuditLogService, filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)]
+        self, audit_service: AuditLogService, filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
     ) -> AuditLogPage:
         """List audit log entries.
 

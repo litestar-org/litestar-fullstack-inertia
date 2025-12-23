@@ -814,24 +814,11 @@ export const NoPropsSchema = {
 
 export const OauthAccountSchema = {
     properties: {
-        accessToken: {
-            type: 'string'
-        },
         accountEmail: {
             type: 'string'
         },
         accountId: {
             type: 'string'
-        },
-        expiresAt: {
-            oneOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ]
         },
         id: {
             format: 'uuid',
@@ -840,10 +827,13 @@ export const OauthAccountSchema = {
         oauthName: {
             type: 'string'
         },
-        refreshToken: {
+        scopes: {
             oneOf: [
                 {
-                    type: 'string'
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
                 },
                 {
                     type: 'null'
@@ -852,7 +842,6 @@ export const OauthAccountSchema = {
         }
     },
     required: [
-        'accessToken',
         'accountEmail',
         'accountId',
         'id',

@@ -54,7 +54,6 @@ class MfaChallengeController(Controller):
             flash(request, "No MFA challenge pending.", category="warning")
             return InertiaRedirect(request, request.url_for("login"))
 
-        # Verify MFA code (service handles credential loading and backup code consumption)
         result = await users_service.verify_mfa(
             email=pending_user,
             code=data.code,
@@ -65,7 +64,6 @@ class MfaChallengeController(Controller):
             msg = "Invalid authentication code"
             raise ValidationException(msg)
 
-        # Complete login
         invitation_token = request.session.get("invitation_token")
         request.session.pop("mfa_user_id", None)
         request.set_session({"user_id": result.user.email})
@@ -73,7 +71,6 @@ class MfaChallengeController(Controller):
         if invitation_token:
             request.session["invitation_token"] = invitation_token
 
-        # Flash appropriate message
         if result.mfa_disabled:
             flash(request, "Your account was successfully authenticated.", category="info")
         elif result.used_backup_code:
@@ -89,7 +86,6 @@ class MfaChallengeController(Controller):
         else:
             flash(request, "Your account was successfully authenticated.", category="info")
 
-        # Redirect to invitation or dashboard
         if invitation_token:
             return InertiaRedirect(request, request.url_for("invitation.accept.page", token=invitation_token))
         return InertiaRedirect(request, request.url_for("dashboard"))

@@ -496,6 +496,58 @@
       ],
       "uri": "/mfa/regenerate-codes"
     },
+    "oauth.link.complete": {
+      "method": "get",
+      "methods": [
+        "GET"
+      ],
+      "parameterTypes": {
+        "provider": "string"
+      },
+      "parameters": [
+        "provider"
+      ],
+      "uri": "/profile/oauth/{provider}/complete"
+    },
+    "oauth.link.start": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "provider": "string"
+      },
+      "parameters": [
+        "provider"
+      ],
+      "uri": "/profile/oauth/{provider}/link"
+    },
+    "oauth.unlink": {
+      "method": "delete",
+      "methods": [
+        "DELETE"
+      ],
+      "parameterTypes": {
+        "provider": "string"
+      },
+      "parameters": [
+        "provider"
+      ],
+      "uri": "/profile/oauth/{provider}"
+    },
+    "oauth.upgrade_scopes": {
+      "method": "post",
+      "methods": [
+        "POST"
+      ],
+      "parameterTypes": {
+        "provider": "string"
+      },
+      "parameters": [
+        "provider"
+      ],
+      "uri": "/profile/oauth/{provider}/upgrade-scopes"
+    },
     "openapi.json": {
       "method": "get",
       "methods": [

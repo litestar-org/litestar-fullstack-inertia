@@ -77,7 +77,7 @@ class ProfileController(Controller):
             Redirect to landing page after account deletion.
         """
         request.session.clear()
-        _ = await users_service.delete(current_user.id)
+        await users_service.delete(current_user.id)
         flash(request, "Your account has been removed from the system.", category="info")
         return InertiaRedirect(request, request.url_for("landing"))
 

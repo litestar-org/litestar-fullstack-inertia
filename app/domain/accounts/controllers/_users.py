@@ -124,4 +124,4 @@ class UserController(Controller):
         user_id: Annotated[UUID, Parameter(title="User ID", description="The user to delete.")],
     ) -> None:
         """Delete a user from the system."""
-        _ = await users_service.delete(user_id)
+        await users_service.delete(user_id)

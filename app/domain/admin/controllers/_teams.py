@@ -26,12 +26,13 @@ from app.domain.admin.schemas import (
     AdminTeamUpdate,
     TeamMemberInfo,
 )
-from app.domain.admin.services import AuditLogService
 from app.domain.teams.dependencies import provide_team_members_service
 from app.domain.teams.services import TeamMemberService, TeamService
 
 if TYPE_CHECKING:
     from advanced_alchemy.filters import FilterTypes
+
+    from app.domain.admin.services import AuditLogService
 
 __all__ = ("AdminTeamController",)
 
@@ -60,7 +61,7 @@ class AdminTeamController(Controller):
 
     @get(component="admin/teams/list", name="admin.teams.list", operation_id="AdminListTeams", path="/")
     async def list_teams(
-        self, teams_service: TeamService, filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)]
+        self, teams_service: TeamService, filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
     ) -> AdminTeamListPage:
         """List all teams for admin management.
 
@@ -86,7 +87,7 @@ class AdminTeamController(Controller):
         return AdminTeamListPage(teams=teams, total=total)
 
     @get(
-        component="admin/teams/detail", name="admin.teams.detail", operation_id="AdminGetTeam", path="/{team_id:uuid}/"
+        component="admin/teams/detail", name="admin.teams.detail", operation_id="AdminGetTeam", path="/{team_id:uuid}/",
     )
     async def get_team(
         self,
@@ -121,7 +122,7 @@ class AdminTeamController(Controller):
                 ],
                 created_at=team.created_at,
                 updated_at=team.updated_at,
-            )
+            ),
         )
 
     @patch(name="admin.teams.update", operation_id="AdminUpdateTeam", path="/{team_id:uuid}/")

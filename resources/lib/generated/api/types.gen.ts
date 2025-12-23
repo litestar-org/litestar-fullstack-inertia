@@ -250,13 +250,11 @@ export type NoProps = {
  * OauthAccount
  */
 export type OauthAccount = {
-    accessToken: string;
     accountEmail: string;
     accountId: string;
-    expiresAt?: number | null;
     id: string;
     oauthName: string;
-    refreshToken?: string | null;
+    scopes?: Array<string> | null;
 };
 
 /**

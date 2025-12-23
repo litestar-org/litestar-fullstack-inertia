@@ -1,6 +1,5 @@
-from __future__ import annotations
-
-from enum import Enum
+# ruff: noqa: S105
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -13,7 +12,7 @@ if TYPE_CHECKING:
     from .user import User
 
 
-class AuditAction(str, Enum):
+class AuditAction(StrEnum):
     """Admin audit action types."""
 
     # User actions
@@ -45,9 +44,7 @@ class AuditLog(UUIDAuditBase):
 
     # Actor (the admin who performed the action)
     actor_id: Mapped[UUID] = mapped_column(
-        ForeignKey("user_account.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
+        ForeignKey("user_account.id", ondelete="SET NULL"), nullable=True, index=True,
     )
     actor_email: Mapped[str] = mapped_column(String(255), nullable=False)
 
@@ -65,4 +62,4 @@ class AuditLog(UUIDAuditBase):
     user_agent: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Relationships
-    actor: Mapped[User | None] = relationship(lazy="joined", foreign_keys=[actor_id])
+    actor: "Mapped[User | None]" = relationship(lazy="joined", foreign_keys=[actor_id])

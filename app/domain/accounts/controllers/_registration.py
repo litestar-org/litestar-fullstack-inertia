@@ -76,7 +76,6 @@ class RegistrationController(Controller):
         Raises:
             ValidationException: If the email is already registered.
         """
-        # Check if email already exists
         existing_user = await users_service.get_one_or_none(email=data.email)
         if existing_user:
             raise ValidationException(_MSG_EMAIL_EXISTS)

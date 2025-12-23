@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from uuid import UUID
 
 from advanced_alchemy.repository import SQLAlchemyAsyncRepository
 from advanced_alchemy.service import SQLAlchemyAsyncRepositoryService
@@ -9,6 +8,8 @@ from advanced_alchemy.service import SQLAlchemyAsyncRepositoryService
 from app.db.models import AuditAction, AuditLog
 
 if TYPE_CHECKING:
+    from uuid import UUID
+
     from app.db.models import User
 
 
@@ -49,16 +50,14 @@ class AuditLogService(SQLAlchemyAsyncRepositoryService[AuditLog]):
         Returns:
             The created audit log entry.
         """
-        return await self.create(
-            {
-                "actor_id": actor.id,
-                "actor_email": actor.email,
-                "action": action.value,
-                "target_type": target_type,
-                "target_id": target_id,
-                "target_label": target_label,
-                "details": details,
-                "ip_address": ip_address,
-                "user_agent": user_agent,
-            },
-        )
+        return await self.create({
+            "actor_id": actor.id,
+            "actor_email": actor.email,
+            "action": action.value,
+            "target_type": target_type,
+            "target_id": target_id,
+            "target_label": target_label,
+            "details": details,
+            "ip_address": ip_address,
+            "user_agent": user_agent,
+        })

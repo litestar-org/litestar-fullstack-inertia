@@ -12,7 +12,7 @@ from litestar.params import Dependency, Parameter
 from litestar_vite.inertia import InertiaRedirect, flash
 from sqlalchemy.orm import joinedload, selectinload, undefer_group
 
-from app.db.models import AuditAction, Role, Team, TeamMember, UserRole
+from app.db.models import AuditAction, TeamMember, UserRole
 from app.db.models import User as UserModel
 from app.domain.accounts.dependencies import provide_roles_service, provide_user_roles_service
 from app.domain.accounts.guards import requires_superuser
@@ -31,10 +31,11 @@ from app.domain.admin.schemas import (
     UserRoleInfo,
     UserTeamInfo,
 )
-from app.domain.admin.services import AuditLogService
 
 if TYPE_CHECKING:
     from advanced_alchemy.filters import FilterTypes
+
+    from app.domain.admin.services import AuditLogService
 
 __all__ = ("AdminUserController",)
 
