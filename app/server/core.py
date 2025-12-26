@@ -143,9 +143,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
 
         # static files for uploads
         uploads_router = create_static_files_router(
-            directories=[settings.storage.UPLOAD_DIR],
-            path="/uploads",
-            name="uploads",
+            directories=[settings.storage.UPLOAD_DIR], path="/uploads", name="uploads",
         )
 
         # routes
@@ -193,7 +191,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         })
         # dependencies
         app_config.dependencies.update({
-            "current_user": Provide(provide_user),
+            "current_user": Provide(provide_user, sync_to_thread=False),
             "settings": Provide(get_settings, sync_to_thread=False),
         })
         # listeners

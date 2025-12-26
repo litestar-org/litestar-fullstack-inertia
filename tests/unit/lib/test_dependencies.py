@@ -28,7 +28,7 @@ async def test_provide_user_dependency() -> None:
     """Test that the provide_user dependency correctly retrieves user from request."""
     user = User()
     request = RequestFactory(app=Litestar(route_handlers=[])).get("/", user=user)
-    assert await provide_user(request) is user
+    assert provide_user(request) is user
 
 
 async def test_filter_dependencies_with_litestar() -> None:

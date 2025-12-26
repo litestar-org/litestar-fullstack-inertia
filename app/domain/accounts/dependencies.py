@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from litestar.connection import Request
 
 
-async def provide_user(request: Request[UserModel, Any, Any]) -> UserModel:
+def provide_user(request: Request[UserModel, Any, Any]) -> UserModel:
     """Get the user from the connection.
 
     Args:
