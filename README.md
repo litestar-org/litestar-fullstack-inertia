@@ -22,6 +22,17 @@ A modern, production-ready fullstack reference application. It seamlessly integr
 
 This project serves as a comprehensive template for building scalable web applications. It comes pre-configured with best practices for authentication, database management, and deployment.
 
+### Features
+
+- **Authentication** — Email/password login, registration, password reset
+- **OAuth** — Sign in with GitHub or Google
+- **MFA** — TOTP-based two-factor authentication
+- **Email Verification** — Configurable verification flow
+- **Teams** — Multi-tenant workspaces with invitations and member roles
+- **User Profiles** — Avatar uploads, connected accounts management
+- **Admin Panel** — Superuser management for users and teams
+- **Role-Based Access** — Granular permission system
+
 ### Tech Stack
 
 | Component | Technology | Description |
@@ -39,6 +50,7 @@ This project serves as a comprehensive template for building scalable web applic
 ## 🛠️ Setup
 
 **Prerequisites:**
+
 - Python 3.12+
 - Node.js & npm (or Bun)
 - Docker & Docker Compose
@@ -46,38 +58,45 @@ This project serves as a comprehensive template for building scalable web applic
 
 ### Step-by-Step Installation
 
-1.  **Clone the Repository**
+1. **Clone the Repository**
+
     ```bash
     git clone https://github.com/litestar-org/litestar-fullstack-inertia.git
     cd litestar-fullstack-inertia
     ```
 
-2.  **Install Dependencies**
+2. **Install Dependencies**
     This installs both Python (virtualenv) and JavaScript dependencies.
+
     ```bash
     make install
     ```
 
-3.  **Configure Environment**
+3. **Configure Environment**
     Create the environment file from the example.
+
     ```bash
     cp .env.local.example .env
     ```
 
-4.  **Start Infrastructure**
+4. **Start Infrastructure**
     Spin up PostgreSQL and Redis containers.
+
     ```bash
     make start-infra
     ```
 
-5.  **Run Migrations**
-    Apply database schema changes.
+5. **Run Migrations & Seed Data**
+    Apply database schema and create default roles.
+
     ```bash
     uv run app database upgrade
+    uv run app users create-roles
     ```
 
-6.  **Run the Application**
+6. **Run the Application**
     Start the development server (Backend + Vite HMR).
+
     ```bash
     uv run app run --reload
     ```
@@ -93,28 +112,39 @@ This project serves as a comprehensive template for building scalable web applic
 We use `make` to manage common development tasks.
 
 ### Running Tests
+
 Execute the full test suite (unit + integration).
+
 ```bash
 make test
 ```
+
 **Outcome:** All tests passed with a summary report.
 
 ### Code Quality (Linting & Formatting)
+
 Run all linters (Ruff, Mypy, Biome, Slotscheck).
+
 ```bash
 make lint
 ```
+
 **Outcome:** Zero errors reported. Code is formatted and type-checked.
 
 ### Documentation
+
 Build and serve the documentation locally.
+
 ```bash
 make docs-serve
 ```
+
 **Outcome:** Documentation running at `http://localhost:8002`.
 
 ### Database Management
+
 The application CLI handles database operations.
+
 ```bash
 uv run app database --help
 # Examples:
@@ -146,12 +176,12 @@ uv run app database upgrade                              # Apply migrations
 
 We welcome contributions! Please follow these steps:
 
-1.  **Fork & Clone** the repository.
-2.  **Install** dependencies using `make install`.
-3.  **Branch** off `main` for your feature/fix.
-4.  **Implement** your changes.
-5.  **Verify** with `make test` and `make lint`.
-6.  **Submit** a Pull Request.
+1. **Fork & Clone** the repository.
+2. **Install** dependencies using `make install`.
+3. **Branch** off `main` for your feature/fix.
+4. **Implement** your changes.
+5. **Verify** with `make test` and `make lint`.
+6. **Submit** a Pull Request.
 
 **Note:** This project uses [Conventional Commits](https://www.conventionalcommits.org/).
 
