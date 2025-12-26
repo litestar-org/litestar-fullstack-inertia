@@ -66,7 +66,7 @@ class RegistrationController(Controller):
 
     @post(component="auth/register", name="register.add", path="/register/", guards=[requires_registration_enabled])
     async def signup(
-        self, request: Request, users_service: UserService, roles_service: RoleService, data: AccountRegister
+        self, request: Request, users_service: UserService, roles_service: RoleService, data: AccountRegister,
     ) -> InertiaRedirect:
         """Register a new user account.
 
@@ -130,7 +130,7 @@ class RegistrationController(Controller):
             Redirect to dashboard after successful OAuth authentication.
         """
         return await self._auth_complete(
-            request, access_token_state, users_service, github_oauth2_client, oauth_account_service
+            request, access_token_state, users_service, github_oauth2_client, oauth_account_service,
         )
 
     @post(name="google.register", path="/register/google/")
@@ -188,7 +188,7 @@ class RegistrationController(Controller):
         invitation_token = request.session.get("invitation_token")
 
         user, created = await users_service.get_or_upsert(
-            match_fields=["email"], email=email, is_verified=True, is_active=True
+            match_fields=["email"], email=email, is_verified=True, is_active=True,
         )
 
         # Link or update the OAuth account
@@ -217,7 +217,7 @@ class RegistrationController(Controller):
         if invitation_token:
             request.logger.info("Redirecting OAuth user to invitation page with token")
             return InertiaRedirect(
-                request, redirect_to=request.url_for("invitation.accept.page", token=invitation_token)
+                request, redirect_to=request.url_for("invitation.accept.page", token=invitation_token),
             )
 
         return InertiaRedirect(request, redirect_to=request.url_for("dashboard"))
