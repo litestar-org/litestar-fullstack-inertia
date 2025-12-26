@@ -1,5 +1,5 @@
 import { type InertiaLinkProps, Link, router, usePage } from "@inertiajs/react"
-import { LogInIcon, UserRoundCogIcon } from "lucide-react"
+import { LogInIcon, ShieldCheck, UserRoundCogIcon } from "lucide-react"
 import { Icons } from "@/components/icons"
 import { TeamSwitcher } from "@/components/team-switcher"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -57,6 +57,14 @@ export default function Navbar() {
 												Profile
 											</Link>
 										</DropdownMenuItem>
+										{auth.user.isSuperuser && (
+											<DropdownMenuItem>
+												<Link className="flex w-full items-center" href="/admin">
+													<ShieldCheck className="mr-2 size-4" />
+													Admin Panel
+												</Link>
+											</DropdownMenuItem>
+										)}
 										<DropdownMenuSeparator />
 										<DropdownMenuItem onClick={() => router.post(route("logout"))}>Logout</DropdownMenuItem>
 									</DropdownMenuContent>

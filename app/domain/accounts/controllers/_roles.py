@@ -22,7 +22,6 @@ class RoleController(Controller):
     tags = ["Roles"]
     guards = [requires_superuser]
     dependencies = {"roles_service": Provide(provide_roles_service)}
-    signature_namespace = {"RoleService": RoleService}
 
 
 class UserRoleController(Controller):
@@ -90,7 +89,7 @@ class UserRoleController(Controller):
         removed_role: bool = False
         for user_role in user_obj.roles:
             if user_role.role_slug == role_slug:
-                _ = await user_roles_service.delete(user_role.id)
+                await user_roles_service.delete(user_role.id)
                 removed_role = True
         if not removed_role:
             msg = "User did not have role assigned."

@@ -5,6 +5,7 @@ from uuid import UUID  # noqa: TC003
 
 from advanced_alchemy.base import UUIDAuditBase
 from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -29,6 +30,12 @@ class UserOauthAccount(UUIDAuditBase):
     refresh_token: Mapped[str | None] = mapped_column(String(length=1024), nullable=True)
     account_id: Mapped[str] = mapped_column(String(length=320), index=True, nullable=False)
     account_email: Mapped[str] = mapped_column(String(length=320), nullable=False)
+    scopes: Mapped[list[str] | None] = mapped_column(
+        JSONB,
+        nullable=True,
+        default=None,
+        comment="OAuth scopes granted by the provider",
+    )
 
     # -----------
     # ORM Relationships

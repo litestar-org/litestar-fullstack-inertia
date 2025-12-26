@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcceptInvitationData, AcceptInvitationErrors, AcceptInvitationResponses, AddMemberToTeamData, AddMemberToTeamErrors, AddMemberToTeamResponses, AssignUserRoleData, AssignUserRoleErrors, AssignUserRoleResponses, CancelTeamInvitationData, CancelTeamInvitationErrors, CreateTagData, CreateTagErrors, CreateTagResponses, CreateTeamData, CreateTeamErrors, CreateTeamInvitationData, CreateTeamInvitationErrors, CreateTeamInvitationResponses, CreateTeamPageData, CreateTeamPageResponses, CreateTeamResponses, CreateUserData, CreateUserErrors, CreateUserResponses, DeclineInvitationData, DeclineInvitationErrors, DeclineInvitationResponses, DeleteTagData, DeleteTagErrors, DeleteTagResponses, DeleteTeamData, DeleteTeamErrors, DeleteUserData, DeleteUserErrors, DeleteUserResponses, GetInvitationAcceptPageData, GetInvitationAcceptPageErrors, GetInvitationAcceptPageResponses, GetTagData, GetTagErrors, GetTagResponses, GetTeamData, GetTeamErrors, GetTeamInvitationsData, GetTeamInvitationsErrors, GetTeamInvitationsResponses, GetTeamResponses, GetTeamSettingsData, GetTeamSettingsErrors, GetTeamSettingsResponses, GetUserData, GetUserErrors, GetUserInvitationsData, GetUserInvitationsResponses, GetUserResponses, ListTagsData, ListTagsErrors, ListTagsResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, RemoveMemberFromTeamData, RemoveMemberFromTeamErrors, RemoveMemberFromTeamResponses, RevokeUserRoleData, RevokeUserRoleErrors, RevokeUserRoleResponses, UpdateTagData, UpdateTagErrors, UpdateTagResponses, UpdateTeamData, UpdateTeamErrors, UpdateTeamResponses, UpdateUserData, UpdateUserErrors, UpdateUserResponses } from './types.gen';
+import type { AcceptInvitationData, AcceptInvitationErrors, AcceptInvitationResponses, AddMemberToTeamData, AddMemberToTeamErrors, AddMemberToTeamResponses, AdminAddTeamMemberData, AdminAddTeamMemberErrors, AdminAddTeamMemberResponses, AdminAssignRoleData, AdminAssignRoleErrors, AdminAssignRoleResponses, AdminCreateUserData, AdminCreateUserErrors, AdminCreateUserPageData, AdminCreateUserPageResponses, AdminCreateUserResponses, AdminDashboardData, AdminDashboardResponses, AdminDeleteTeamData, AdminDeleteTeamErrors, AdminDeleteUserData, AdminDeleteUserErrors, AdminGetTeamData, AdminGetTeamErrors, AdminGetTeamResponses, AdminGetUserData, AdminGetUserErrors, AdminGetUserResponses, AdminListAuditLogsData, AdminListAuditLogsErrors, AdminListAuditLogsResponses, AdminListTeamsData, AdminListTeamsErrors, AdminListTeamsResponses, AdminListUsersData, AdminListUsersErrors, AdminListUsersResponses, AdminLockUserData, AdminLockUserErrors, AdminLockUserResponses, AdminRemoveTeamMemberData, AdminRemoveTeamMemberErrors, AdminRevokeRoleData, AdminRevokeRoleErrors, AdminUnlockUserData, AdminUnlockUserErrors, AdminUnlockUserResponses, AdminUnverifyUserData, AdminUnverifyUserErrors, AdminUnverifyUserResponses, AdminUpdateTeamData, AdminUpdateTeamErrors, AdminUpdateTeamResponses, AdminUpdateUserData, AdminUpdateUserErrors, AdminUpdateUserResponses, AdminVerifyUserData, AdminVerifyUserErrors, AdminVerifyUserResponses, AssignUserRoleData, AssignUserRoleErrors, AssignUserRoleResponses, CancelTeamInvitationData, CancelTeamInvitationErrors, CreateTagData, CreateTagErrors, CreateTagResponses, CreateTeamData, CreateTeamErrors, CreateTeamInvitationData, CreateTeamInvitationErrors, CreateTeamInvitationResponses, CreateTeamPageData, CreateTeamPageResponses, CreateTeamResponses, CreateUserData, CreateUserErrors, CreateUserResponses, DeclineInvitationData, DeclineInvitationErrors, DeclineInvitationResponses, DeleteTagData, DeleteTagErrors, DeleteTagResponses, DeleteTeamData, DeleteTeamErrors, DeleteUserData, DeleteUserErrors, DeleteUserResponses, GetInvitationAcceptPageData, GetInvitationAcceptPageErrors, GetInvitationAcceptPageResponses, GetTagData, GetTagErrors, GetTagResponses, GetTeamData, GetTeamErrors, GetTeamInvitationsData, GetTeamInvitationsErrors, GetTeamInvitationsResponses, GetTeamResponses, GetTeamSettingsData, GetTeamSettingsErrors, GetTeamSettingsResponses, GetUserData, GetUserErrors, GetUserInvitationsData, GetUserInvitationsResponses, GetUserResponses, ListTagsData, ListTagsErrors, ListTagsResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, RemoveMemberFromTeamData, RemoveMemberFromTeamErrors, RemoveMemberFromTeamResponses, RevokeUserRoleData, RevokeUserRoleErrors, RevokeUserRoleResponses, UpdateTagData, UpdateTagErrors, UpdateTagResponses, UpdateTeamData, UpdateTeamErrors, UpdateTeamResponses, UpdateUserData, UpdateUserErrors, UpdateUserResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -17,6 +17,386 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
      */
     meta?: Record<string, unknown>;
 };
+
+/**
+ * Dashboard
+ *
+ * Admin dashboard with overview statistics.
+ *
+ * Returns:
+ * Dashboard page with stats and recent activity.
+ */
+export const adminDashboard = <ThrowOnError extends boolean = false>(options?: Options<AdminDashboardData, ThrowOnError>) => (options?.client ?? client).get<AdminDashboardResponses, unknown, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin',
+    ...options
+});
+
+/**
+ * ListAuditLogs
+ *
+ * List audit log entries.
+ *
+ * Returns:
+ * Paginated list of audit log entries.
+ */
+export const adminListAuditLogs = <ThrowOnError extends boolean = false>(options?: Options<AdminListAuditLogsData, ThrowOnError>) => (options?.client ?? client).get<AdminListAuditLogsResponses, AdminListAuditLogsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/audit',
+    ...options
+});
+
+/**
+ * ListTeams
+ *
+ * List all teams for admin management.
+ *
+ * Returns:
+ * Paginated list of teams.
+ */
+export const adminListTeams = <ThrowOnError extends boolean = false>(options?: Options<AdminListTeamsData, ThrowOnError>) => (options?.client ?? client).get<AdminListTeamsResponses, AdminListTeamsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/teams',
+    ...options
+});
+
+/**
+ * DeleteTeam
+ *
+ * Delete a team.
+ *
+ * Returns:
+ * Redirect to teams list.
+ */
+export const adminDeleteTeam = <ThrowOnError extends boolean = false>(options: Options<AdminDeleteTeamData, ThrowOnError>) => (options.client ?? client).delete<unknown, AdminDeleteTeamErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/teams/{team_id}',
+    ...options
+});
+
+/**
+ * GetTeam
+ *
+ * Get team details for admin.
+ *
+ * Returns:
+ * Team details with member list.
+ */
+export const adminGetTeam = <ThrowOnError extends boolean = false>(options: Options<AdminGetTeamData, ThrowOnError>) => (options.client ?? client).get<AdminGetTeamResponses, AdminGetTeamErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/teams/{team_id}',
+    ...options
+});
+
+/**
+ * UpdateTeam
+ *
+ * Update a team.
+ *
+ * Returns:
+ * Redirect to team detail page.
+ */
+export const adminUpdateTeam = <ThrowOnError extends boolean = false>(options: Options<AdminUpdateTeamData, ThrowOnError>) => (options.client ?? client).patch<AdminUpdateTeamResponses, AdminUpdateTeamErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/teams/{team_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * AddMember
+ *
+ * Add a member to a team.
+ *
+ * Returns:
+ * Redirect to team detail page.
+ */
+export const adminAddTeamMember = <ThrowOnError extends boolean = false>(options: Options<AdminAddTeamMemberData, ThrowOnError>) => (options.client ?? client).post<AdminAddTeamMemberResponses, AdminAddTeamMemberErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/teams/{team_id}/members',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * RemoveMember
+ *
+ * Remove a member from a team.
+ *
+ * Returns:
+ * Redirect to team detail page.
+ */
+export const adminRemoveTeamMember = <ThrowOnError extends boolean = false>(options: Options<AdminRemoveTeamMemberData, ThrowOnError>) => (options.client ?? client).delete<unknown, AdminRemoveTeamMemberErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/teams/{team_id}/members/{member_id}',
+    ...options
+});
+
+/**
+ * ListUsers
+ *
+ * List all users for admin management.
+ *
+ * Returns:
+ * Paginated list of users with role information.
+ */
+export const adminListUsers = <ThrowOnError extends boolean = false>(options?: Options<AdminListUsersData, ThrowOnError>) => (options?.client ?? client).get<AdminListUsersResponses, AdminListUsersErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/users',
+    ...options
+});
+
+/**
+ * CreateUser
+ *
+ * Create a new user.
+ *
+ * Returns:
+ * Redirect to user detail page.
+ */
+export const adminCreateUser = <ThrowOnError extends boolean = false>(options: Options<AdminCreateUserData, ThrowOnError>) => (options.client ?? client).post<AdminCreateUserResponses, AdminCreateUserErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/users',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * CreateUserPage
+ *
+ * Show user creation form.
+ *
+ * Returns:
+ * Page with available roles for assignment.
+ */
+export const adminCreateUserPage = <ThrowOnError extends boolean = false>(options?: Options<AdminCreateUserPageData, ThrowOnError>) => (options?.client ?? client).get<AdminCreateUserPageResponses, unknown, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/users/create',
+    ...options
+});
+
+/**
+ * DeleteUser
+ *
+ * Delete a user.
+ *
+ * Returns:
+ * Redirect to users list.
+ */
+export const adminDeleteUser = <ThrowOnError extends boolean = false>(options: Options<AdminDeleteUserData, ThrowOnError>) => (options.client ?? client).delete<unknown, AdminDeleteUserErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/users/{user_id}',
+    ...options
+});
+
+/**
+ * GetUser
+ *
+ * Get user details for admin.
+ *
+ * Returns:
+ * User details with roles and team memberships.
+ */
+export const adminGetUser = <ThrowOnError extends boolean = false>(options: Options<AdminGetUserData, ThrowOnError>) => (options.client ?? client).get<AdminGetUserResponses, AdminGetUserErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/users/{user_id}',
+    ...options
+});
+
+/**
+ * UpdateUser
+ *
+ * Update a user.
+ *
+ * Returns:
+ * Redirect to user detail page.
+ */
+export const adminUpdateUser = <ThrowOnError extends boolean = false>(options: Options<AdminUpdateUserData, ThrowOnError>) => (options.client ?? client).patch<AdminUpdateUserResponses, AdminUpdateUserErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/users/{user_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * LockUser
+ *
+ * Lock (deactivate) a user account.
+ *
+ * Returns:
+ * Redirect to user detail page.
+ */
+export const adminLockUser = <ThrowOnError extends boolean = false>(options: Options<AdminLockUserData, ThrowOnError>) => (options.client ?? client).post<AdminLockUserResponses, AdminLockUserErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/users/{user_id}/lock',
+    ...options
+});
+
+/**
+ * AssignRole
+ *
+ * Assign a role to a user.
+ *
+ * Returns:
+ * Redirect to user detail page.
+ */
+export const adminAssignRole = <ThrowOnError extends boolean = false>(options: Options<AdminAssignRoleData, ThrowOnError>) => (options.client ?? client).post<AdminAssignRoleResponses, AdminAssignRoleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/users/{user_id}/roles',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * RevokeRole
+ *
+ * Revoke a role from a user.
+ *
+ * Returns:
+ * Redirect to user detail page.
+ */
+export const adminRevokeRole = <ThrowOnError extends boolean = false>(options: Options<AdminRevokeRoleData, ThrowOnError>) => (options.client ?? client).delete<unknown, AdminRevokeRoleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/users/{user_id}/roles/{user_role_id}',
+    ...options
+});
+
+/**
+ * UnlockUser
+ *
+ * Unlock (activate) a user account.
+ *
+ * Returns:
+ * Redirect to user detail page.
+ */
+export const adminUnlockUser = <ThrowOnError extends boolean = false>(options: Options<AdminUnlockUserData, ThrowOnError>) => (options.client ?? client).post<AdminUnlockUserResponses, AdminUnlockUserErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/users/{user_id}/unlock',
+    ...options
+});
+
+/**
+ * UnverifyUser
+ *
+ * Remove verification from a user.
+ *
+ * Returns:
+ * Redirect to user detail page.
+ */
+export const adminUnverifyUser = <ThrowOnError extends boolean = false>(options: Options<AdminUnverifyUserData, ThrowOnError>) => (options.client ?? client).post<AdminUnverifyUserResponses, AdminUnverifyUserErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/users/{user_id}/unverify',
+    ...options
+});
+
+/**
+ * VerifyUser
+ *
+ * Manually verify a user's email.
+ *
+ * Returns:
+ * Redirect to user detail page.
+ */
+export const adminVerifyUser = <ThrowOnError extends boolean = false>(options: Options<AdminVerifyUserData, ThrowOnError>) => (options.client ?? client).post<AdminVerifyUserResponses, AdminVerifyUserErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'session',
+            type: 'apiKey'
+        }],
+    url: '/admin/users/{user_id}/verify',
+    ...options
+});
 
 /**
  * AssignRole

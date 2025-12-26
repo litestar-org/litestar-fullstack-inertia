@@ -1,3 +1,4 @@
+from .audit_log import AuditAction, AuditLog
 from .email_token import EmailToken, TokenType
 from .oauth_account import UserOauthAccount
 from .role import Role
@@ -11,6 +12,8 @@ from .user import User
 from .user_role import UserRole
 
 __all__ = (
+    "AuditAction",
+    "AuditLog",
     "EmailToken",
     "Role",
     "Tag",

@@ -58,16 +58,13 @@ class AccessController(Controller):
         user = await users_service.authenticate(data.username, data.password)
         invitation_token = request.session.get("invitation_token")
 
-        # Check if user has MFA enabled
         if user.is_two_factor_enabled and user.totp_secret:
-            # Store pending MFA session
             request.set_session({"mfa_user_id": user.email})
             if invitation_token:
                 request.session["invitation_token"] = invitation_token
             request.logger.info("Redirecting to MFA challenge")
             return InertiaRedirect(request, request.url_for("mfa-challenge"))
 
-        # No MFA, complete login immediately
         request.set_session({"user_id": user.email})
         if invitation_token:
             request.session["invitation_token"] = invitation_token
@@ -92,7 +89,12 @@ class AccessController(Controller):
         request.clear_session()
         return InertiaRedirect(request, request.url_for("login"))
 
-    @get(component="auth/confirm-password", name="password.confirm.page", path="/confirm-password/", exclude_from_auth=False)
+    @get(
+        component="auth/confirm-password",
+        name="password.confirm.page",
+        path="/confirm-password/",
+        exclude_from_auth=False,
+    )
     async def show_confirm_password(self, request: Request) -> NoProps:
         """Show the password confirmation page.
 
@@ -103,14 +105,17 @@ class AccessController(Controller):
         """
         return NoProps()
 
-    @post(component="auth/confirm-password", name="password.confirm", path="/confirm-password/", exclude_from_auth=False)
+    @post(
+        component="auth/confirm-password", name="password.confirm", path="/confirm-password/", exclude_from_auth=False,
+    )
     async def confirm_password(
-        self,
-        request: Request,
-        users_service: UserService,
-        data: PasswordConfirm,
+        self, request: Request, users_service: UserService, data: PasswordConfirm,
     ) -> InertiaRedirect:
         """Confirm user password before sensitive actions.
+
+        Raises:
+            PermissionDeniedException: If authentication fails.
+            ValidationException: If the provided password is incorrect.
 
         Returns:
             Redirect to intended destination or dashboard.
@@ -119,22 +124,14 @@ class AccessController(Controller):
         if not user_id:
             raise PermissionDeniedException(_MSG_AUTH_REQUIRED)
 
-        user = await users_service.get_one_or_none(
-            email=user_id,
-            load=[undefer_group("security_sensitive")],
-        )
+        user = await users_service.get_one_or_none(email=user_id, load=[undefer_group("security_sensitive")])
         if not user:
             raise PermissionDeniedException(_MSG_USER_NOT_FOUND)
 
         if not user.hashed_password or not crypt.verify_password(data.password, user.hashed_password):
             raise ValidationException(_MSG_INVALID_CREDENTIALS)
 
-        # Set password confirmation timestamp in session
         request.session["password_confirmed_at"] = datetime.now(UTC).isoformat()
-
-        # Redirect to intended destination or dashboard
-        intended_url = request.session.pop("intended_url", None)
-        if intended_url:
+        if intended_url := request.session.pop("intended_url", None):
             return InertiaRedirect(request, intended_url)
-
         return InertiaRedirect(request, request.url_for("dashboard"))

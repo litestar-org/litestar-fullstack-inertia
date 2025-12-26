@@ -1,6 +1,695 @@
 {
   "components": {
     "schemas": {
+      "AdminDashboardPage": {
+        "properties": {
+          "recentLogs": {
+            "items": {
+              "$ref": "#/components/schemas/AuditLogItem"
+            },
+            "type": "array"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/AdminStats"
+          }
+        },
+        "required": [
+          "stats"
+        ],
+        "title": "AdminDashboardPage",
+        "type": "object"
+      },
+      "AdminStats": {
+        "properties": {
+          "activeUsers": {
+            "default": 0,
+            "type": "integer"
+          },
+          "recentSignups": {
+            "default": 0,
+            "type": "integer"
+          },
+          "totalTeams": {
+            "default": 0,
+            "type": "integer"
+          },
+          "totalUsers": {
+            "default": 0,
+            "type": "integer"
+          },
+          "verifiedUsers": {
+            "default": 0,
+            "type": "integer"
+          }
+        },
+        "required": [],
+        "title": "AdminStats",
+        "type": "object"
+      },
+      "AdminTeamDetail": {
+        "properties": {
+          "createdAt": {
+            "oneOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "isActive": {
+            "default": true,
+            "type": "boolean"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/TeamMemberInfo"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "oneOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ],
+        "title": "AdminTeamDetail",
+        "type": "object"
+      },
+      "AdminTeamDetailPage": {
+        "properties": {
+          "team": {
+            "$ref": "#/components/schemas/AdminTeamDetail"
+          }
+        },
+        "required": [
+          "team"
+        ],
+        "title": "AdminTeamDetailPage",
+        "type": "object"
+      },
+      "AdminTeamListItem": {
+        "properties": {
+          "createdAt": {
+            "oneOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "isActive": {
+            "default": true,
+            "type": "boolean"
+          },
+          "memberCount": {
+            "default": 0,
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ownerEmail": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ],
+        "title": "AdminTeamListItem",
+        "type": "object"
+      },
+      "AdminTeamListPage": {
+        "properties": {
+          "page": {
+            "default": 1,
+            "type": "integer"
+          },
+          "pageSize": {
+            "default": 25,
+            "type": "integer"
+          },
+          "teams": {
+            "items": {
+              "$ref": "#/components/schemas/AdminTeamListItem"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "teams",
+          "total"
+        ],
+        "title": "AdminTeamListPage",
+        "type": "object"
+      },
+      "AdminTeamMemberAdd": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/TeamRoles"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId"
+        ],
+        "title": "AdminTeamMemberAdd",
+        "type": "object"
+      },
+      "AdminTeamUpdate": {
+        "properties": {
+          "description": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "isActive": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [],
+        "title": "AdminTeamUpdate",
+        "type": "object"
+      },
+      "AdminUserCreate": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "isActive": {
+            "default": true,
+            "type": "boolean"
+          },
+          "isSuperuser": {
+            "default": false,
+            "type": "boolean"
+          },
+          "isVerified": {
+            "default": false,
+            "type": "boolean"
+          },
+          "name": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "AdminUserCreate",
+        "type": "object"
+      },
+      "AdminUserCreatePage": {
+        "properties": {
+          "availableRoles": {
+            "items": {
+              "$ref": "#/components/schemas/RoleOption"
+            },
+            "type": "array"
+          }
+        },
+        "required": [],
+        "title": "AdminUserCreatePage",
+        "type": "object"
+      },
+      "AdminUserDetail": {
+        "properties": {
+          "avatarUrl": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "oneOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "type": "string"
+          },
+          "hasPassword": {
+            "default": false,
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "isActive": {
+            "default": false,
+            "type": "boolean"
+          },
+          "isSuperuser": {
+            "default": false,
+            "type": "boolean"
+          },
+          "isTwoFactorEnabled": {
+            "default": false,
+            "type": "boolean"
+          },
+          "isVerified": {
+            "default": false,
+            "type": "boolean"
+          },
+          "name": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/UserRoleInfo"
+            },
+            "type": "array"
+          },
+          "teams": {
+            "items": {
+              "$ref": "#/components/schemas/UserTeamInfo"
+            },
+            "type": "array"
+          },
+          "updatedAt": {
+            "oneOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "id"
+        ],
+        "title": "AdminUserDetail",
+        "type": "object"
+      },
+      "AdminUserDetailPage": {
+        "properties": {
+          "availableRoles": {
+            "items": {
+              "$ref": "#/components/schemas/RoleOption"
+            },
+            "type": "array"
+          },
+          "user": {
+            "$ref": "#/components/schemas/AdminUserDetail"
+          }
+        },
+        "required": [
+          "user"
+        ],
+        "title": "AdminUserDetailPage",
+        "type": "object"
+      },
+      "AdminUserListItem": {
+        "properties": {
+          "avatarUrl": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "oneOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "isActive": {
+            "default": false,
+            "type": "boolean"
+          },
+          "isSuperuser": {
+            "default": false,
+            "type": "boolean"
+          },
+          "isTwoFactorEnabled": {
+            "default": false,
+            "type": "boolean"
+          },
+          "isVerified": {
+            "default": false,
+            "type": "boolean"
+          },
+          "name": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "roleNames": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "teamCount": {
+            "default": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "email",
+          "id"
+        ],
+        "title": "AdminUserListItem",
+        "type": "object"
+      },
+      "AdminUserListPage": {
+        "properties": {
+          "page": {
+            "default": 1,
+            "type": "integer"
+          },
+          "pageSize": {
+            "default": 25,
+            "type": "integer"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/RoleOption"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "users": {
+            "items": {
+              "$ref": "#/components/schemas/AdminUserListItem"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "total",
+          "users"
+        ],
+        "title": "AdminUserListPage",
+        "type": "object"
+      },
+      "AdminUserRoleAssign": {
+        "properties": {
+          "roleId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "roleId"
+        ],
+        "title": "AdminUserRoleAssign",
+        "type": "object"
+      },
+      "AdminUserUpdate": {
+        "properties": {
+          "email": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "isActive": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "isSuperuser": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "isVerified": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [],
+        "title": "AdminUserUpdate",
+        "type": "object"
+      },
+      "AuditLogItem": {
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "actorEmail": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "details": {
+            "oneOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "ipAddress": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "targetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "targetLabel": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "targetType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "actorEmail",
+          "createdAt",
+          "id",
+          "targetId",
+          "targetType"
+        ],
+        "title": "AuditLogItem",
+        "type": "object"
+      },
+      "AuditLogPage": {
+        "properties": {
+          "logs": {
+            "items": {
+              "$ref": "#/components/schemas/AuditLogItem"
+            },
+            "type": "array"
+          },
+          "page": {
+            "default": 1,
+            "type": "integer"
+          },
+          "pageSize": {
+            "default": 50,
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "logs",
+          "total"
+        ],
+        "title": "AuditLogPage",
+        "type": "object"
+      },
       "CurrentTeam": {
         "properties": {
           "teamId": {
@@ -103,24 +792,11 @@
       },
       "OauthAccount": {
         "properties": {
-          "accessToken": {
-            "type": "string"
-          },
           "accountEmail": {
             "type": "string"
           },
           "accountId": {
             "type": "string"
-          },
-          "expiresAt": {
-            "oneOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "id": {
             "format": "uuid",
@@ -129,10 +805,13 @@
           "oauthName": {
             "type": "string"
           },
-          "refreshToken": {
+          "scopes": {
             "oneOf": [
               {
-                "type": "string"
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
               },
               {
                 "type": "null"
@@ -141,7 +820,6 @@
           }
         },
         "required": [
-          "accessToken",
           "accountEmail",
           "accountId",
           "id",
@@ -164,6 +842,27 @@
           "token"
         ],
         "title": "PasswordResetToken",
+        "type": "object"
+      },
+      "RoleOption": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ],
+        "title": "RoleOption",
         "type": "object"
       },
       "Tag": {
@@ -643,6 +1342,55 @@
         "title": "TeamMember",
         "type": "object"
       },
+      "TeamMemberInfo": {
+        "properties": {
+          "avatarUrl": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "isOwner": {
+            "default": false,
+            "type": "boolean"
+          },
+          "name": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role": {
+            "$ref": "#/components/schemas/TeamRoles"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "id",
+          "userId"
+        ],
+        "title": "TeamMemberInfo",
+        "type": "object"
+      },
       "TeamMemberModify": {
         "properties": {
           "userName": {
@@ -997,6 +1745,37 @@
         "title": "UserRoleAdd",
         "type": "object"
       },
+      "UserRoleInfo": {
+        "properties": {
+          "assignedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "roleId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "roleName": {
+            "type": "string"
+          },
+          "roleSlug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assignedAt",
+          "id",
+          "roleId",
+          "roleName",
+          "roleSlug"
+        ],
+        "title": "UserRoleInfo",
+        "type": "object"
+      },
       "UserRoleRevoke": {
         "properties": {
           "userName": {
@@ -1035,6 +1814,34 @@
           "teamSlug"
         ],
         "title": "UserTeam",
+        "type": "object"
+      },
+      "UserTeamInfo": {
+        "properties": {
+          "isOwner": {
+            "default": false,
+            "type": "boolean"
+          },
+          "role": {
+            "$ref": "#/components/schemas/TeamRoles"
+          },
+          "teamId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "teamName": {
+            "type": "string"
+          },
+          "teamSlug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "teamId",
+          "teamName",
+          "teamSlug"
+        ],
+        "title": "UserTeamInfo",
         "type": "object"
       },
       "UserUpdate": {
@@ -1120,6 +1927,2055 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/admin": {
+      "get": {
+        "deprecated": false,
+        "description": "Admin dashboard with overview statistics.\n\nReturns:\n    Dashboard page with stats and recent activity.",
+        "operationId": "AdminDashboard",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDashboardPage"
+                }
+              }
+            },
+            "description": "Request fulfilled, document follows",
+            "headers": {}
+          }
+        },
+        "summary": "Dashboard",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/audit": {
+      "get": {
+        "deprecated": false,
+        "description": "List audit log entries.\n\nReturns:\n    Paginated list of audit log entries.",
+        "operationId": "AdminListAuditLogs",
+        "parameters": [
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "ids",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "createdBefore",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "createdAfter",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "searchString",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Field to search"
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "searchIgnoreCase",
+            "required": false,
+            "schema": {
+              "default": false,
+              "oneOf": [
+                {
+                  "default": false,
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search should be case sensitive"
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "currentPage",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1.0,
+              "type": "integer"
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "pageSize",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "minimum": 1.0,
+              "type": "integer"
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "orderBy",
+            "required": false,
+            "schema": {
+              "default": "created_at",
+              "oneOf": [
+                {
+                  "default": "created_at",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Order by field"
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "sortOrder",
+            "required": false,
+            "schema": {
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc",
+                null
+              ],
+              "title": "Field to search",
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogPage"
+                }
+              }
+            },
+            "description": "Request fulfilled, document follows",
+            "headers": {}
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "ListAuditLogs",
+        "tags": [
+          "Admin - Audit"
+        ]
+      }
+    },
+    "/admin/teams": {
+      "get": {
+        "deprecated": false,
+        "description": "List all teams for admin management.\n\nReturns:\n    Paginated list of teams.",
+        "operationId": "AdminListTeams",
+        "parameters": [
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "ids",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "createdBefore",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "createdAfter",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "updatedBefore",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "updatedAfter",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "searchString",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Field to search"
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "searchIgnoreCase",
+            "required": false,
+            "schema": {
+              "default": false,
+              "oneOf": [
+                {
+                  "default": false,
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search should be case sensitive"
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "currentPage",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1.0,
+              "type": "integer"
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "pageSize",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "minimum": 1.0,
+              "type": "integer"
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "orderBy",
+            "required": false,
+            "schema": {
+              "default": "created_at",
+              "oneOf": [
+                {
+                  "default": "created_at",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Order by field"
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "sortOrder",
+            "required": false,
+            "schema": {
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc",
+                null
+              ],
+              "title": "Field to search",
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTeamListPage"
+                }
+              }
+            },
+            "description": "Request fulfilled, document follows",
+            "headers": {}
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "ListTeams",
+        "tags": [
+          "Admin - Teams"
+        ]
+      }
+    },
+    "/admin/teams/{team_id}": {
+      "delete": {
+        "deprecated": false,
+        "description": "Delete a team.\n\nReturns:\n    Redirect to teams list.",
+        "operationId": "AdminDeleteTeam",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The team ID.",
+            "in": "path",
+            "name": "team_id",
+            "required": true,
+            "schema": {
+              "description": "The team ID.",
+              "format": "uuid",
+              "title": "Team ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "Object moved -- see Method and URL list",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "DeleteTeam",
+        "tags": [
+          "Admin - Teams"
+        ]
+      },
+      "get": {
+        "deprecated": false,
+        "description": "Get team details for admin.\n\nReturns:\n    Team details with member list.",
+        "operationId": "AdminGetTeam",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The team ID.",
+            "in": "path",
+            "name": "team_id",
+            "required": true,
+            "schema": {
+              "description": "The team ID.",
+              "format": "uuid",
+              "title": "Team ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTeamDetailPage"
+                }
+              }
+            },
+            "description": "Request fulfilled, document follows",
+            "headers": {}
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "GetTeam",
+        "tags": [
+          "Admin - Teams"
+        ]
+      },
+      "patch": {
+        "deprecated": false,
+        "description": "Update a team.\n\nReturns:\n    Redirect to team detail page.",
+        "operationId": "AdminUpdateTeam",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The team ID.",
+            "in": "path",
+            "name": "team_id",
+            "required": true,
+            "schema": {
+              "description": "The team ID.",
+              "format": "uuid",
+              "title": "Team ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminTeamUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Request fulfilled, document follows",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "UpdateTeam",
+        "tags": [
+          "Admin - Teams"
+        ]
+      }
+    },
+    "/admin/teams/{team_id}/members": {
+      "post": {
+        "deprecated": false,
+        "description": "Add a member to a team.\n\nReturns:\n    Redirect to team detail page.",
+        "operationId": "AdminAddTeamMember",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The team ID.",
+            "in": "path",
+            "name": "team_id",
+            "required": true,
+            "schema": {
+              "description": "The team ID.",
+              "format": "uuid",
+              "title": "Team ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminTeamMemberAdd"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Document created, URL follows",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "AddMember",
+        "tags": [
+          "Admin - Teams"
+        ]
+      }
+    },
+    "/admin/teams/{team_id}/members/{member_id}": {
+      "delete": {
+        "deprecated": false,
+        "description": "Remove a member from a team.\n\nReturns:\n    Redirect to team detail page.",
+        "operationId": "AdminRemoveTeamMember",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The team ID.",
+            "in": "path",
+            "name": "team_id",
+            "required": true,
+            "schema": {
+              "description": "The team ID.",
+              "format": "uuid",
+              "title": "Team ID",
+              "type": "string"
+            }
+          },
+          {
+            "deprecated": false,
+            "description": "The team member ID.",
+            "in": "path",
+            "name": "member_id",
+            "required": true,
+            "schema": {
+              "description": "The team member ID.",
+              "format": "uuid",
+              "title": "Member ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "Object moved -- see Method and URL list",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "RemoveMember",
+        "tags": [
+          "Admin - Teams"
+        ]
+      }
+    },
+    "/admin/users": {
+      "get": {
+        "deprecated": false,
+        "description": "List all users for admin management.\n\nReturns:\n    Paginated list of users with role information.",
+        "operationId": "AdminListUsers",
+        "parameters": [
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "ids",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "createdBefore",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "createdAfter",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "updatedBefore",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "updatedAfter",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "searchString",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Field to search"
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "searchIgnoreCase",
+            "required": false,
+            "schema": {
+              "default": false,
+              "oneOf": [
+                {
+                  "default": false,
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search should be case sensitive"
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "currentPage",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1.0,
+              "type": "integer"
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "pageSize",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "minimum": 1.0,
+              "type": "integer"
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "orderBy",
+            "required": false,
+            "schema": {
+              "default": "created_at",
+              "oneOf": [
+                {
+                  "default": "created_at",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Order by field"
+            }
+          },
+          {
+            "allowEmptyValue": false,
+            "allowReserved": false,
+            "deprecated": false,
+            "in": "query",
+            "name": "sortOrder",
+            "required": false,
+            "schema": {
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc",
+                null
+              ],
+              "title": "Field to search",
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserListPage"
+                }
+              }
+            },
+            "description": "Request fulfilled, document follows",
+            "headers": {}
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "ListUsers",
+        "tags": [
+          "Admin - Users"
+        ]
+      },
+      "post": {
+        "deprecated": false,
+        "description": "Create a new user.\n\nReturns:\n    Redirect to user detail page.",
+        "operationId": "AdminCreateUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Document created, URL follows",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "CreateUser",
+        "tags": [
+          "Admin - Users"
+        ]
+      }
+    },
+    "/admin/users/create": {
+      "get": {
+        "deprecated": false,
+        "description": "Show user creation form.\n\nReturns:\n    Page with available roles for assignment.",
+        "operationId": "AdminCreateUserPage",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserCreatePage"
+                }
+              }
+            },
+            "description": "Request fulfilled, document follows",
+            "headers": {}
+          }
+        },
+        "summary": "CreateUserPage",
+        "tags": [
+          "Admin - Users"
+        ]
+      }
+    },
+    "/admin/users/{user_id}": {
+      "delete": {
+        "deprecated": false,
+        "description": "Delete a user.\n\nReturns:\n    Redirect to users list.",
+        "operationId": "AdminDeleteUser",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The user ID.",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "description": "The user ID.",
+              "format": "uuid",
+              "title": "User ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "Object moved -- see Method and URL list",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "DeleteUser",
+        "tags": [
+          "Admin - Users"
+        ]
+      },
+      "get": {
+        "deprecated": false,
+        "description": "Get user details for admin.\n\nReturns:\n    User details with roles and team memberships.",
+        "operationId": "AdminGetUser",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The user ID.",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "description": "The user ID.",
+              "format": "uuid",
+              "title": "User ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserDetailPage"
+                }
+              }
+            },
+            "description": "Request fulfilled, document follows",
+            "headers": {}
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "GetUser",
+        "tags": [
+          "Admin - Users"
+        ]
+      },
+      "patch": {
+        "deprecated": false,
+        "description": "Update a user.\n\nReturns:\n    Redirect to user detail page.",
+        "operationId": "AdminUpdateUser",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The user ID.",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "description": "The user ID.",
+              "format": "uuid",
+              "title": "User ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUserUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Request fulfilled, document follows",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "UpdateUser",
+        "tags": [
+          "Admin - Users"
+        ]
+      }
+    },
+    "/admin/users/{user_id}/lock": {
+      "post": {
+        "deprecated": false,
+        "description": "Lock (deactivate) a user account.\n\nReturns:\n    Redirect to user detail page.",
+        "operationId": "AdminLockUser",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The user ID.",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "description": "The user ID.",
+              "format": "uuid",
+              "title": "User ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Document created, URL follows",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "LockUser",
+        "tags": [
+          "Admin - Users"
+        ]
+      }
+    },
+    "/admin/users/{user_id}/roles": {
+      "post": {
+        "deprecated": false,
+        "description": "Assign a role to a user.\n\nReturns:\n    Redirect to user detail page.",
+        "operationId": "AdminAssignRole",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The user ID.",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "description": "The user ID.",
+              "format": "uuid",
+              "title": "User ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUserRoleAssign"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Document created, URL follows",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "AssignRole",
+        "tags": [
+          "Admin - Users"
+        ]
+      }
+    },
+    "/admin/users/{user_id}/roles/{user_role_id}": {
+      "delete": {
+        "deprecated": false,
+        "description": "Revoke a role from a user.\n\nReturns:\n    Redirect to user detail page.",
+        "operationId": "AdminRevokeRole",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The user ID.",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "description": "The user ID.",
+              "format": "uuid",
+              "title": "User ID",
+              "type": "string"
+            }
+          },
+          {
+            "deprecated": false,
+            "description": "The user-role assignment ID.",
+            "in": "path",
+            "name": "user_role_id",
+            "required": true,
+            "schema": {
+              "description": "The user-role assignment ID.",
+              "format": "uuid",
+              "title": "User Role ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "Object moved -- see Method and URL list",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "RevokeRole",
+        "tags": [
+          "Admin - Users"
+        ]
+      }
+    },
+    "/admin/users/{user_id}/unlock": {
+      "post": {
+        "deprecated": false,
+        "description": "Unlock (activate) a user account.\n\nReturns:\n    Redirect to user detail page.",
+        "operationId": "AdminUnlockUser",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The user ID.",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "description": "The user ID.",
+              "format": "uuid",
+              "title": "User ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Document created, URL follows",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "UnlockUser",
+        "tags": [
+          "Admin - Users"
+        ]
+      }
+    },
+    "/admin/users/{user_id}/unverify": {
+      "post": {
+        "deprecated": false,
+        "description": "Remove verification from a user.\n\nReturns:\n    Redirect to user detail page.",
+        "operationId": "AdminUnverifyUser",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The user ID.",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "description": "The user ID.",
+              "format": "uuid",
+              "title": "User ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Document created, URL follows",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "UnverifyUser",
+        "tags": [
+          "Admin - Users"
+        ]
+      }
+    },
+    "/admin/users/{user_id}/verify": {
+      "post": {
+        "deprecated": false,
+        "description": "Manually verify a user's email.\n\nReturns:\n    Redirect to user detail page.",
+        "operationId": "AdminVerifyUser",
+        "parameters": [
+          {
+            "deprecated": false,
+            "description": "The user ID.",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "description": "The user ID.",
+              "format": "uuid",
+              "title": "User ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Document created, URL follows",
+            "headers": {
+              "location": {
+                "deprecated": false,
+                "description": "target path for the redirect",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Validation Exception",
+                  "examples": [
+                    {
+                      "detail": "Bad Request",
+                      "extra": {},
+                      "status_code": 400
+                    }
+                  ],
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "additionalProperties": {},
+                      "type": [
+                        "null",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "detail",
+                    "status_code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request syntax or unsupported method"
+          }
+        },
+        "summary": "VerifyUser",
+        "tags": [
+          "Admin - Users"
+        ]
+      }
+    },
     "/api/roles/{role_slug}/assign": {
       "post": {
         "deprecated": false,

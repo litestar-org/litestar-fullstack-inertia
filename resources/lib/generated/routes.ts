@@ -17,6 +17,26 @@ export type UUID = string;
 export type RouteName =
   | 'about'
   | 'account.remove'
+  | 'admin.audit.list'
+  | 'admin.dashboard'
+  | 'admin.teams.delete'
+  | 'admin.teams.detail'
+  | 'admin.teams.list'
+  | 'admin.teams.members.add'
+  | 'admin.teams.members.remove'
+  | 'admin.teams.update'
+  | 'admin.users.create'
+  | 'admin.users.delete'
+  | 'admin.users.detail'
+  | 'admin.users.list'
+  | 'admin.users.lock'
+  | 'admin.users.roles.assign'
+  | 'admin.users.roles.revoke'
+  | 'admin.users.store'
+  | 'admin.users.unlock'
+  | 'admin.users.unverify'
+  | 'admin.users.update'
+  | 'admin.users.verify'
   | 'dashboard'
   | 'favicon'
   | 'forgot-password'
@@ -41,6 +61,10 @@ export type RouteName =
   | 'mfa.disable'
   | 'mfa.enable'
   | 'mfa.regenerate-codes'
+  | 'oauth.link.complete'
+  | 'oauth.link.start'
+  | 'oauth.unlink'
+  | 'oauth.upgrade_scopes'
   | 'openapi.json'
   | 'password.confirm'
   | 'password.confirm.page'
@@ -88,6 +112,56 @@ export type RouteName =
 export interface RoutePathParams {
   'about': Record<string, never>;
   'account.remove': Record<string, never>;
+  'admin.audit.list': Record<string, never>;
+  'admin.dashboard': Record<string, never>;
+  'admin.teams.delete': {
+    team_id: UUID;
+  };
+  'admin.teams.detail': {
+    team_id: UUID;
+  };
+  'admin.teams.list': Record<string, never>;
+  'admin.teams.members.add': {
+    team_id: UUID;
+  };
+  'admin.teams.members.remove': {
+    member_id: UUID;
+    team_id: UUID;
+  };
+  'admin.teams.update': {
+    team_id: UUID;
+  };
+  'admin.users.create': Record<string, never>;
+  'admin.users.delete': {
+    user_id: UUID;
+  };
+  'admin.users.detail': {
+    user_id: UUID;
+  };
+  'admin.users.list': Record<string, never>;
+  'admin.users.lock': {
+    user_id: UUID;
+  };
+  'admin.users.roles.assign': {
+    user_id: UUID;
+  };
+  'admin.users.roles.revoke': {
+    user_id: UUID;
+    user_role_id: UUID;
+  };
+  'admin.users.store': Record<string, never>;
+  'admin.users.unlock': {
+    user_id: UUID;
+  };
+  'admin.users.unverify': {
+    user_id: UUID;
+  };
+  'admin.users.update': {
+    user_id: UUID;
+  };
+  'admin.users.verify': {
+    user_id: UUID;
+  };
   'dashboard': Record<string, never>;
   'favicon': Record<string, never>;
   'forgot-password': Record<string, never>;
@@ -118,6 +192,18 @@ export interface RoutePathParams {
   'mfa.disable': Record<string, never>;
   'mfa.enable': Record<string, never>;
   'mfa.regenerate-codes': Record<string, never>;
+  'oauth.link.complete': {
+    provider: string;
+  };
+  'oauth.link.start': {
+    provider: string;
+  };
+  'oauth.unlink': {
+    provider: string;
+  };
+  'oauth.upgrade_scopes': {
+    provider: string;
+  };
   'openapi.json': Record<string, never>;
   'password.confirm': Record<string, never>;
   'password.confirm.page': Record<string, never>;
@@ -205,6 +291,60 @@ export interface RoutePathParams {
 export interface RouteQueryParams {
   'about': Record<string, never>;
   'account.remove': Record<string, never>;
+  'admin.audit.list': {
+    createdAfter?: DateTime;
+    createdBefore?: DateTime;
+    currentPage?: number;
+    ids?: string[];
+    orderBy?: string;
+    pageSize?: number;
+    searchIgnoreCase?: boolean;
+    searchString?: string;
+    sortOrder?: "asc" | "desc";
+  };
+  'admin.dashboard': Record<string, never>;
+  'admin.teams.delete': Record<string, never>;
+  'admin.teams.detail': Record<string, never>;
+  'admin.teams.list': {
+    createdAfter?: DateTime;
+    createdBefore?: DateTime;
+    currentPage?: number;
+    ids?: string[];
+    orderBy?: string;
+    pageSize?: number;
+    searchIgnoreCase?: boolean;
+    searchString?: string;
+    sortOrder?: "asc" | "desc";
+    updatedAfter?: DateTime;
+    updatedBefore?: DateTime;
+  };
+  'admin.teams.members.add': Record<string, never>;
+  'admin.teams.members.remove': Record<string, never>;
+  'admin.teams.update': Record<string, never>;
+  'admin.users.create': Record<string, never>;
+  'admin.users.delete': Record<string, never>;
+  'admin.users.detail': Record<string, never>;
+  'admin.users.list': {
+    createdAfter?: DateTime;
+    createdBefore?: DateTime;
+    currentPage?: number;
+    ids?: string[];
+    orderBy?: string;
+    pageSize?: number;
+    searchIgnoreCase?: boolean;
+    searchString?: string;
+    sortOrder?: "asc" | "desc";
+    updatedAfter?: DateTime;
+    updatedBefore?: DateTime;
+  };
+  'admin.users.lock': Record<string, never>;
+  'admin.users.roles.assign': Record<string, never>;
+  'admin.users.roles.revoke': Record<string, never>;
+  'admin.users.store': Record<string, never>;
+  'admin.users.unlock': Record<string, never>;
+  'admin.users.unverify': Record<string, never>;
+  'admin.users.update': Record<string, never>;
+  'admin.users.verify': Record<string, never>;
   'dashboard': Record<string, never>;
   'favicon': Record<string, never>;
   'forgot-password': Record<string, never>;
@@ -239,6 +379,10 @@ export interface RouteQueryParams {
   'mfa.disable': Record<string, never>;
   'mfa.enable': Record<string, never>;
   'mfa.regenerate-codes': Record<string, never>;
+  'oauth.link.complete': Record<string, never>;
+  'oauth.link.start': Record<string, never>;
+  'oauth.unlink': Record<string, never>;
+  'oauth.upgrade_scopes': Record<string, never>;
   'openapi.json': Record<string, never>;
   'password.confirm': Record<string, never>;
   'password.confirm.page': Record<string, never>;
@@ -317,7 +461,9 @@ export interface RouteQueryParams {
   };
   'users:revoke-role': Record<string, never>;
   'users:update': Record<string, never>;
-  'verification.send': Record<string, never>;
+  'verification.send': {
+    dotenv_filename?: string;
+  };
   'verify-email': {
     token?: string;
   };
@@ -346,6 +492,153 @@ export const routeDefinitions = {
     methods: ['DELETE'] as const,
     method: 'delete',
     pathParams: [] as const,
+    queryParams: [] as const,
+  },
+  'admin.audit.list': {
+    path: '/admin/audit',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: [] as const,
+    queryParams: ['createdAfter', 'createdBefore', 'currentPage', 'ids', 'orderBy', 'pageSize', 'searchIgnoreCase', 'searchString', 'sortOrder'] as const,
+    component: 'admin/audit/list',
+  },
+  'admin.dashboard': {
+    path: '/admin',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: [] as const,
+    queryParams: [] as const,
+    component: 'admin/dashboard',
+  },
+  'admin.teams.delete': {
+    path: '/admin/teams/{team_id}',
+    methods: ['DELETE'] as const,
+    method: 'delete',
+    pathParams: ['team_id'] as const,
+    queryParams: [] as const,
+  },
+  'admin.teams.detail': {
+    path: '/admin/teams/{team_id}',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: ['team_id'] as const,
+    queryParams: [] as const,
+    component: 'admin/teams/detail',
+  },
+  'admin.teams.list': {
+    path: '/admin/teams',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: [] as const,
+    queryParams: ['createdAfter', 'createdBefore', 'currentPage', 'ids', 'orderBy', 'pageSize', 'searchIgnoreCase', 'searchString', 'sortOrder', 'updatedAfter', 'updatedBefore'] as const,
+    component: 'admin/teams/list',
+  },
+  'admin.teams.members.add': {
+    path: '/admin/teams/{team_id}/members',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: ['team_id'] as const,
+    queryParams: [] as const,
+  },
+  'admin.teams.members.remove': {
+    path: '/admin/teams/{team_id}/members/{member_id}',
+    methods: ['DELETE'] as const,
+    method: 'delete',
+    pathParams: ['member_id', 'team_id'] as const,
+    queryParams: [] as const,
+  },
+  'admin.teams.update': {
+    path: '/admin/teams/{team_id}',
+    methods: ['PATCH'] as const,
+    method: 'patch',
+    pathParams: ['team_id'] as const,
+    queryParams: [] as const,
+  },
+  'admin.users.create': {
+    path: '/admin/users/create',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: [] as const,
+    queryParams: [] as const,
+    component: 'admin/users/create',
+  },
+  'admin.users.delete': {
+    path: '/admin/users/{user_id}',
+    methods: ['DELETE'] as const,
+    method: 'delete',
+    pathParams: ['user_id'] as const,
+    queryParams: [] as const,
+  },
+  'admin.users.detail': {
+    path: '/admin/users/{user_id}',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: ['user_id'] as const,
+    queryParams: [] as const,
+    component: 'admin/users/detail',
+  },
+  'admin.users.list': {
+    path: '/admin/users',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: [] as const,
+    queryParams: ['createdAfter', 'createdBefore', 'currentPage', 'ids', 'orderBy', 'pageSize', 'searchIgnoreCase', 'searchString', 'sortOrder', 'updatedAfter', 'updatedBefore'] as const,
+    component: 'admin/users/list',
+  },
+  'admin.users.lock': {
+    path: '/admin/users/{user_id}/lock',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: ['user_id'] as const,
+    queryParams: [] as const,
+  },
+  'admin.users.roles.assign': {
+    path: '/admin/users/{user_id}/roles',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: ['user_id'] as const,
+    queryParams: [] as const,
+  },
+  'admin.users.roles.revoke': {
+    path: '/admin/users/{user_id}/roles/{user_role_id}',
+    methods: ['DELETE'] as const,
+    method: 'delete',
+    pathParams: ['user_id', 'user_role_id'] as const,
+    queryParams: [] as const,
+  },
+  'admin.users.store': {
+    path: '/admin/users',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: [] as const,
+    queryParams: [] as const,
+  },
+  'admin.users.unlock': {
+    path: '/admin/users/{user_id}/unlock',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: ['user_id'] as const,
+    queryParams: [] as const,
+  },
+  'admin.users.unverify': {
+    path: '/admin/users/{user_id}/unverify',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: ['user_id'] as const,
+    queryParams: [] as const,
+  },
+  'admin.users.update': {
+    path: '/admin/users/{user_id}',
+    methods: ['PATCH'] as const,
+    method: 'patch',
+    pathParams: ['user_id'] as const,
+    queryParams: [] as const,
+  },
+  'admin.users.verify': {
+    path: '/admin/users/{user_id}/verify',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: ['user_id'] as const,
     queryParams: [] as const,
   },
   'dashboard': {
@@ -524,6 +817,34 @@ export const routeDefinitions = {
     methods: ['POST'] as const,
     method: 'post',
     pathParams: [] as const,
+    queryParams: [] as const,
+  },
+  'oauth.link.complete': {
+    path: '/profile/oauth/{provider}/complete',
+    methods: ['GET'] as const,
+    method: 'get',
+    pathParams: ['provider'] as const,
+    queryParams: [] as const,
+  },
+  'oauth.link.start': {
+    path: '/profile/oauth/{provider}/link',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: ['provider'] as const,
+    queryParams: [] as const,
+  },
+  'oauth.unlink': {
+    path: '/profile/oauth/{provider}',
+    methods: ['DELETE'] as const,
+    method: 'delete',
+    pathParams: ['provider'] as const,
+    queryParams: [] as const,
+  },
+  'oauth.upgrade_scopes': {
+    path: '/profile/oauth/{provider}/upgrade-scopes',
+    methods: ['POST'] as const,
+    method: 'post',
+    pathParams: ['provider'] as const,
     queryParams: [] as const,
   },
   'openapi.json': {
@@ -821,7 +1142,7 @@ export const routeDefinitions = {
     methods: ['POST'] as const,
     method: 'post',
     pathParams: [] as const,
-    queryParams: [] as const,
+    queryParams: ['dotenv_filename'] as const,
     component: 'auth/verify-email',
   },
   'verify-email': {

@@ -65,6 +65,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             EmailVerificationController,
             MfaChallengeController,
             MfaController,
+            OAuthAccountController,
             PasswordResetController,
             ProfileController,
             RegistrationController,
@@ -73,7 +74,22 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         )
         from app.domain.accounts.dependencies import provide_user
         from app.domain.accounts.guards import session_auth
+        from app.domain.accounts.services import (
+            EmailTokenService,
+            RoleService,
+            UserOAuthAccountService,
+            UserRoleService,
+            UserService,
+        )
+        from app.domain.admin.controllers import (
+            AdminAuditController,
+            AdminDashboardController,
+            AdminTeamController,
+            AdminUserController,
+        )
+        from app.domain.admin.services import AuditLogService
         from app.domain.tags.controllers import TagController
+        from app.domain.tags.services import TagService
         from app.domain.teams import signals as team_signals
         from app.domain.teams.controllers import (
             InvitationAcceptController,
@@ -82,6 +98,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             TeamMemberController,
             UserInvitationsController,
         )
+        from app.domain.teams.services import TeamInvitationService, TeamMemberService, TeamService
         from app.domain.web.controllers import WebController
         from app.lib import log
         from app.lib.exceptions import (
@@ -90,7 +107,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             not_found_error_handler,
             repository_error_handler,
         )
-        from app.lib.settings import get_settings
+        from app.lib.settings import Settings, get_settings
         from app.server import plugins
 
         settings = get_settings()
@@ -126,9 +143,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
 
         # static files for uploads
         uploads_router = create_static_files_router(
-            directories=[settings.storage.UPLOAD_DIR],
-            path="/uploads",
-            name="uploads",
+            directories=[settings.storage.UPLOAD_DIR], path="/uploads", name="uploads",
         )
 
         # routes
@@ -139,6 +154,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             EmailVerificationController,
             MfaChallengeController,
             MfaController,
+            OAuthAccountController,
             PasswordResetController,
             ProfileController,
             RegistrationController,
@@ -151,11 +167,33 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             UserInvitationsController,
             TagController,
             WebController,
+            # Admin controllers
+            AdminDashboardController,
+            AdminUserController,
+            AdminTeamController,
+            AdminAuditController,
         ])
         # signatures
-        app_config.signature_namespace.update({"UserModel": UserModel, "UUID": UUID})
+        app_config.signature_namespace.update({
+            "UUID": UUID,
+            "UserModel": UserModel,
+            "AuditLogService": AuditLogService,
+            "EmailTokenService": EmailTokenService,
+            "RoleService": RoleService,
+            "TagService": TagService,
+            "TeamInvitationService": TeamInvitationService,
+            "TeamMemberService": TeamMemberService,
+            "TeamService": TeamService,
+            "UserOAuthAccountService": UserOAuthAccountService,
+            "UserRoleService": UserRoleService,
+            "UserService": UserService,
+            "Settings": Settings,
+        })
         # dependencies
-        app_config.dependencies.update({"current_user": Provide(provide_user)})
+        app_config.dependencies.update({
+            "current_user": Provide(provide_user, sync_to_thread=False),
+            "settings": Provide(get_settings, sync_to_thread=False),
+        })
         # listeners
         app_config.listeners.extend([
             account_signals.user_created_event_handler,
