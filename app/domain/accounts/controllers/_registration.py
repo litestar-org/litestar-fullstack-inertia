@@ -66,7 +66,7 @@ class RegistrationController(Controller):
 
     @post(component="auth/register", name="register.add", path="/register/", guards=[requires_registration_enabled])
     async def signup(
-        self, request: Request, users_service: UserService, roles_service: RoleService, data: AccountRegister,
+        self, request: Request, users_service: UserService, roles_service: RoleService, data: AccountRegister
     ) -> InertiaRedirect:
         """Register a new user account.
 
@@ -118,14 +118,20 @@ class RegistrationController(Controller):
         signature_namespace={"AccessTokenState": AccessTokenState},
     )
     async def github_complete(
-        self, request: Request, access_token_state: AccessTokenState, users_service: UserService,
+        self,
+        request: Request,
+        access_token_state: AccessTokenState,
+        users_service: UserService,
+        oauth_account_service: UserOAuthAccountService,
     ) -> InertiaRedirect:
         """Complete login with GitHub and redirect to the dashboard.
 
         Returns:
             Redirect to dashboard after successful OAuth authentication.
         """
-        return await self._auth_complete(request, access_token_state, users_service, github_oauth2_client)
+        return await self._auth_complete(
+            request, access_token_state, users_service, github_oauth2_client, oauth_account_service
+        )
 
     @post(name="google.register", path="/register/google/")
     async def google_signup(self, request: Request) -> InertiaExternalRedirect:
@@ -144,20 +150,28 @@ class RegistrationController(Controller):
         signature_namespace={"AccessTokenState": AccessTokenState},
     )
     async def google_complete(
-        self, request: Request, access_token_state: AccessTokenState, users_service: UserService,
+        self,
+        request: Request,
+        access_token_state: AccessTokenState,
+        users_service: UserService,
+        oauth_account_service: UserOAuthAccountService,
     ) -> InertiaRedirect:
         """Complete login with Google and redirect to the dashboard.
 
         Returns:
             Redirect to dashboard after successful OAuth authentication.
         """
-        return await RegistrationController._auth_complete(
-            request, access_token_state, users_service, google_oauth2_client,
+        return await self._auth_complete(
+            request, access_token_state, users_service, google_oauth2_client, oauth_account_service,
         )
 
     @staticmethod
     async def _auth_complete(
-        request: Request, access_token_state: AccessTokenState, users_service: UserService, oauth_client: BaseOAuth2,
+        request: Request,
+        access_token_state: AccessTokenState,
+        users_service: UserService,
+        oauth_client: BaseOAuth2,
+        oauth_account_service: UserOAuthAccountService,
     ) -> InertiaRedirect:
         """Complete the OAuth2 flow and redirect to the dashboard or invitation page.
 
@@ -165,18 +179,36 @@ class RegistrationController(Controller):
             Redirect to dashboard or invitation page after creating or updating user from OAuth data.
         """
         token, _ = access_token_state
-        id_, email = await oauth_client.get_id_email(token=token["access_token"])
+        account_id, email = await oauth_client.get_id_email(token=token["access_token"])
+
+        if not email:
+            flash(request, "Could not retrieve email from OAuth provider.", category="error")
+            return InertiaRedirect(request, redirect_to=request.url_for("login"))
 
         invitation_token = request.session.get("invitation_token")
 
         user, created = await users_service.get_or_upsert(
-            match_fields=["email"], email=email, is_verified=True, is_active=True,
+            match_fields=["email"], email=email, is_verified=True, is_active=True
         )
+
+        # Link or update the OAuth account
+        scopes = token.get("scope", "").split() if token.get("scope") else None
+        await oauth_account_service.link_or_update_oauth(
+            user_id=user.id,
+            provider=oauth_client.name,
+            account_id=account_id,
+            account_email=email,
+            access_token=token["access_token"],
+            refresh_token=token.get("refresh_token"),
+            expires_at=token.get("expires_at"),
+            scopes=scopes,
+        )
+
         request.set_session({"user_id": user.email})
         if invitation_token:
             request.session["invitation_token"] = invitation_token
 
-        request.logger.info("auth request complete", id=id_, email=email, provider=oauth_client.name)
+        request.logger.info("auth request complete", id=account_id, email=email, provider=oauth_client.name)
         if created:
             request.logger.info("created a new user", id=user.id)
             flash(request, "Welcome to fullstack.  Your account is ready", category="info")
@@ -184,6 +216,8 @@ class RegistrationController(Controller):
 
         if invitation_token:
             request.logger.info("Redirecting OAuth user to invitation page with token")
-            return InertiaRedirect(request, redirect_to=request.url_for("invitation.accept.page", token=invitation_token))
+            return InertiaRedirect(
+                request, redirect_to=request.url_for("invitation.accept.page", token=invitation_token)
+            )
 
         return InertiaRedirect(request, redirect_to=request.url_for("dashboard"))
