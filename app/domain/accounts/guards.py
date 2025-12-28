@@ -16,8 +16,12 @@ from app.lib.oauth import OAuth2AuthorizeCallback
 from app.lib.settings import get_settings
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
     from litestar.connection import ASGIConnection
     from litestar.handlers.base import BaseRouteHandler
+
+    from app.domain.accounts.services import UserService
 
 
 __all__ = (
@@ -117,11 +121,18 @@ async def current_user_from_session(
     if (user_id := session.get("user_id")) is None:
         share(connection, "auth", {"isAuthenticated": False})
         return None
-    service = await anext(provide_users_service(alchemy.provide_session(connection.app.state, connection.scope)))
-    user = await service.get_one_or_none(email=user_id)
-    if user and user.is_active:
-        share(connection, "auth", {"isAuthenticated": True, "user": service.to_schema(user, schema_type=UserSchema)})
-        return user
+    service_provider: AsyncGenerator[UserService, None] = provide_users_service(
+        alchemy.provide_session(connection.app.state, connection.scope),
+    )
+    try:
+        service = await anext(service_provider)
+        user = await service.get_one_or_none(email=user_id)
+        if user and user.is_active:
+            share(connection, "auth", {"isAuthenticated": True, "user": service.to_schema(user, schema_type=UserSchema)})
+            return user
+    finally:
+        await service_provider.aclose()
+    session.pop("user_id", None)
     share(connection, "auth", {"isAuthenticated": False})
     return None
 
@@ -131,5 +142,9 @@ session_auth = SessionAuth[UserModel, ServerSideSessionBackend](
     retrieve_user_handler=current_user_from_session,
     exclude=["^/schema", "^/health", "^/login", "^/register", "^/forgot-password", "^/reset-password", "^/verify-email", "^/mfa-challenge", "^/o/"],
 )
-github_oauth_callback = OAuth2AuthorizeCallback(github_oauth2_client, route_name="github.complete")
-google_oauth_callback = OAuth2AuthorizeCallback(google_oauth2_client, route_name="google.complete")
+github_oauth_callback = OAuth2AuthorizeCallback(
+    github_oauth2_client, route_name="github.complete", state_session_key="oauth_state:auth:github",
+)
+google_oauth_callback = OAuth2AuthorizeCallback(
+    google_oauth2_client, route_name="google.complete", state_session_key="oauth_state:auth:google",
+)

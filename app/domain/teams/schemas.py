@@ -28,14 +28,14 @@ class Team(CamelizedBaseStruct):
     id: UUID
     name: str
     description: str | None = None
-    members: list[TeamMember] = []
-    tags: list[TeamTag] = []
+    members: list[TeamMember] = msgspec.field(default_factory=list)
+    tags: list[TeamTag] = msgspec.field(default_factory=list)
 
 
 class TeamCreate(CamelizedBaseStruct):
     name: str
     description: str | None = None
-    tags: list[str] = []
+    tags: list[str] = msgspec.field(default_factory=list)
 
 
 class TeamUpdate(CamelizedBaseStruct, omit_defaults=True):
@@ -115,7 +115,7 @@ class TeamDetailPage(CamelizedBaseStruct):
     team: TeamDetail
     members: list[TeamPageMember]
     permissions: TeamPermissions
-    pending_invitations: list[TeamInvitationItem] = []
+    pending_invitations: list[TeamInvitationItem] = msgspec.field(default_factory=list)
 
 
 # Team Invitation schemas

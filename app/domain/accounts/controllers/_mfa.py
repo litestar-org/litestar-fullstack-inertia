@@ -13,17 +13,18 @@ from litestar_vite.inertia import InertiaRedirect, flash
 from sqlalchemy.orm import undefer_group
 
 from app.domain.accounts.dependencies import provide_users_service
+from app.domain.accounts.guards import requires_active_user
 from app.domain.accounts.schemas import MfaBackupCodes, MfaConfirm, MfaDisable, MfaSetup
 from app.domain.accounts.services import generate_backup_codes, generate_qr_code
 from app.lib import crypt
 
 if TYPE_CHECKING:
+    from app.db.models import User as UserModel
     from app.domain.accounts.services import UserService
 
 __all__ = ("MfaController",)
 
 # Exception messages
-_MSG_AUTH_REQUIRED = "Authentication required"
 _MSG_USER_NOT_FOUND = "User not found"
 _MSG_MFA_ALREADY_ENABLED = "MFA is already enabled"
 _MSG_MFA_ALREADY_CONFIRMED = "MFA is already confirmed"
@@ -40,9 +41,10 @@ class MfaController(Controller):
     include_in_schema = False
     dependencies = {"users_service": Provide(provide_users_service)}
     cache = False
+    guards = [requires_active_user]
 
     @post(path="/enable", name="mfa.enable")
-    async def enable_mfa(self, request: Request, users_service: UserService) -> MfaSetup:
+    async def enable_mfa(self, current_user: UserModel, users_service: UserService) -> MfaSetup:
         """Generate TOTP secret and QR code for MFA setup.
 
         Raises:
@@ -52,11 +54,7 @@ class MfaController(Controller):
         Returns:
             MfaSetup with secret and QR code.
         """
-        user_id = request.session.get("user_id")
-        if not user_id:
-            raise PermissionDeniedException(_MSG_AUTH_REQUIRED)
-
-        user = await users_service.get_one_or_none(email=user_id)
+        user = await users_service.get_one_or_none(id=current_user.id)
         if not user:
             raise PermissionDeniedException(_MSG_USER_NOT_FOUND)
 
@@ -74,7 +72,9 @@ class MfaController(Controller):
         return MfaSetup(secret=secret, qr_code=qr_code)
 
     @post(path="/confirm", name="mfa.confirm")
-    async def confirm_mfa(self, request: Request, users_service: UserService, data: MfaConfirm) -> MfaBackupCodes:
+    async def confirm_mfa(
+        self, request: Request, current_user: UserModel, users_service: UserService, data: MfaConfirm,
+    ) -> MfaBackupCodes:
         """Confirm MFA setup with a valid TOTP code.
 
         Raises:
@@ -84,11 +84,7 @@ class MfaController(Controller):
         Returns:
             Backup codes for account recovery.
         """
-        user_id = request.session.get("user_id")
-        if not user_id:
-            raise PermissionDeniedException(_MSG_AUTH_REQUIRED)
-
-        user = await users_service.get_one_or_none(email=user_id, load=[undefer_group("security_sensitive")])
+        user = await users_service.get_one_or_none(id=current_user.id, load=[undefer_group("security_sensitive")])
         if not user:
             raise PermissionDeniedException(_MSG_USER_NOT_FOUND)
 
@@ -116,7 +112,9 @@ class MfaController(Controller):
         return MfaBackupCodes(codes=plain_codes)
 
     @delete(path="/disable", name="mfa.disable", status_code=303)
-    async def disable_mfa(self, request: Request, users_service: UserService, data: MfaDisable) -> InertiaRedirect:
+    async def disable_mfa(
+        self, request: Request, current_user: UserModel, users_service: UserService, data: MfaDisable,
+    ) -> InertiaRedirect:
         """Disable MFA with password confirmation.
 
         Raises:
@@ -126,11 +124,7 @@ class MfaController(Controller):
         Returns:
             Redirect to profile page.
         """
-        user_id = request.session.get("user_id")
-        if not user_id:
-            raise PermissionDeniedException(_MSG_AUTH_REQUIRED)
-
-        user = await users_service.get_one_or_none(email=user_id, load=[undefer_group("security_sensitive")])
+        user = await users_service.get_one_or_none(id=current_user.id, load=[undefer_group("security_sensitive")])
         if not user:
             raise PermissionDeniedException(_MSG_USER_NOT_FOUND)
 
@@ -155,7 +149,9 @@ class MfaController(Controller):
         return InertiaRedirect(request, request.url_for("profile.show"))
 
     @post(path="/regenerate-codes", name="mfa.regenerate-codes")
-    async def regenerate_backup_codes(self, request: Request, users_service: UserService) -> MfaBackupCodes:
+    async def regenerate_backup_codes(
+        self, request: Request, current_user: UserModel, users_service: UserService,
+    ) -> MfaBackupCodes:
         """Regenerate backup codes for MFA recovery.
 
         Raises:
@@ -165,11 +161,7 @@ class MfaController(Controller):
         Returns:
             New backup codes.
         """
-        user_id = request.session.get("user_id")
-        if not user_id:
-            raise PermissionDeniedException(_MSG_AUTH_REQUIRED)
-
-        user = await users_service.get_one_or_none(email=user_id)
+        user = await users_service.get_one_or_none(id=current_user.id)
         if not user:
             raise PermissionDeniedException(_MSG_USER_NOT_FOUND)
 

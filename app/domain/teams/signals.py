@@ -10,7 +10,10 @@ from app.domain.teams.dependencies import provide_teams_service
 from app.lib.email import EmailService
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
     from uuid import UUID
+
+    from app.domain.teams.services import TeamService
 
 logger = structlog.get_logger()
 
@@ -25,8 +28,12 @@ async def team_created_event_handler(team_id: UUID) -> None:
     await logger.ainfo("Team created.", team_id=str(team_id))
 
     async with alchemy.get_session() as db_session:
-        service = await anext(provide_teams_service(db_session))
-        obj = await service.get_one_or_none(id=team_id)
+        service_provider: AsyncGenerator[TeamService, None] = provide_teams_service(db_session)
+        try:
+            service = await anext(service_provider)
+            obj = await service.get_one_or_none(id=team_id)
+        finally:
+            await service_provider.aclose()
         if obj is None:
             await logger.aerror("Could not locate the specified team", id=team_id)
         else:

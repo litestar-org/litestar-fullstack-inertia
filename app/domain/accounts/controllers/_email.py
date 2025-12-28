@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 from typing import TYPE_CHECKING
+from uuid import UUID
 
 from litestar import Controller, Request, get, post
 from litestar.di import Provide
@@ -39,15 +40,14 @@ class EmailVerificationController(Controller):
         users_service: UserService,
         email_token_service: EmailTokenService,
         token: str | None = None,
-    ) -> InertiaRedirect:
+    ) -> InertiaRedirect | dict[str, str | None]:
         """Verify a user's email address.
 
         Returns:
-            Redirect to login page with appropriate flash message.
+            Verify-email page props when no token is supplied, otherwise a redirect.
         """
         if not token:
-            flash(request, "Invalid verification link.", category="error")
-            return InertiaRedirect(request, request.url_for("login"))
+            return {"status": request.query_params.get("status")}
 
         token_record = await email_token_service.consume_token(
             plain_token=token, token_type=TokenType.EMAIL_VERIFICATION,
@@ -68,6 +68,7 @@ class EmailVerificationController(Controller):
             await users_service.update({"is_verified": True}, item_id=user.id, auto_commit=True)
             request.app.emit(event_id="user_verified", user_id=user.id)
             flash(request, "Your email has been verified successfully!", category="success")
+        request.session.pop("unverified_user_id", None)
 
         if request.session.get("user_id"):
             return InertiaRedirect(request, request.url_for("dashboard"))
@@ -87,11 +88,19 @@ class EmailVerificationController(Controller):
             Redirect back to verify-email page with status message.
         """
         user_id = request.session.get("user_id")
-        if not user_id:
+        unverified_user_id = request.session.get("unverified_user_id")
+        if not user_id and not unverified_user_id:
             msg = "Authentication required"
             raise PermissionDeniedException(msg)
 
-        user = await users_service.get_one_or_none(email=user_id)
+        user = None
+        if user_id:
+            user = await users_service.get_one_or_none(email=user_id)
+        elif unverified_user_id:
+            try:
+                user = await users_service.get_one_or_none(id=UUID(unverified_user_id))
+            except (TypeError, ValueError):
+                user = None
         if not user:
             msg = "User not found"
             raise PermissionDeniedException(msg)
@@ -116,4 +125,4 @@ class EmailVerificationController(Controller):
         await email_service.send_verification_email(user_info, plain_token)
 
         flash(request, "A new verification link has been sent to your email address.", category="success")
-        return InertiaRedirect(request, request.url_for("verify-email"))
+        return InertiaRedirect(request, request.url_for("verify-email", status="verification-link-sent"))

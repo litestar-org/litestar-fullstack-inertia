@@ -70,12 +70,14 @@ class OAuth2AuthorizeCallback:
     client: BaseOAuth2
     route_name: str | None
     redirect_url: str | None
+    state_session_key: str | None
 
     def __init__(
         self,
         client: BaseOAuth2,
         route_name: str | None = None,
         redirect_url: str | None = None,
+        state_session_key: str | None = None,
     ) -> None:
         """Args:
         client: An [OAuth2][httpx_oauth.oauth2.BaseOAuth2] client.
@@ -88,6 +90,7 @@ class OAuth2AuthorizeCallback:
         self.client = client
         self.route_name = route_name
         self.redirect_url = redirect_url
+        self.state_session_key = state_session_key
 
     async def __call__(
         self,
@@ -107,6 +110,14 @@ class OAuth2AuthorizeCallback:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=error if error is not None else None,
             )
+
+        if self.state_session_key:
+            expected_state = request.session.pop(self.state_session_key, None)
+            if not expected_state or expected_state != callback_state:
+                raise OAuth2AuthorizeCallbackError(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid OAuth state.",
+                )
 
         redirect_url = self.redirect_url
         if self.route_name:

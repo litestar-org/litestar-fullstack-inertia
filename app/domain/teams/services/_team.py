@@ -77,7 +77,7 @@ class TeamService(SQLAlchemyAsyncRepositoryService[Team]):
 
         owner_id: UUID | None = data.pop("owner_id", None)
         owner: User | None = data.pop("owner", None)
-        input_tags: list[str] = data.pop("tags", [])
+        input_tags: list[str] | None = data.pop("tags", None)
 
         if operation == "create":
             if "id" not in data:
@@ -95,7 +95,7 @@ class TeamService(SQLAlchemyAsyncRepositoryService[Team]):
                 else TeamMember(user_id=owner_id, role=TeamRoles.ADMIN, is_owner=True),
             )
 
-        if input_tags:
+        if input_tags is not None:
             existing = {tag.name for tag in data.tags}
             for tag in [t for t in data.tags if t.name not in input_tags]:
                 data.tags.remove(tag)
@@ -114,7 +114,4 @@ class TeamService(SQLAlchemyAsyncRepositoryService[Team]):
         Returns:
             True if user is superuser, False otherwise.
         """
-        return bool(
-            user.is_superuser
-            or any(assigned_role.role.name for assigned_role in user.roles if assigned_role.role.name in {"Superuser"}),
-        )
+        return bool(user.is_superuser or any(assigned_role.role.name == "Superuser" for assigned_role in user.roles))

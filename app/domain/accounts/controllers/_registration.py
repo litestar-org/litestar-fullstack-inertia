@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import secrets
 from typing import TYPE_CHECKING
 
 from advanced_alchemy.utils.text import slugify
@@ -108,7 +109,11 @@ class RegistrationController(Controller):
         Returns:
             External redirect to GitHub OAuth authorization URL.
         """
-        redirect_to = await github_oauth2_client.get_authorization_url(redirect_uri=request.url_for("github.complete"))
+        request.session["oauth_state:auth:github"] = secrets.token_urlsafe(32)
+        redirect_to = await github_oauth2_client.get_authorization_url(
+            redirect_uri=request.url_for("github.complete"),
+            state=request.session["oauth_state:auth:github"],
+        )
         return InertiaExternalRedirect(request, redirect_to=redirect_to)
 
     @get(
@@ -140,7 +145,11 @@ class RegistrationController(Controller):
         Returns:
             External redirect to Google OAuth authorization URL.
         """
-        redirect_to = await google_oauth2_client.get_authorization_url(redirect_uri=request.url_for("google.complete"))
+        request.session["oauth_state:auth:google"] = secrets.token_urlsafe(32)
+        redirect_to = await google_oauth2_client.get_authorization_url(
+            redirect_uri=request.url_for("google.complete"),
+            state=request.session["oauth_state:auth:google"],
+        )
         return InertiaExternalRedirect(request, redirect_to=redirect_to)
 
     @get(

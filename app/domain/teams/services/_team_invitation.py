@@ -91,7 +91,7 @@ class TeamInvitationService(SQLAlchemyAsyncRepositoryService[TeamInvitation]):
             "invited_by_id": invited_by.id,
             "invited_by_email": invited_by.email,
             "token": token,  # to_model_on_create hashes this
-        })
+        }, auto_commit=True)
         return invitation, token
 
     async def get_by_token(self, token: str) -> TeamInvitation | None:

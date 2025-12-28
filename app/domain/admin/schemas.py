@@ -76,7 +76,7 @@ class AdminUserListItem(CamelizedBaseStruct):
     is_superuser: bool = False
     is_verified: bool = False
     is_two_factor_enabled: bool = False
-    role_names: list[str] = []
+    role_names: list[str] = msgspec.field(default_factory=list)
     team_count: int = 0
     created_at: datetime | None = None
     avatar_url: str | None = None
@@ -89,7 +89,7 @@ class AdminUserListPage(CamelizedBaseStruct):
     total: int
     page: int = 1
     page_size: int = 25
-    roles: list[RoleOption] = []
+    roles: list[RoleOption] = msgspec.field(default_factory=list)
 
 
 class AdminUserDetail(CamelizedBaseStruct):
@@ -103,8 +103,8 @@ class AdminUserDetail(CamelizedBaseStruct):
     is_verified: bool = False
     is_two_factor_enabled: bool = False
     has_password: bool = False
-    roles: list[UserRoleInfo] = []
-    teams: list[UserTeamInfo] = []
+    roles: list[UserRoleInfo] = msgspec.field(default_factory=list)
+    teams: list[UserTeamInfo] = msgspec.field(default_factory=list)
     created_at: datetime | None = None
     updated_at: datetime | None = None
     avatar_url: str | None = None
@@ -114,13 +114,13 @@ class AdminUserDetailPage(CamelizedBaseStruct):
     """User detail page props."""
 
     user: AdminUserDetail
-    available_roles: list[RoleOption] = []
+    available_roles: list[RoleOption] = msgspec.field(default_factory=list)
 
 
 class AdminUserCreatePage(CamelizedBaseStruct):
     """User create page props."""
 
-    available_roles: list[RoleOption] = []
+    available_roles: list[RoleOption] = msgspec.field(default_factory=list)
 
 
 class AdminUserCreate(CamelizedBaseStruct):
@@ -193,7 +193,7 @@ class AdminTeamDetail(CamelizedBaseStruct):
     slug: str
     description: str | None = None
     is_active: bool = True
-    members: list[TeamMemberInfo] = []
+    members: list[TeamMemberInfo] = msgspec.field(default_factory=list)
     created_at: datetime | None = None
     updated_at: datetime | None = None
 
@@ -258,4 +258,4 @@ class AdminDashboardPage(CamelizedBaseStruct):
     """Admin dashboard page props."""
 
     stats: AdminStats
-    recent_logs: list[AuditLogItem] = []
+    recent_logs: list[AuditLogItem] = msgspec.field(default_factory=list)

@@ -18,10 +18,10 @@ pytestmark = pytest.mark.anyio
 
 
 async def test_verify_email_no_token(client: "AsyncClient") -> None:
-    """Verify email without token should redirect to login with error."""
+    """Verify email without token should render the verify email page."""
     response = await client.get("/verify-email", follow_redirects=True)
     assert response.status_code == 200
-    assert "/login" in str(response.url)
+    assert "/verify-email" in str(response.url)
 
 
 async def test_verify_email_invalid_token(client: "AsyncClient") -> None:
