@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 import UserLoginForm from "./partials/user-login-form"
 
 export default function Login() {
-	const { registrationEnabled } = usePage<PagePropsFor<"auth/login">>().props
+	const { registrationEnabled, mustVerifyEmail } = usePage<PagePropsFor<"auth/login">>().props
 
 	return (
 		<>
@@ -31,6 +31,9 @@ export default function Login() {
 						</h1>
 						<p className="text-muted-foreground text-sm">Enter your credentials to sign in to your account</p>
 					</div>
+					{mustVerifyEmail && (
+						<div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 text-sm">Email verification is required before you can sign in.</div>
+					)}
 
 					<UserLoginForm />
 

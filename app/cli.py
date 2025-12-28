@@ -1,8 +1,13 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import click
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
+    from app.domain.accounts.services import RoleService, UserService
 
 
 @click.group(name="users", invoke_without_command=False, help="Manage application users and roles.")
@@ -56,7 +61,6 @@ def create_user(
     from app.config import alchemy
     from app.domain.accounts.dependencies import provide_users_service
     from app.domain.accounts.schemas import UserCreate
-
     console = get_console()
 
     async def _create_user(
@@ -72,9 +76,13 @@ def create_user(
             is_superuser=superuser,
         )
         async with alchemy.get_session() as db_session:
-            users_service = await anext(provide_users_service(db_session))
-            user = await users_service.create(data=obj_in.to_dict(), auto_commit=True)
-            console.print(f"User created: {user.email}")
+            service_provider: AsyncGenerator[UserService, None] = provide_users_service(db_session)
+            try:
+                users_service = await anext(service_provider)
+                user = await users_service.create(data=obj_in.to_dict(), auto_commit=True)
+                console.print(f"User created: {user.email}")
+            finally:
+                await service_provider.aclose()
 
     console.rule("Create a new application user.")
     email = email or click.prompt("Email")
@@ -145,24 +153,29 @@ def create_default_roles() -> None:
     from app.db.models import UserRole
     from app.db.utils import load_database_fixtures
     from app.domain.accounts.dependencies import provide_roles_service, provide_users_service
-
     console = get_console()
 
     async def _create_default_roles() -> None:
         await load_database_fixtures()
         async with alchemy.get_session() as db_session:
-            users_service = await anext(provide_users_service(db_session))
-            roles_service = await anext(provide_roles_service(db_session))
-            default_role = await roles_service.get_one_or_none(slug=slugify(users_service.default_role))
-            if default_role:
-                all_active_users = await users_service.list(is_active=True)
-                for user in all_active_users:
-                    if any(r.role_id == default_role.id for r in user.roles):
-                        console.print("User %s already has default role", user.email)
-                    else:
-                        user.roles.append(UserRole(role_id=default_role.id))
-                        console.print("Assigned %s default role", user.email)
-                        await users_service.repository.update(user)
+            users_provider: AsyncGenerator[UserService, None] = provide_users_service(db_session)
+            roles_provider: AsyncGenerator[RoleService, None] = provide_roles_service(db_session)
+            try:
+                users_service = await anext(users_provider)
+                roles_service = await anext(roles_provider)
+                default_role = await roles_service.get_one_or_none(slug=slugify(users_service.default_role))
+                if default_role:
+                    all_active_users = await users_service.list(is_active=True)
+                    for user in all_active_users:
+                        if any(r.role_id == default_role.id for r in user.roles):
+                            console.print("User %s already has default role", user.email)
+                        else:
+                            user.roles.append(UserRole(role_id=default_role.id))
+                            console.print("Assigned %s default role", user.email)
+                            await users_service.repository.update(user)
+            finally:
+                await roles_provider.aclose()
+                await users_provider.aclose()
             await db_session.commit()
 
     console.rule("Creating default roles.")

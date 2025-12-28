@@ -83,9 +83,9 @@ class User(CamelizedBaseStruct):
     is_verified: bool = False
     has_password: bool = False
     is_two_factor_enabled: bool = False
-    teams: list[UserTeam] = []
-    roles: list[UserRole] = []
-    oauth_accounts: list[OauthAccount] = []
+    teams: list[UserTeam] = msgspec.field(default_factory=list)
+    roles: list[UserRole] = msgspec.field(default_factory=list)
+    oauth_accounts: list[OauthAccount] = msgspec.field(default_factory=list)
     avatar_url: str | None = None
 
 

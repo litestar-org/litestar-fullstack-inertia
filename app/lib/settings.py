@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 
 from advanced_alchemy.utils.text import slugify
+from litestar.data_extractors import RequestExtractorField, ResponseExtractorField
 from litestar.utils.module_loader import module_to_os_path
 from sqlalchemy.ext.asyncio import AsyncEngine
 
@@ -20,7 +21,6 @@ if TYPE_CHECKING:
     from litestar.config.compression import CompressionConfig
     from litestar.config.cors import CORSConfig
     from litestar.config.csrf import CSRFConfig
-    from litestar.data_extractors import RequestExtractorField, ResponseExtractorField
     from litestar.middleware.session.server_side import ServerSideSessionConfig
     from litestar.plugins.structlog import StructlogConfig
     from litestar.template import TemplateConfig
@@ -119,7 +119,7 @@ class ViteSettings:
                 extra_static_page_props={
                     "canResetPassword": True,
                     "hasTermsAndPrivacyPolicyFeature": True,
-                    "mustVerifyEmail": True,
+                    "mustVerifyEmail": app_settings.MUST_VERIFY_EMAIL,
                     "githubOAuthEnabled": app_settings.github_oauth_enabled,
                     "googleOAuthEnabled": app_settings.google_oauth_enabled,
                     "registrationEnabled": app_settings.REGISTRATION_ENABLED,
@@ -423,6 +423,16 @@ class AppSettings:
         default_factory=lambda: os.getenv("SECRET_KEY", binascii.hexlify(os.urandom(32)).decode(encoding="utf-8")),
     )
     """Application secret key."""
+    SESSION_COOKIE_NAME: str = field(default_factory=get_env("SESSION_COOKIE_NAME", "session"))
+    """Session cookie name."""
+    SESSION_COOKIE_SECURE: bool = field(default_factory=get_env("SESSION_COOKIE_SECURE", False))
+    """Require HTTPS for session cookies."""
+    SESSION_COOKIE_SAMESITE: str = field(default_factory=get_env("SESSION_COOKIE_SAMESITE", "lax"))
+    """SameSite policy for session cookies."""
+    SESSION_MAX_AGE: int = field(default_factory=get_env("SESSION_MAX_AGE", 3600))
+    """Session max age (seconds)."""
+    SESSION_RENEW_ON_ACCESS: bool = field(default_factory=get_env("SESSION_RENEW_ON_ACCESS", True))
+    """Renew session expiry on access."""
     NAME: str = field(default_factory=get_env("APP_NAME", "app"))
     """Application name."""
     ALLOWED_CORS_ORIGINS: list[str] = field(default_factory=get_env("ALLOWED_CORS_ORIGINS", ["*"]))
@@ -445,6 +455,8 @@ class AppSettings:
     """Enable user registration. If False, only existing users can log in."""
     MFA_ENABLED: bool = field(default_factory=get_env("MFA_ENABLED", False))
     """Enable Multi-Factor Authentication (TOTP) support in the UI."""
+    MUST_VERIFY_EMAIL: bool = field(default_factory=get_env("MUST_VERIFY_EMAIL", False))
+    """Require email verification before allowing login."""
 
     @property
     def slug(self) -> str:
@@ -494,9 +506,21 @@ class AppSettings:
         return CORSConfig(allow_origins=self.ALLOWED_CORS_ORIGINS)
 
     def get_session_config(self) -> ServerSideSessionConfig:
+        from typing import Literal, cast
+
         from litestar.middleware.session.server_side import ServerSideSessionConfig
 
-        return ServerSideSessionConfig(max_age=3600)
+        samesite = self.SESSION_COOKIE_SAMESITE.lower()
+        if samesite not in {"lax", "strict", "none"}:
+            samesite = "lax"
+
+        return ServerSideSessionConfig(
+            key=self.SESSION_COOKIE_NAME,
+            max_age=self.SESSION_MAX_AGE,
+            renew_on_access=self.SESSION_RENEW_ON_ACCESS,
+            secure=self.SESSION_COOKIE_SECURE,
+            samesite=cast("Literal['lax', 'strict', 'none']", samesite),
+        )
 
     def get_template_config(self, template_dir: Path) -> TemplateConfig:
         from litestar.contrib.jinja import JinjaTemplateEngine

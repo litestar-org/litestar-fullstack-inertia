@@ -261,7 +261,7 @@ class UserService(SQLAlchemyAsyncRepositoryService[User]):
         Returns:
             True if user has the role, False otherwise.
         """
-        return any(assigned_role.role_id for assigned_role in db_obj.roles if assigned_role.role_id == role_id)
+        return any(assigned_role.role_id == role_id for assigned_role in db_obj.roles)
 
     @staticmethod
     async def has_role(db_obj: User, role_name: str) -> bool:
@@ -270,7 +270,7 @@ class UserService(SQLAlchemyAsyncRepositoryService[User]):
         Returns:
             True if user has the role, False otherwise.
         """
-        return any(assigned_role.role_id for assigned_role in db_obj.roles if assigned_role.role_name == role_name)
+        return any(assigned_role.role_name == role_name for assigned_role in db_obj.roles)
 
     @staticmethod
     def is_superuser(user: User) -> bool:
@@ -279,10 +279,7 @@ class UserService(SQLAlchemyAsyncRepositoryService[User]):
         Returns:
             True if user is a superuser, False otherwise.
         """
-        return bool(
-            user.is_superuser
-            or any(assigned_role.role.name for assigned_role in user.roles if assigned_role.role.name == "Superuser"),
-        )
+        return bool(user.is_superuser or any(assigned_role.role.name == "Superuser" for assigned_role in user.roles))
 
     # Avatar upload settings
     ALLOWED_AVATAR_TYPES: set[str] = {"image/jpeg", "image/png", "image/gif", "image/webp"}

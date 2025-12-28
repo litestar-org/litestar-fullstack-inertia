@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import hashlib
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING
 
 from advanced_alchemy.base import UUIDAuditBase
@@ -40,7 +40,7 @@ class User(UUIDAuditBase):
     is_superuser: Mapped[bool] = mapped_column(default=False, nullable=False)
     is_verified: Mapped[bool] = mapped_column(default=False, nullable=False)
     verified_at: Mapped[date] = mapped_column(nullable=True, default=None)
-    joined_at: Mapped[date] = mapped_column(default=datetime.now)
+    joined_at: Mapped[date] = mapped_column(default=lambda: datetime.now(UTC).date())
 
     # Multi-Factor Authentication (MFA/TOTP)
     totp_secret: Mapped[str | None] = mapped_column(

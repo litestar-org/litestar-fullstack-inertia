@@ -15,7 +15,10 @@ from app.lib.email import EmailService
 from app.lib.settings import get_settings
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
     from uuid import UUID
+
+    from app.domain.accounts.services import UserService
 
 logger = structlog.get_logger()
 
@@ -30,10 +33,7 @@ class UserInfo:
 
 @listener("user_created")
 async def user_created_event_handler(
-    user_id: UUID,
-    send_verification: bool = True,
-    ip_address: str | None = None,
-    user_agent: str | None = None,
+    user_id: UUID, send_verification: bool = True, ip_address: str | None = None, user_agent: str | None = None,
 ) -> None:
     """Executes when a new user is created.
 
@@ -48,8 +48,12 @@ async def user_created_event_handler(
     await logger.ainfo("Running post signup flow.", user_id=str(user_id))
 
     async with alchemy.get_session() as db_session:
-        users_service = await anext(provide_users_service(db_session))
-        user = await users_service.get_one_or_none(id=user_id)
+        service_provider: AsyncGenerator[UserService, None] = provide_users_service(db_session)
+        try:
+            users_service = await anext(service_provider)
+            user = await users_service.get_one_or_none(id=user_id)
+        finally:
+            await service_provider.aclose()
 
         if user is None:
             await logger.aerror("Could not locate the specified user", id=user_id)
@@ -66,10 +70,7 @@ async def user_created_event_handler(
         token_service = EmailTokenService(session=db_session)
 
         # Invalidate any existing verification tokens
-        await token_service.invalidate_existing_tokens(
-            email=user.email,
-            token_type=TokenType.EMAIL_VERIFICATION,
-        )
+        await token_service.invalidate_existing_tokens(email=user.email, token_type=TokenType.EMAIL_VERIFICATION)
 
         # Create new verification token
         expires_delta = timedelta(hours=settings.email.VERIFICATION_TOKEN_EXPIRES_HOURS)
@@ -94,9 +95,7 @@ async def user_created_event_handler(
 
 
 @listener("user_verified")
-async def user_verified_event_handler(
-    user_id: UUID,
-) -> None:
+async def user_verified_event_handler(user_id: UUID) -> None:
     """Executes when a user verifies their email.
 
     Sends a welcome email to the newly verified user.
@@ -107,8 +106,12 @@ async def user_verified_event_handler(
     await logger.ainfo("User verified, sending welcome email.", user_id=str(user_id))
 
     async with alchemy.get_session() as db_session:
-        users_service = await anext(provide_users_service(db_session))
-        user = await users_service.get_one_or_none(id=user_id)
+        service_provider: AsyncGenerator[UserService, None] = provide_users_service(db_session)
+        try:
+            users_service = await anext(service_provider)
+            user = await users_service.get_one_or_none(id=user_id)
+        finally:
+            await service_provider.aclose()
 
         if user is None:
             await logger.aerror("Could not locate the specified user", id=user_id)
@@ -127,9 +130,7 @@ async def user_verified_event_handler(
 
 @listener("password_reset_requested")
 async def password_reset_requested_handler(
-    email: str,
-    ip_address: str = "unknown",
-    user_agent: str | None = None,
+    email: str, ip_address: str = "unknown", user_agent: str | None = None,
 ) -> None:
     """Executes when a password reset is requested.
 
@@ -144,8 +145,12 @@ async def password_reset_requested_handler(
     await logger.ainfo("Password reset requested", email=email)
 
     async with alchemy.get_session() as db_session:
-        users_service = await anext(provide_users_service(db_session))
-        user = await users_service.get_one_or_none(email=email)
+        service_provider: AsyncGenerator[UserService, None] = provide_users_service(db_session)
+        try:
+            users_service = await anext(service_provider)
+            user = await users_service.get_one_or_none(email=email)
+        finally:
+            await service_provider.aclose()
 
         if user is None:
             # Don't reveal if email exists or not
@@ -157,10 +162,7 @@ async def password_reset_requested_handler(
         token_service = EmailTokenService(session=db_session)
 
         # Invalidate any existing reset tokens
-        await token_service.invalidate_existing_tokens(
-            email=user.email,
-            token_type=TokenType.PASSWORD_RESET,
-        )
+        await token_service.invalidate_existing_tokens(email=user.email, token_type=TokenType.PASSWORD_RESET)
 
         # Create new reset token
         expires_delta = timedelta(minutes=settings.email.PASSWORD_RESET_TOKEN_EXPIRES_MINUTES)
@@ -185,9 +187,7 @@ async def password_reset_requested_handler(
 
 
 @listener("password_reset_completed")
-async def password_reset_completed_handler(
-    user_id: UUID,
-) -> None:
+async def password_reset_completed_handler(user_id: UUID) -> None:
     """Executes when a password reset is completed.
 
     Sends a confirmation email to the user.
@@ -198,8 +198,12 @@ async def password_reset_completed_handler(
     await logger.ainfo("Password reset completed", user_id=str(user_id))
 
     async with alchemy.get_session() as db_session:
-        users_service = await anext(provide_users_service(db_session))
-        user = await users_service.get_one_or_none(id=user_id)
+        service_provider: AsyncGenerator[UserService, None] = provide_users_service(db_session)
+        try:
+            users_service = await anext(service_provider)
+            user = await users_service.get_one_or_none(id=user_id)
+        finally:
+            await service_provider.aclose()
 
         if user is None:
             await logger.aerror("Could not locate the specified user", id=user_id)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import secrets
 from typing import TYPE_CHECKING
 
 from litestar import Controller, Request, delete, get, post
@@ -110,11 +111,12 @@ class OAuthAccountController(Controller):
             External redirect to OAuth provider authorization URL.
         """
         client = _get_oauth_client(provider)
-        request.session["oauth_action"] = "link"
-        request.session["oauth_provider"] = provider
+        state_key = f"oauth_state:link:{provider}"
+        request.session[state_key] = secrets.token_urlsafe(32)
         redirect_to = await client.get_authorization_url(
             redirect_uri=str(request.url_for("oauth.link.complete", provider=provider)),
             scope=OAUTH_DEFAULT_SCOPES.get(provider, []),
+            state=request.session[state_key],
         )
         return InertiaExternalRedirect(request, redirect_to=redirect_to)
 
@@ -140,7 +142,18 @@ class OAuthAccountController(Controller):
             Redirect to profile page.
         """
         client = _get_oauth_client(provider)
-        callback = OAuth2AuthorizeCallback(client, route_name="oauth.link.complete")
+        state_key = next(
+            (
+                key
+                for key in (f"oauth_state:link:{provider}", f"oauth_state:upgrade:{provider}")
+                if key in request.session
+            ),
+            None,
+        )
+        if not state_key:
+            flash(request, "Invalid OAuth session. Please try again.", category="error")
+            return InertiaRedirect(request, request.url_for("profile.show"))
+        callback = OAuth2AuthorizeCallback(client, route_name="oauth.link.complete", state_session_key=state_key)
         try:
             access_token_state: AccessTokenState = await callback(request)
         except Exception as e:  # noqa: BLE001
@@ -179,9 +192,6 @@ class OAuthAccountController(Controller):
             scopes=scopes,
         )
 
-        request.session.pop("oauth_action", None)
-        request.session.pop("oauth_provider", None)
-
         flash(request, f"Successfully connected {provider.title()} account.", category="success")
         return InertiaRedirect(request, request.url_for("profile.show"))
 
@@ -201,10 +211,11 @@ class OAuthAccountController(Controller):
             External redirect to OAuth provider for re-authorization.
         """
         client = _get_oauth_client(provider)
-        request.session["oauth_action"] = "upgrade_scopes"
-        request.session["oauth_provider"] = provider
+        state_key = f"oauth_state:upgrade:{provider}"
+        request.session[state_key] = secrets.token_urlsafe(32)
         redirect_to = await client.get_authorization_url(
             redirect_uri=str(request.url_for("oauth.link.complete", provider=provider)),
             scope=OAUTH_DEFAULT_SCOPES.get(provider, []),
+            state=request.session[state_key],
         )
         return InertiaExternalRedirect(request, redirect_to=redirect_to)

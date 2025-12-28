@@ -34,6 +34,11 @@ export default function VerifyEmail({ status }: { status?: string }) {
 							A new verification link has been sent to your email address.
 						</div>
 					)}
+					{status === "verification-required" && (
+						<div className="rounded-md bg-amber-50 p-3 text-center font-medium text-amber-700 text-sm dark:bg-amber-900/20">
+							Your account needs verification before you can sign in. Please check your email or resend a link below.
+						</div>
+					)}
 
 					<form onSubmit={submit} className="space-y-4">
 						<Button type="submit" className="w-full" disabled={processing}>

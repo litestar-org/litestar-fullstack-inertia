@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from litestar import Controller, Request, get, post
 from litestar.di import Provide
@@ -16,6 +16,9 @@ from app.domain.accounts.schemas import AccountLogin, PasswordConfirm
 from app.domain.accounts.services import UserService
 from app.lib import crypt
 from app.lib.schema import NoProps
+
+if TYPE_CHECKING:
+    from app.lib.settings import Settings
 
 __all__ = ("AccessController",)
 
@@ -47,16 +50,27 @@ class AccessController(Controller):
 
     @post(component="auth/login", name="login.check", path="/login/")
     async def login(
-        self, request: Request[Any, Any, Any], users_service: UserService, data: AccountLogin,
+        self,
+        request: Request[Any, Any, Any],
+        settings: Settings,
+        users_service: UserService,
+        data: AccountLogin,
     ) -> InertiaRedirect:
         """Authenticate a user.
 
         Returns:
             Redirect to dashboard on successful authentication,
-            to MFA challenge if enabled, or to invitation page if pending.
+            to verify-email if unverified, to MFA challenge if enabled, or to invitation page if pending.
         """
         user = await users_service.authenticate(data.username, data.password)
         invitation_token = request.session.get("invitation_token")
+
+        if settings.app.MUST_VERIFY_EMAIL and not user.is_verified:
+            request.set_session({"unverified_user_id": str(user.id)})
+            if invitation_token:
+                request.session["invitation_token"] = invitation_token
+            flash(request, "Please verify your email before logging in.", category="error")
+            return InertiaRedirect(request, request.url_for("verify-email", status="verification-required"))
 
         if user.is_two_factor_enabled and user.totp_secret:
             request.set_session({"mfa_user_id": user.email})

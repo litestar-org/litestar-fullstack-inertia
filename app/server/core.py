@@ -10,6 +10,7 @@ from litestar.openapi.config import OpenAPIConfig
 from litestar.openapi.plugins import ScalarRenderPlugin, SwaggerRenderPlugin
 from litestar.plugins import CLIPluginProtocol, InitPluginProtocol
 from litestar.static_files import create_static_files_router
+from litestar.stores.registry import StoreRegistry
 
 
 @get("/health", exclude_from_auth=True, include_in_schema=False)
@@ -55,9 +56,11 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         """
 
         from advanced_alchemy.exceptions import IntegrityError, NotFoundError, RepositoryError
+        from advanced_alchemy.extensions.litestar.store import SQLAlchemyStore
 
         from app import config
         from app.__metadata__ import __version__ as current_version
+        from app.db.models import SessionStore
         from app.db.models import User as UserModel
         from app.domain.accounts import signals as account_signals
         from app.domain.accounts.controllers import (
@@ -136,6 +139,14 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         # security
         app_config.cors_config = config.cors
         app_config.csrf_config = config.csrf
+        # session store (advanced-alchemy, no redis)
+        if app_config.stores is None:
+            app_config.stores = {}
+        session_store = SQLAlchemyStore(config.alchemy, model=SessionStore, namespace=settings.app.slug)
+        if isinstance(app_config.stores, StoreRegistry):
+            app_config.stores.register("sessions", session_store, allow_override=True)
+        else:
+            app_config.stores["sessions"] = session_store
         # templates
         app_config.template_config = config.templates
         # plugins
