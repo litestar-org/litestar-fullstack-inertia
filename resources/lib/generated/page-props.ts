@@ -4,7 +4,7 @@
 // Import user-defined type extensions (edit page-props.user.ts to customize)
 import type { UserExtensions, SharedPropsExtensions } from "./page-props.user"
 
-import type { AdminDashboardPage, AdminStats, AdminTeamDetail, AdminTeamDetailPage, AdminTeamListItem, AdminTeamListPage, AdminUserCreatePage, AdminUserDetail, AdminUserDetailPage, AdminUserListItem, AdminUserListPage, AuditLogItem, AuditLogPage, CurrentTeam, InvitationAcceptPage, Message, NoProps, PasswordResetToken, RoleOption, Team, TeamDetail, TeamDetailPage, TeamInvitationDetail, TeamInvitationItem, TeamInvitationsPage, TeamListItem, TeamListPage, TeamMember, TeamPageMember, TeamPermissions, TeamTag, UserPendingInvitation, UserPendingInvitationsPage } from "./api/types.gen"
+import type { AdminDashboardPage, AdminStats, AdminTeamDetail, AdminTeamDetailPage, AdminTeamListItem, AdminTeamListPage, AdminUserCreatePage, AdminUserDetail, AdminUserDetailPage, AdminUserListItem, AdminUserListPage, AuditLogItem, AuditLogPage, CurrentTeam, InvitationAcceptPage, Message, NoProps, PasswordResetToken, RoleOption, Team, TeamDetail, TeamDetailPage, TeamInvitationDetail, TeamInvitationItem, TeamInvitationsPage, TeamListItem, TeamListPage, TeamMember, TeamPageMember, TeamPermissions, TeamTag, UserPendingInvitation, UserPendingInvitationsPage, VerifyEmailPage } from "./api/types.gen"
 
 /**
  * Default User interface - minimal baseline for common auth patterns.
@@ -78,7 +78,7 @@ export interface PageProps {
   "auth/mfa-challenge": NoProps & FullSharedProps
   "auth/register": NoProps & FullSharedProps
   "auth/reset-password": PasswordResetToken & FullSharedProps
-  "auth/verify-email": any & FullSharedProps
+  "auth/verify-email": VerifyEmailPage & FullSharedProps
   "dashboard": NoProps & FullSharedProps
   "invitation/accept": InvitationAcceptPage & FullSharedProps
   "invitation/list": UserPendingInvitationsPage & FullSharedProps

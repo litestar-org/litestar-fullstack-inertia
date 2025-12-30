@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { toast } from "@/components/ui/use-toast"
 import { route } from "@/lib/generated/routes"
 
 export default function CreateTeamForm() {
@@ -15,7 +16,15 @@ export default function CreateTeamForm() {
 
 	const submit = (e: React.FormEvent) => {
 		e.preventDefault()
-		post(route("teams.add"))
+		post(route("teams.add"), {
+			onSuccess: () => {
+				toast({
+					title: "Team Created",
+					description: "Your new team has been created.",
+					variant: "success",
+				})
+			},
+		})
 	}
 
 	return (

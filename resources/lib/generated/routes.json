@@ -443,6 +443,9 @@
       "methods": [
         "POST"
       ],
+      "queryParameters": {
+        "dotenv_filename": "string | undefined"
+      },
       "uri": "/login"
     },
     "logout": {

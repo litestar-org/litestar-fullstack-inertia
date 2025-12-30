@@ -1,5 +1,6 @@
 import { router, usePage } from "@inertiajs/react"
 import { AlertCircle } from "lucide-react"
+import { useState } from "react"
 import { z } from "zod"
 import { Icons } from "@/components/icons"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -34,6 +35,9 @@ export default function UserRegistrationForm({ className, ...props }: UserRegist
 		url: route("register.add"),
 	})
 
+	const [oauthLoading, setOauthLoading] = useState(false)
+	const isLoading = isSubmitting || oauthLoading
+
 	return (
 		<div className={cn("grid gap-6", className)} {...props}>
 			<Form {...form}>
@@ -54,7 +58,7 @@ export default function UserRegistrationForm({ className, ...props }: UserRegist
 								<FormItem>
 									<FormLabel>Full Name</FormLabel>
 									<FormControl>
-										<Input placeholder="Your name (optional)" autoCapitalize="words" autoComplete="name" autoCorrect="off" {...field} disabled={isSubmitting} />
+										<Input placeholder="Your name (optional)" autoCapitalize="words" autoComplete="name" autoCorrect="off" {...field} disabled={isLoading} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -68,7 +72,7 @@ export default function UserRegistrationForm({ className, ...props }: UserRegist
 								<FormItem>
 									<FormLabel>Email</FormLabel>
 									<FormControl>
-										<Input placeholder="name@example.com" autoCapitalize="none" autoComplete="email" autoCorrect="off" {...field} disabled={isSubmitting} />
+										<Input placeholder="name@example.com" autoCapitalize="none" autoComplete="email" autoCorrect="off" {...field} disabled={isLoading} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -89,7 +93,7 @@ export default function UserRegistrationForm({ className, ...props }: UserRegist
 											autoCorrect="off"
 											autoComplete="new-password"
 											{...field}
-											disabled={isSubmitting}
+											disabled={isLoading}
 										/>
 									</FormControl>
 									<FormMessage />
@@ -97,8 +101,8 @@ export default function UserRegistrationForm({ className, ...props }: UserRegist
 							)}
 						/>
 
-						<Button type="submit" className="mt-2 w-full" disabled={isSubmitting}>
-							{isSubmitting && <Icons.spinner className="mr-2 h-4 w-4" />}
+						<Button type="submit" className="mt-2 w-full" disabled={isLoading}>
+							{isLoading && <Icons.spinner className="mr-2 h-4 w-4" />}
 							Sign Up
 						</Button>
 					</div>
@@ -115,13 +119,29 @@ export default function UserRegistrationForm({ className, ...props }: UserRegist
 						</div>
 					</div>
 					{githubOAuthEnabled && (
-						<Button variant="outline" type="button" disabled={isSubmitting} onClick={() => router.post(route("github.register"))}>
-							{isSubmitting ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.gitHub className="mr-2 h-4 w-4" />} Sign up with GitHub
+						<Button
+							variant="outline"
+							type="button"
+							disabled={isLoading}
+							onClick={() => {
+								setOauthLoading(true)
+								router.post(route("github.register"))
+							}}
+						>
+							{isLoading ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.gitHub className="mr-2 h-4 w-4" />} Sign up with GitHub
 						</Button>
 					)}
 					{googleOAuthEnabled && (
-						<Button variant="outline" type="button" disabled={isSubmitting} onClick={() => router.post(route("google.register"))}>
-							{isSubmitting ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.google className="mr-2 h-4 w-4" />} Sign up with Google
+						<Button
+							variant="outline"
+							type="button"
+							disabled={isLoading}
+							onClick={() => {
+								setOauthLoading(true)
+								router.post(route("google.register"))
+							}}
+						>
+							{isLoading ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.google className="mr-2 h-4 w-4" />} Sign up with Google
 						</Button>
 					)}
 				</>

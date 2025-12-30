@@ -822,7 +822,7 @@ export const deleteTeam = <ThrowOnError extends boolean = false>(options: Option
  * Get details about a team.
  *
  * Returns:
- * Team details, members list, and user permissions.
+ * Team details, members list, pending invitations, and user permissions.
  */
 export const getTeam = <ThrowOnError extends boolean = false>(options: Options<GetTeamData, ThrowOnError>) => (options.client ?? client).get<GetTeamResponses, GetTeamErrors, ThrowOnError>({
     security: [{

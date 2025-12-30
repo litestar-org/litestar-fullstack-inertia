@@ -329,6 +329,7 @@ export type TeamDetail = {
     id: string;
     name: string;
     slug: string;
+    tags?: Array<TeamTag>;
 };
 
 /**
@@ -610,6 +611,13 @@ export type UserUpdate = {
     isVerified?: boolean | null;
     name?: string | null;
     password?: string | null;
+};
+
+/**
+ * VerifyEmailPage
+ */
+export type VerifyEmailPage = {
+    status?: string | null;
 };
 
 export type AdminDashboardData = {

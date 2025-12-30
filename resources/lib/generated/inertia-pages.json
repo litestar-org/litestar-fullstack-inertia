@@ -145,9 +145,13 @@
       "tsType": "PasswordResetToken"
     },
     "auth/verify-email": {
+      "customTypes": [
+        "VerifyEmailPage"
+      ],
       "handler": "verify_email",
-      "propsType": "any",
-      "route": "/verify-email"
+      "propsType": "VerifyEmailPage",
+      "route": "/verify-email",
+      "tsType": "VerifyEmailPage"
     },
     "dashboard": {
       "customTypes": [

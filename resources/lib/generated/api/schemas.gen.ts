@@ -1074,6 +1074,12 @@ export const TeamDetailSchema = {
         },
         slug: {
             type: 'string'
+        },
+        tags: {
+            items: {
+                $ref: '#/components/schemas/TeamTag'
+            },
+            type: 'array'
         }
     },
     required: [
@@ -1965,5 +1971,23 @@ export const UserUpdateSchema = {
     },
     required: [],
     title: 'UserUpdate',
+    type: 'object'
+} as const;
+
+export const VerifyEmailPageSchema = {
+    properties: {
+        status: {
+            oneOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        }
+    },
+    required: [],
+    title: 'VerifyEmailPage',
     type: 'object'
 } as const;

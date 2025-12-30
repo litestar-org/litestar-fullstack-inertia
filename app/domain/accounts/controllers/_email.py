@@ -15,6 +15,7 @@ from app.db.models import TokenType
 from app.domain.accounts.dependencies import provide_email_token_service, provide_users_service
 from app.domain.accounts.signals import UserInfo
 from app.lib.email import EmailService
+from app.lib.schema import VerifyEmailPage
 
 if TYPE_CHECKING:
     from app.domain.accounts.services import EmailTokenService, UserService
@@ -40,14 +41,14 @@ class EmailVerificationController(Controller):
         users_service: UserService,
         email_token_service: EmailTokenService,
         token: str | None = None,
-    ) -> InertiaRedirect | dict[str, str | None]:
+    ) -> InertiaRedirect | VerifyEmailPage:
         """Verify a user's email address.
 
         Returns:
             Verify-email page props when no token is supplied, otherwise a redirect.
         """
         if not token:
-            return {"status": request.query_params.get("status")}
+            return VerifyEmailPage(status=request.query_params.get("status"))
 
         token_record = await email_token_service.consume_token(
             plain_token=token, token_type=TokenType.EMAIL_VERIFICATION,

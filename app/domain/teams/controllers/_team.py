@@ -32,6 +32,7 @@ from app.domain.teams.schemas import (
     TeamListPage,
     TeamPageMember,
     TeamPermissions,
+    TeamTag,
     TeamUpdate,
 )
 from app.domain.teams.services import TeamInvitationService, TeamService
@@ -159,18 +160,24 @@ class TeamController(Controller):
         operation_id="GetTeam",
         guards=[requires_team_membership],
         path="/teams/{team_slug:str}/",
+        dependencies={
+            "team_invitations_service": create_service_provider(TeamInvitationService),
+            "users_service": Provide(provide_users_service),
+        },
     )
     async def get_team(
         self,
         request: Request,
         teams_service: TeamService,
+        team_invitations_service: TeamInvitationService,
+        users_service: UserService,
         current_user: UserModel,
         team_slug: Annotated[str, Parameter(title="Team Slug", description="The team slug.")],
     ) -> TeamDetailPage:
         """Get details about a team.
 
         Returns:
-            Team details, members list, and user permissions.
+            Team details, members list, pending invitations, and user permissions.
         """
         db_obj = await teams_service.get_one(slug=team_slug)
         request.session.update({"currentTeam": CurrentTeam(team_id=db_obj.id, team_name=db_obj.name)})
@@ -179,6 +186,17 @@ class TeamController(Controller):
         is_owner = bool(membership and membership.is_owner)
         is_admin = is_owner or bool(membership and membership.role == TeamRoles.ADMIN)
 
+        # Fetch pending invitations for admins
+        invitations = await team_invitations_service.get_pending_for_team(db_obj.id) if is_admin else []
+        invitee_flags: dict[str, bool] = {}
+        if invitations:
+            emails = {inv.email for inv in invitations}
+            result = await users_service.repository.session.execute(
+                select(UserModel.email).where(UserModel.email.in_(emails)),
+            )
+            existing_emails = {row[0] for row in result}
+            invitee_flags = {email: email in existing_emails for email in emails}
+
         return TeamDetailPage(
             team=TeamDetail(
                 id=db_obj.id,
@@ -186,6 +204,7 @@ class TeamController(Controller):
                 slug=db_obj.slug,
                 description=db_obj.description,
                 created_at=db_obj.created_at,
+                tags=[TeamTag(id=tag.id, slug=tag.slug, name=tag.name) for tag in db_obj.tags],
             ),
             members=[
                 TeamPageMember(
@@ -197,6 +216,19 @@ class TeamController(Controller):
                     avatar_url=m.user.avatar_url,
                 )
                 for m in db_obj.members
+            ],
+            pending_invitations=[
+                TeamInvitationItem(
+                    id=inv.id,
+                    email=inv.email,
+                    role=str(inv.role),
+                    invited_by_email=inv.invited_by_email,
+                    created_at=inv.created_at,
+                    expires_at=inv.expires_at,
+                    is_expired=inv.is_expired,
+                    invitee_exists=invitee_flags.get(inv.email, False),
+                )
+                for inv in invitations
             ],
             permissions=TeamPermissions(
                 can_add_team_members=is_admin,
@@ -261,6 +293,7 @@ class TeamController(Controller):
                 name=db_obj.name,
                 slug=db_obj.slug,
                 description=db_obj.description,
+                tags=[TeamTag(id=tag.id, slug=tag.slug, name=tag.name) for tag in db_obj.tags],
             ),
             members=[
                 TeamPageMember(

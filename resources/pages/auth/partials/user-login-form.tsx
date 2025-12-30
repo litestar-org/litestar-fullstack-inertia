@@ -1,6 +1,6 @@
 import { router, usePage } from "@inertiajs/react"
 import { AlertCircle } from "lucide-react"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { z } from "zod"
 import { Icons } from "@/components/icons"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -45,6 +45,9 @@ export default function UserLoginForm({ className, ...props }: UserLoginFormProp
 		url: route("login"),
 	})
 
+	const [oauthLoading, setOauthLoading] = useState(false)
+	const isLoading = isSubmitting || oauthLoading
+
 	return (
 		<div className={cn("grid gap-6", className)} {...props}>
 			<Form {...form}>
@@ -65,7 +68,7 @@ export default function UserLoginForm({ className, ...props }: UserLoginFormProp
 								<FormItem>
 									<FormLabel>Email</FormLabel>
 									<FormControl>
-										<Input placeholder="name@example.com" autoCapitalize="none" autoComplete="username" autoCorrect="off" {...field} disabled={isSubmitting} />
+										<Input placeholder="name@example.com" autoCapitalize="none" autoComplete="username" autoCorrect="off" {...field} disabled={isLoading} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -86,7 +89,7 @@ export default function UserLoginForm({ className, ...props }: UserLoginFormProp
 											autoCorrect="off"
 											autoComplete="current-password"
 											{...field}
-											disabled={isSubmitting}
+											disabled={isLoading}
 										/>
 									</FormControl>
 									<FormMessage />
@@ -94,8 +97,8 @@ export default function UserLoginForm({ className, ...props }: UserLoginFormProp
 							)}
 						/>
 
-						<Button type="submit" className="mt-2 w-full" disabled={isSubmitting}>
-							{isSubmitting && <Icons.spinner className="mr-2 h-4 w-4" />}
+						<Button type="submit" className="mt-2 w-full" disabled={isLoading}>
+							{isLoading && <Icons.spinner className="mr-2 h-4 w-4" />}
 							Sign In
 						</Button>
 					</div>
@@ -112,14 +115,30 @@ export default function UserLoginForm({ className, ...props }: UserLoginFormProp
 						</div>
 					</div>
 					{githubOAuthEnabled && (
-						<Button variant="outline" type="button" disabled={isSubmitting} onClick={() => router.post(route("github.register"))}>
-							{isSubmitting ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.gitHub className="mr-2 h-4 w-4" />}
+						<Button
+							variant="outline"
+							type="button"
+							disabled={isLoading}
+							onClick={() => {
+								setOauthLoading(true)
+								router.post(route("github.register"))
+							}}
+						>
+							{isLoading ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.gitHub className="mr-2 h-4 w-4" />}
 							Continue with GitHub
 						</Button>
 					)}
 					{googleOAuthEnabled && (
-						<Button variant="outline" type="button" disabled={isSubmitting} onClick={() => router.post(route("google.register"))}>
-							{isSubmitting ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.google className="mr-2 h-4 w-4" />}
+						<Button
+							variant="outline"
+							type="button"
+							disabled={isLoading}
+							onClick={() => {
+								setOauthLoading(true)
+								router.post(route("google.register"))
+							}}
+						>
+							{isLoading ? <Icons.spinner className="mr-2 h-4 w-4" /> : <Icons.google className="mr-2 h-4 w-4" />}
 							Continue with Google
 						</Button>
 					)}
