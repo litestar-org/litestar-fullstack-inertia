@@ -371,7 +371,9 @@ export interface RouteQueryParams {
   'invitations.list': Record<string, never>;
   'landing': Record<string, never>;
   'login': Record<string, never>;
-  'login.check': Record<string, never>;
+  'login.check': {
+    dotenv_filename?: string;
+  };
   'logout': Record<string, never>;
   'mfa-challenge': Record<string, never>;
   'mfa-challenge.verify': Record<string, never>;
@@ -765,7 +767,7 @@ export const routeDefinitions = {
     methods: ['POST'] as const,
     method: 'post',
     pathParams: [] as const,
-    queryParams: [] as const,
+    queryParams: ['dotenv_filename'] as const,
     component: 'auth/login',
   },
   'logout': {

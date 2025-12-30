@@ -23,3 +23,9 @@ class Message(CamelizedBaseStruct):
 
 class NoProps(CamelizedBaseStruct):
     """Empty page props for Inertia pages with no data."""
+
+
+class VerifyEmailPage(CamelizedBaseStruct):
+    """Page props for email verification page."""
+
+    status: str | None = None

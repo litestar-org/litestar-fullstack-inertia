@@ -1044,6 +1044,12 @@
           },
           "slug": {
             "type": "string"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/TeamTag"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -1909,6 +1915,23 @@
         },
         "required": [],
         "title": "UserUpdate",
+        "type": "object"
+      },
+      "VerifyEmailPage": {
+        "properties": {
+          "status": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [],
+        "title": "VerifyEmailPage",
         "type": "object"
       }
     },
@@ -6198,7 +6221,7 @@
       },
       "get": {
         "deprecated": false,
-        "description": "Get details about a team.\n\nReturns:\n    Team details, members list, and user permissions.",
+        "description": "Get details about a team.\n\nReturns:\n    Team details, members list, pending invitations, and user permissions.",
         "operationId": "GetTeam",
         "parameters": [
           {

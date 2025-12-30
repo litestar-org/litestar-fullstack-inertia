@@ -56,10 +56,13 @@ make coverage       # Run tests with coverage
 make start-infra    # Start Docker containers (PostgreSQL, Redis)
 make stop-infra     # Stop Docker containers
 
-# Frontend
-npm run dev         # Start Vite dev server
-npm run build       # Build production assets
+# Frontend (use bun, not npm)
+bun run dev         # Start Vite dev server
+bun run build       # Build production assets
 npx biome check resources/  # Lint frontend
+
+# Type Generation
+uv run app assets generate-types  # Generate TypeScript types from OpenAPI schema
 
 # Database
 uv run app database upgrade         # Apply migrations

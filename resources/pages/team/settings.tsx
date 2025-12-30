@@ -1,6 +1,6 @@
-import { Head, Link, useForm } from "@inertiajs/react"
+import { Head, Link, router, useForm } from "@inertiajs/react"
 import { formatDistanceToNow } from "date-fns"
-import { ArrowLeft, Clock, Mail, Pencil, Send, Trash2, UserPlus, Users } from "lucide-react"
+import { ArrowLeft, Clock, Mail, Pencil, Plus, Send, Tag, Trash2, UserPlus, Users, X } from "lucide-react"
 import type React from "react"
 import { useState } from "react"
 import { Container } from "@/components/container"
@@ -46,6 +46,12 @@ const getSidebarItems = (permissions: Props["permissions"]): SettingsSidebarItem
 			icon: Pencil,
 			description: "Update team name and info",
 		})
+		items.push({
+			id: "team-tags",
+			label: "Tags",
+			icon: Tag,
+			description: "Manage team tags",
+		})
 	}
 
 	items.push({
@@ -82,6 +88,8 @@ export default function TeamSettings({ team, members, permissions, pendingInvita
 	const [activeSection, setActiveSection] = useState(() => sidebarItems[0]?.id ?? "team-members")
 	const [showInviteDialog, setShowInviteDialog] = useState(false)
 	const [invitationToCancel, setInvitationToCancel] = useState<TeamInvitationItem | null>(null)
+	const [newTag, setNewTag] = useState("")
+	const [isUpdatingTags, setIsUpdatingTags] = useState(false)
 
 	const inviteForm = useForm({
 		email: "",
@@ -89,6 +97,49 @@ export default function TeamSettings({ team, members, permissions, pendingInvita
 	})
 
 	const cancelForm = useForm({})
+
+	const addTag = (e: React.FormEvent) => {
+		e.preventDefault()
+		if (!newTag.trim()) return
+
+		const currentTags = team.tags?.map((t) => t.name) ?? []
+		if (currentTags.includes(newTag.trim())) {
+			toast({ description: "Tag already exists.", variant: "warning" })
+			return
+		}
+
+		setIsUpdatingTags(true)
+		router.patch(
+			route("teams.edit", { team_slug: team.slug }),
+			{ tags: [...currentTags, newTag.trim()] },
+			{
+				preserveScroll: true,
+				onSuccess: () => {
+					setNewTag("")
+					toast({ description: "Tag added.", variant: "success" })
+				},
+				onFinish: () => setIsUpdatingTags(false),
+			},
+		)
+	}
+
+	const removeTag = (tagName: string) => {
+		const currentTags = team.tags?.map((t) => t.name) ?? []
+		const updatedTags = currentTags.filter((t) => t !== tagName)
+
+		setIsUpdatingTags(true)
+		router.patch(
+			route("teams.edit", { team_slug: team.slug }),
+			{ tags: updatedTags },
+			{
+				preserveScroll: true,
+				onSuccess: () => {
+					toast({ description: "Tag removed.", variant: "success" })
+				},
+				onFinish: () => setIsUpdatingTags(false),
+			},
+		)
+	}
 
 	const sendInvitation = (e: React.FormEvent) => {
 		e.preventDefault()
@@ -130,6 +181,42 @@ export default function TeamSettings({ team, members, permissions, pendingInvita
 						{permissions.canUpdateTeam && (
 							<div id="team-details">
 								<UpdateTeamNameForm team={team} />
+							</div>
+						)}
+
+						{/* Tags Section */}
+						{permissions.canUpdateTeam && (
+							<div id="team-tags">
+								<Card>
+									<CardHeader>
+										<CardTitle>Team Tags</CardTitle>
+										<CardDescription>Add tags to organize and categorize your team.</CardDescription>
+									</CardHeader>
+									<CardContent>
+										<form onSubmit={addTag} className="flex gap-2 mb-4">
+											<Input value={newTag} onChange={(e) => setNewTag(e.target.value)} placeholder="Enter a tag name" className="flex-1" disabled={isUpdatingTags} />
+											<Button type="submit" size="sm" disabled={isUpdatingTags || !newTag.trim()}>
+												<Plus className="mr-1 h-4 w-4" />
+												Add Tag
+											</Button>
+										</form>
+										{team.tags && team.tags.length > 0 ? (
+											<div className="flex flex-wrap gap-2">
+												{team.tags.map((tag) => (
+													<Badge key={tag.id} variant="secondary" className="flex items-center gap-1 pr-1">
+														<Tag className="h-3 w-3" />
+														{tag.name}
+														<button type="button" onClick={() => removeTag(tag.name)} disabled={isUpdatingTags} className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20">
+															<X className="h-3 w-3" />
+														</button>
+													</Badge>
+												))}
+											</div>
+										) : (
+											<p className="text-muted-foreground text-sm">No tags yet. Add tags to help organize your teams.</p>
+										)}
+									</CardContent>
+								</Card>
 							</div>
 						)}
 

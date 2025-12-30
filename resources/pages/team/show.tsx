@@ -1,6 +1,7 @@
 import { Head, Link } from "@inertiajs/react"
+import { formatDistanceToNow } from "date-fns"
 import type { LucideIcon } from "lucide-react"
-import { Calendar, Settings, Shield, ShieldCheck, Users } from "lucide-react"
+import { Calendar, Clock, Mail, Settings, Shield, ShieldCheck, Tag, Users } from "lucide-react"
 import type React from "react"
 import { Container } from "@/components/container"
 import { Header } from "@/components/header"
@@ -29,7 +30,7 @@ const roleIcons: Record<string, LucideIcon | null> = {
 	member: null,
 }
 
-export default function TeamShow({ team, members, permissions }: PagePropsFor<"team/show">) {
+export default function TeamShow({ team, members, permissions, pendingInvitations = [] }: PagePropsFor<"team/show">) {
 	const canManageTeam = permissions.canUpdateTeam || permissions.canDeleteTeam
 
 	return (
@@ -55,6 +56,17 @@ export default function TeamShow({ team, members, permissions }: PagePropsFor<"t
 							</CardHeader>
 							<CardContent>
 								{team.description ? <p className="text-muted-foreground">{team.description}</p> : <p className="text-muted-foreground italic">No description provided.</p>}
+								{/* Tags */}
+								{team.tags && team.tags.length > 0 && (
+									<div className="mt-4 flex flex-wrap gap-2">
+										{team.tags.map((tag) => (
+											<Badge key={tag.id} variant="secondary" className="flex items-center gap-1">
+												<Tag className="h-3 w-3" />
+												{tag.name}
+											</Badge>
+										))}
+									</div>
+								)}
 								<div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
 									<div className="flex items-center">
 										<Users className="mr-2 h-4 w-4" />
@@ -126,6 +138,57 @@ export default function TeamShow({ team, members, permissions }: PagePropsFor<"t
 								</div>
 							</CardContent>
 						</Card>
+
+						{/* Pending Invitations (read-only) */}
+						{permissions.canAddTeamMembers && pendingInvitations.length > 0 && (
+							<Card>
+								<CardHeader>
+									<div className="flex items-center justify-between">
+										<div>
+											<CardTitle>Pending Invitations</CardTitle>
+											<CardDescription>
+												{pendingInvitations.length} pending invitation{pendingInvitations.length !== 1 ? "s" : ""}
+											</CardDescription>
+										</div>
+										<Link href={route("teams.settings", { team_slug: team.slug })}>
+											<Button variant="outline" size="sm">
+												Manage Invitations
+											</Button>
+										</Link>
+									</div>
+								</CardHeader>
+								<CardContent>
+									<div className="space-y-3">
+										{pendingInvitations.map((invitation) => (
+											<div key={invitation.id} className="flex items-center justify-between rounded-lg border p-3">
+												<div className="flex items-center gap-3">
+													<div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
+														<Mail className="h-4 w-4 text-muted-foreground" />
+													</div>
+													<div>
+														<div className="flex items-center gap-2">
+															<span className="font-medium text-sm">{invitation.email}</span>
+															<Badge variant="secondary" className="text-xs capitalize">
+																{invitation.role}
+															</Badge>
+															{invitation.isExpired && (
+																<Badge variant="destructive" className="text-xs">
+																	Expired
+																</Badge>
+															)}
+														</div>
+														<div className="flex items-center gap-1 text-muted-foreground text-xs">
+															<Clock className="h-3 w-3" />
+															<span>Sent {formatDistanceToNow(new Date(invitation.createdAt), { addSuffix: true })}</span>
+														</div>
+													</div>
+												</div>
+											</div>
+										))}
+									</div>
+								</CardContent>
+							</Card>
+						)}
 					</div>
 
 					{/* Sidebar */}

@@ -107,6 +107,7 @@ class TeamDetail(CamelizedBaseStruct):
     slug: str
     description: str | None = None
     created_at: datetime | None = None
+    tags: list[TeamTag] = msgspec.field(default_factory=list)
 
 
 class TeamDetailPage(CamelizedBaseStruct):
