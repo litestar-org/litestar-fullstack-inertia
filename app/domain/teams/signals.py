@@ -5,9 +5,10 @@ from typing import TYPE_CHECKING
 import structlog
 from litestar.events import listener
 
+from app import config
 from app.config import alchemy
 from app.domain.teams.dependencies import provide_teams_service
-from app.lib.email import EmailService
+from app.domain.web.email import EmailMessageService
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -54,10 +55,12 @@ async def team_invitation_created_handler(invitee_email: str, inviter_name: str,
     """
     await logger.ainfo("Team invitation created, sending email.", invitee_email=invitee_email, team_name=team_name)
 
-    email_service = EmailService()
-    sent = await email_service.send_team_invitation_email(
-        invitee_email=invitee_email, inviter_name=inviter_name, team_name=team_name, token=token,
-    )
+    # Send invitation email using litestar-email plugin
+    async with config.email.provide_service() as mailer:
+        email_service = EmailMessageService(mailer=mailer)
+        sent = await email_service.send_team_invitation_email(
+            invitee_email=invitee_email, inviter_name=inviter_name, team_name=team_name, token=token,
+        )
 
     if sent:
         await logger.ainfo("Team invitation email sent", email=invitee_email, team=team_name)

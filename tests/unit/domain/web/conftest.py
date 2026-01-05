@@ -3,15 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from unittest.mock import AsyncMock
 
 import pytest
-
-from app.lib.email.backends.locmem import InMemoryBackend
-from app.lib.email.base import EmailMessage, EmailMultiAlternatives
-
-if TYPE_CHECKING:
-    from collections.abc import Generator
+from litestar_email import EmailMessage, EmailMultiAlternatives
 
 
 @dataclass
@@ -52,8 +47,8 @@ def sample_html_email() -> EmailMultiAlternatives:
 
 
 @pytest.fixture
-def clear_email_outbox() -> Generator[None, None, None]:
-    """Clear the in-memory email outbox before and after tests."""
-    InMemoryBackend.clear()
-    yield
-    InMemoryBackend.clear()
+def mock_mailer() -> AsyncMock:
+    """Create a mock mailer (litestar-email EmailService) for testing."""
+    mailer = AsyncMock()
+    mailer.send_message = AsyncMock(return_value=None)
+    return mailer

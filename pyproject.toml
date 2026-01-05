@@ -20,15 +20,15 @@ dependencies = [
   "cryptography>=42.0.0",
   "asyncpg>=0.28.0",
   "python-dotenv>=1.0.0",
-  "litestar-vite>=0.15.0-rc.5",
+  "litestar-vite>=0.15.0",
   "litestar-granian[uvloop]",
   "aiosqlite>=0.19.0",
-  "aiosmtplib>=3.0.0",
   "httptools",
   "pwdlib[argon2]>=0.2.0",
   "httpx-oauth>=0.15.0",
   "pyotp>=2.9.0",
   "qrcode[pil]>=7.4",
+  "litestar-email[resend]>=0.2.0",
 ]
 description = "Opinionated template for a Litestar application."
 keywords = ["litestar", "sqlalchemy", "alembic", "fullstack", "api", "asgi", "vite", "inertia"]

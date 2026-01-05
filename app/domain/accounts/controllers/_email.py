@@ -14,10 +14,12 @@ from litestar_vite.inertia import InertiaRedirect, flash
 from app.db.models import TokenType
 from app.domain.accounts.dependencies import provide_email_token_service, provide_users_service
 from app.domain.accounts.signals import UserInfo
-from app.lib.email import EmailService
+from app.domain.web.email import EmailMessageService
 from app.lib.schema import VerifyEmailPage
 
 if TYPE_CHECKING:
+    from litestar_email import EmailService
+
     from app.domain.accounts.services import EmailTokenService, UserService
     from app.lib.settings import Settings
 
@@ -78,9 +80,21 @@ class EmailVerificationController(Controller):
 
     @post(component="auth/verify-email", name="verification.send", path="/verify-email/send")
     async def resend_verification_email(
-        self, request: Request, settings: Settings, users_service: UserService, email_token_service: EmailTokenService,
+        self,
+        request: Request,
+        settings: Settings,
+        users_service: UserService,
+        email_token_service: EmailTokenService,
+        mailer: EmailService,
     ) -> InertiaRedirect:
         """Resend verification email to the current user.
+
+        Args:
+            request: The request object.
+            settings: Application settings.
+            users_service: User service for database operations.
+            email_token_service: Email token service for token management.
+            mailer: Email service from litestar-email plugin (injected by dependency).
 
         Raises:
             PermissionDeniedException: If the user is not authenticated.
@@ -121,7 +135,7 @@ class EmailVerificationController(Controller):
             user_agent=request.headers.get("user-agent"),
         )
 
-        email_service = EmailService()
+        email_service = EmailMessageService(mailer=mailer)
         user_info = UserInfo(email=user.email, name=user.name)
         await email_service.send_verification_email(user_info, plain_token)
 
