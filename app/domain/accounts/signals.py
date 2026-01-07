@@ -7,11 +7,12 @@ from typing import TYPE_CHECKING
 import structlog
 from litestar.events import listener
 
+from app import config
 from app.config import alchemy
 from app.db.models import TokenType
 from app.domain.accounts.dependencies import provide_users_service
 from app.domain.accounts.services import EmailTokenService
-from app.lib.email import EmailService
+from app.domain.web.email import EmailMessageService
 from app.lib.settings import get_settings
 
 if TYPE_CHECKING:
@@ -83,10 +84,11 @@ async def user_created_event_handler(
             user_agent=user_agent,
         )
 
-        # Send verification email
-        email_service = EmailService()
-        user_info = UserInfo(email=user.email, name=user.name)
-        sent = await email_service.send_verification_email(user_info, plain_token)
+        # Send verification email using litestar-email plugin
+        async with config.email.provide_service() as mailer:
+            email_service = EmailMessageService(mailer=mailer)
+            user_info = UserInfo(email=user.email, name=user.name)
+            sent = await email_service.send_verification_email(user_info, plain_token)
 
         if sent:
             await logger.ainfo("Verification email sent", email=user.email)
@@ -117,10 +119,11 @@ async def user_verified_event_handler(user_id: UUID) -> None:
             await logger.aerror("Could not locate the specified user", id=user_id)
             return
 
-        # Send welcome email
-        email_service = EmailService()
-        user_info = UserInfo(email=user.email, name=user.name)
-        sent = await email_service.send_welcome_email(user_info)
+        # Send welcome email using litestar-email plugin
+        async with config.email.provide_service() as mailer:
+            email_service = EmailMessageService(mailer=mailer)
+            user_info = UserInfo(email=user.email, name=user.name)
+            sent = await email_service.send_welcome_email(user_info)
 
         if sent:
             await logger.ainfo("Welcome email sent", email=user.email)
@@ -175,10 +178,11 @@ async def password_reset_requested_handler(
             user_agent=user_agent,
         )
 
-        # Send password reset email
-        email_service = EmailService()
-        user_info = UserInfo(email=user.email, name=user.name)
-        sent = await email_service.send_password_reset_email(user_info, plain_token, ip_address)
+        # Send password reset email using litestar-email plugin
+        async with config.email.provide_service() as mailer:
+            email_service = EmailMessageService(mailer=mailer)
+            user_info = UserInfo(email=user.email, name=user.name)
+            sent = await email_service.send_password_reset_email(user_info, plain_token, ip_address)
 
         if sent:
             await logger.ainfo("Password reset email sent", email=user.email)
@@ -209,10 +213,11 @@ async def password_reset_completed_handler(user_id: UUID) -> None:
             await logger.aerror("Could not locate the specified user", id=user_id)
             return
 
-        # Send confirmation email
-        email_service = EmailService()
-        user_info = UserInfo(email=user.email, name=user.name)
-        sent = await email_service.send_password_reset_confirmation_email(user_info)
+        # Send confirmation email using litestar-email plugin
+        async with config.email.provide_service() as mailer:
+            email_service = EmailMessageService(mailer=mailer)
+            user_info = UserInfo(email=user.email, name=user.name)
+            sent = await email_service.send_password_reset_confirmation_email(user_info)
 
         if sent:
             await logger.ainfo("Password reset confirmation sent", email=user.email)

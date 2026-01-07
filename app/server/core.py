@@ -150,7 +150,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         # templates
         app_config.template_config = config.templates
         # plugins
-        app_config.plugins.extend([plugins.structlog, plugins.granian, plugins.alchemy, plugins.vite])
+        app_config.plugins.extend([plugins.structlog, plugins.granian, plugins.alchemy, plugins.vite, plugins.email])
 
         # static files for uploads
         uploads_router = create_static_files_router(

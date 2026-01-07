@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     from litestar.middleware.session.server_side import ServerSideSessionConfig
     from litestar.plugins.structlog import StructlogConfig
     from litestar.template import TemplateConfig
+    from litestar_email import EmailConfig
     from litestar_vite import ViteConfig
 
 DEFAULT_MODULE_NAME = "app"
@@ -285,30 +286,16 @@ class LogSettings:
 
 @dataclass
 class EmailSettings:
-    """Email service configuration."""
+    """Email service configuration using litestar-email plugin."""
 
     ENABLED: bool = field(default_factory=get_env("EMAIL_ENABLED", False))
     """Enable email sending. If False, emails are logged but not sent."""
     BACKEND: str = field(default_factory=get_env("EMAIL_BACKEND", "console"))
-    """Email backend: 'smtp', 'console', or 'locmem'."""
+    """Email backend: 'console', 'memory', or 'resend'."""
     FROM_EMAIL: str = field(default_factory=get_env("EMAIL_FROM", "noreply@example.com"))
     """Default from email address."""
-
-    # SMTP Settings
-    SMTP_HOST: str = field(default_factory=get_env("EMAIL_SMTP_HOST", "localhost"))
-    """SMTP server hostname."""
-    SMTP_PORT: int = field(default_factory=get_env("EMAIL_SMTP_PORT", 587))
-    """SMTP server port."""
-    SMTP_USER: str = field(default_factory=get_env("EMAIL_SMTP_USER", ""))
-    """SMTP username for authentication."""
-    SMTP_PASSWORD: str = field(default_factory=get_env("EMAIL_SMTP_PASSWORD", ""))
-    """SMTP password for authentication."""
-    SMTP_USE_TLS: bool = field(default_factory=get_env("EMAIL_SMTP_USE_TLS", True))
-    """Use STARTTLS for SMTP connection."""
-    SMTP_USE_SSL: bool = field(default_factory=get_env("EMAIL_SMTP_USE_SSL", False))
-    """Use implicit SSL for SMTP connection."""
-    SMTP_TIMEOUT: int = field(default_factory=get_env("EMAIL_SMTP_TIMEOUT", 30))
-    """SMTP connection timeout in seconds."""
+    FROM_NAME: str = field(default_factory=get_env("EMAIL_FROM_NAME", ""))
+    """Default from name for emails."""
 
     # Resend Settings
     RESEND_API_KEY: str = field(default_factory=get_env("RESEND_API_KEY", ""))
@@ -323,6 +310,30 @@ class EmailSettings:
     """Minutes until password reset token expires."""
     INVITATION_TOKEN_EXPIRES_DAYS: int = field(default_factory=get_env("EMAIL_INVITATION_TOKEN_EXPIRES_DAYS", 7))
     """Days until team invitation token expires."""
+
+    def get_email_config(self) -> "EmailConfig":
+        """Create EmailConfig for litestar-email plugin.
+
+        Returns:
+            Configured EmailConfig instance.
+        """
+        from litestar_email import EmailConfig, ResendConfig
+
+        # Map legacy backend names to plugin names
+        backend_map = {"locmem": "memory"}
+        backend = backend_map.get(self.BACKEND, self.BACKEND)
+
+        config_kwargs: dict[str, Any] = {
+            "backend": backend,
+            "from_email": self.FROM_EMAIL,
+            "from_name": self.FROM_NAME or None,
+        }
+
+        # Add Resend config if using resend backend
+        if backend == "resend" and self.RESEND_API_KEY:
+            config_kwargs["resend"] = ResendConfig(api_key=self.RESEND_API_KEY)
+
+        return EmailConfig(**config_kwargs)
 
 
 @dataclass

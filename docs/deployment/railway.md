@@ -254,17 +254,19 @@ railway run bash
 
 # Test using Python
 python -c "
-from app.lib.email.service import EmailService
+from app import config
+from app.domain.web.email import EmailMessageService
 import asyncio
 
 async def test():
-    service = EmailService()
-    result = await service.send_email(
-        to_email='test@example.com',
-        subject='Railway Test',
-        html_content='<p>Email is working!</p>'
-    )
-    print('Sent:', result)
+    async with config.email.provide_service() as mailer:
+        service = EmailMessageService(mailer=mailer)
+        result = await service.send_email(
+            to_email='test@example.com',
+            subject='Railway Test',
+            html_content='<p>Email is working!</p>'
+        )
+        print('Sent:', result)
 
 asyncio.run(test())
 "

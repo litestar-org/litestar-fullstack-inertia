@@ -16,15 +16,13 @@ templates = _settings.app.get_template_config(_settings.vite.TEMPLATE_DIR)
 alchemy = _settings.db.get_config()
 vite = _settings.vite.get_config(_settings.app)
 log = _settings.log.get_structlog_config()
-
+email = _settings.email.get_email_config()
 # OAuth clients
 github_oauth2_client = GitHubOAuth2(
-    client_id=_settings.app.GITHUB_OAUTH2_CLIENT_ID,
-    client_secret=_settings.app.GITHUB_OAUTH2_CLIENT_SECRET,
+    client_id=_settings.app.GITHUB_OAUTH2_CLIENT_ID, client_secret=_settings.app.GITHUB_OAUTH2_CLIENT_SECRET,
 )
 google_oauth2_client = GoogleOAuth2(
-    client_id=_settings.app.GOOGLE_OAUTH2_CLIENT_ID,
-    client_secret=_settings.app.GOOGLE_OAUTH2_CLIENT_SECRET,
+    client_id=_settings.app.GOOGLE_OAUTH2_CLIENT_ID, client_secret=_settings.app.GOOGLE_OAUTH2_CLIENT_SECRET,
 )
 
 # Configure storage
