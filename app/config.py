@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from httpx_oauth.clients.github import GitHubOAuth2
-from httpx_oauth.clients.google import GoogleOAuth2
+from litestar_oauth.clients.github import GithubOAuth2
+from litestar_oauth.clients.google import GoogleOAuth2
 
 from app.lib.settings import get_settings
 
@@ -18,11 +18,15 @@ vite = _settings.vite.get_config(_settings.app)
 log = _settings.log.get_structlog_config()
 email = _settings.email.get_email_config()
 # OAuth clients
-github_oauth2_client = GitHubOAuth2(
-    client_id=_settings.app.GITHUB_OAUTH2_CLIENT_ID, client_secret=_settings.app.GITHUB_OAUTH2_CLIENT_SECRET,
+github_oauth2_client = GithubOAuth2(
+    client_id=_settings.app.GITHUB_OAUTH2_CLIENT_ID,
+    client_secret=_settings.app.GITHUB_OAUTH2_CLIENT_SECRET,
+    backend="httpx",
 )
 google_oauth2_client = GoogleOAuth2(
-    client_id=_settings.app.GOOGLE_OAUTH2_CLIENT_ID, client_secret=_settings.app.GOOGLE_OAUTH2_CLIENT_SECRET,
+    client_id=_settings.app.GOOGLE_OAUTH2_CLIENT_ID,
+    client_secret=_settings.app.GOOGLE_OAUTH2_CLIENT_SECRET,
+    backend="httpx",
 )
 
 # Configure storage

@@ -3,11 +3,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, TypeAlias, Union  # noqa: UP035
 
-from httpx_oauth.oauth2 import BaseOAuth2, GetAccessTokenError, OAuth2Error, OAuth2Token
 from litestar import status_codes as status
 from litestar.exceptions import HTTPException, ValidationException
 from litestar.params import Parameter
 from litestar.plugins import InitPluginProtocol
+from litestar_oauth.clients.base import BaseOAuth2, OAuth2Token
+from litestar_oauth.exceptions import GetAccessTokenError, OAuth2Error
 
 if TYPE_CHECKING:
     import httpx
@@ -38,13 +39,7 @@ class OAuth2AuthorizeCallbackError(OAuth2Error, HTTPException):
         extra: Union[Dict[str, Any], List[Any]] | None = None,  # noqa: UP007, UP006
     ) -> None:
         super().__init__(message=detail)
-        HTTPException.__init__(
-            self,
-            detail=detail,
-            status_code=status_code,
-            extra=extra,
-            headers=headers,
-        )
+        HTTPException.__init__(self, detail=detail, status_code=status_code, extra=extra, headers=headers)
         self.response = response
 
 
@@ -107,16 +102,14 @@ class OAuth2AuthorizeCallback:
         """
         if code is None or error is not None:
             raise OAuth2AuthorizeCallbackError(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=error if error is not None else None,
+                status_code=status.HTTP_400_BAD_REQUEST, detail=error if error is not None else None,
             )
 
         if self.state_session_key:
             expected_state = request.session.pop(self.state_session_key, None)
             if not expected_state or expected_state != callback_state:
                 raise OAuth2AuthorizeCallbackError(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Invalid OAuth state.",
+                    status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid OAuth state.",
                 )
 
         redirect_url = self.redirect_url
@@ -128,16 +121,12 @@ class OAuth2AuthorizeCallback:
             raise ValidationException(msg)
 
         try:
-            access_token = await self.client.get_access_token(
-                code,
-                redirect_url,
-                code_verifier,
-            )
+            access_token = await self.client.get_access_token(code, redirect_url, code_verifier)
         except GetAccessTokenError as e:
             raise OAuth2AuthorizeCallbackError(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=e.message,
-                response=e.response,
+                response=e.response,  # type: ignore[arg-type]
                 extra={"message": e.message},
             ) from e
 
@@ -156,12 +145,10 @@ class OAuth2ProviderPlugin(InitPluginProtocol):
         Returns:
             Updated application configuration.
         """
-        app_config.signature_namespace.update(
-            {
-                "OAuth2AuthorizeCallback": OAuth2AuthorizeCallback,
-                "AccessTokenState": AccessTokenState,
-                "OAuth2Token": OAuth2Token,
-            },
-        )
+        app_config.signature_namespace.update({
+            "OAuth2AuthorizeCallback": OAuth2AuthorizeCallback,
+            "AccessTokenState": AccessTokenState,
+            "OAuth2Token": OAuth2Token,
+        })
 
         return app_config

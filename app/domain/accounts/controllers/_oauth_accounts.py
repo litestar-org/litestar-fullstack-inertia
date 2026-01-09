@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from litestar import Controller, Request, delete, get, post
 from litestar.di import Provide
 from litestar.exceptions import NotFoundException, PermissionDeniedException
+from litestar_oauth.clients.base import BaseOAuth2
 from litestar_vite.inertia import InertiaExternalRedirect, InertiaRedirect, flash
 
 from app.config import github_oauth2_client, google_oauth2_client
@@ -18,16 +19,11 @@ from app.domain.accounts.services import UserOAuthAccountService, UserService
 from app.lib.oauth import AccessTokenState, OAuth2AuthorizeCallback
 
 if TYPE_CHECKING:
-    from httpx_oauth.oauth2 import BaseOAuth2
-
     from app.db.models import User as UserModel
 
 __all__ = ("OAuthAccountController",)
 
-OAUTH_CLIENTS: dict[str, BaseOAuth2] = {
-    "github": github_oauth2_client,
-    "google": google_oauth2_client,
-}
+OAUTH_CLIENTS: dict[str, BaseOAuth2] = {"github": github_oauth2_client, "google": google_oauth2_client}
 
 OAUTH_DEFAULT_SCOPES: dict[str, list[str]] = {
     "github": ["read:user", "user:email"],
@@ -61,11 +57,7 @@ class OAuthAccountController(Controller):
 
     @delete(path="/{provider:str}", name="oauth.unlink", status_code=303)
     async def unlink_oauth(
-        self,
-        request: Request,
-        provider: str,
-        current_user: UserModel,
-        oauth_account_service: UserOAuthAccountService,
+        self, request: Request, provider: str, current_user: UserModel, oauth_account_service: UserOAuthAccountService,
     ) -> InertiaRedirect:
         """Unlink an OAuth provider from the user's account.
 
@@ -94,11 +86,7 @@ class OAuthAccountController(Controller):
         return InertiaRedirect(request, request.url_for("profile.show"))
 
     @post(path="/{provider:str}/link", name="oauth.link.start")
-    async def start_link_oauth(
-        self,
-        request: Request,
-        provider: str,
-    ) -> InertiaExternalRedirect:
+    async def start_link_oauth(self, request: Request, provider: str) -> InertiaExternalRedirect:
         """Start the OAuth linking flow.
 
         Stores the action in session and redirects to OAuth provider.
@@ -171,7 +159,11 @@ class OAuthAccountController(Controller):
             return InertiaRedirect(request, request.url_for("profile.show"))
 
         if not account_email:
-            flash(request, f"Could not retrieve email from {provider.title()}. Please ensure email access is granted.", category="error")
+            flash(
+                request,
+                f"Could not retrieve email from {provider.title()}. Please ensure email access is granted.",
+                category="error",
+            )
             return InertiaRedirect(request, request.url_for("profile.show"))
 
         existing = await oauth_account_service.get_by_provider_account_id(provider, account_id)
@@ -196,11 +188,7 @@ class OAuthAccountController(Controller):
         return InertiaRedirect(request, request.url_for("profile.show"))
 
     @post(path="/{provider:str}/upgrade-scopes", name="oauth.upgrade_scopes")
-    async def upgrade_scopes(
-        self,
-        request: Request,
-        provider: str,
-    ) -> InertiaExternalRedirect:
+    async def upgrade_scopes(self, request: Request, provider: str) -> InertiaExternalRedirect:
         """Request expanded OAuth scopes via re-authorization.
 
         Args:

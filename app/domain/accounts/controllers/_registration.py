@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import secrets
-from typing import TYPE_CHECKING
 
 from advanced_alchemy.utils.text import slugify
 from litestar import Controller, Request, get, post
 from litestar.di import Provide
 from litestar.exceptions import ValidationException
+from litestar_oauth.clients.base import BaseOAuth2
 from litestar_vite.inertia import InertiaExternalRedirect, InertiaRedirect, flash, share
 
 from app.config import github_oauth2_client, google_oauth2_client
@@ -22,9 +22,6 @@ from app.domain.accounts.schemas import AccountRegister, User
 from app.domain.accounts.services import RoleService, UserOAuthAccountService, UserService
 from app.lib.oauth import AccessTokenState
 from app.lib.schema import NoProps
-
-if TYPE_CHECKING:
-    from httpx_oauth.oauth2 import BaseOAuth2
 
 __all__ = ("RegistrationController",)
 
@@ -111,8 +108,7 @@ class RegistrationController(Controller):
         """
         request.session["oauth_state:auth:github"] = secrets.token_urlsafe(32)
         redirect_to = await github_oauth2_client.get_authorization_url(
-            redirect_uri=request.url_for("github.complete"),
-            state=request.session["oauth_state:auth:github"],
+            redirect_uri=request.url_for("github.complete"), state=request.session["oauth_state:auth:github"],
         )
         return InertiaExternalRedirect(request, redirect_to=redirect_to)
 
@@ -147,8 +143,7 @@ class RegistrationController(Controller):
         """
         request.session["oauth_state:auth:google"] = secrets.token_urlsafe(32)
         redirect_to = await google_oauth2_client.get_authorization_url(
-            redirect_uri=request.url_for("google.complete"),
-            state=request.session["oauth_state:auth:google"],
+            redirect_uri=request.url_for("google.complete"), state=request.session["oauth_state:auth:google"],
         )
         return InertiaExternalRedirect(request, redirect_to=redirect_to)
 
@@ -225,6 +220,8 @@ class RegistrationController(Controller):
 
         if invitation_token:
             request.logger.info("Redirecting OAuth user to invitation page with token")
-            return InertiaRedirect(request, redirect_to=request.url_for("invitation.accept.page", token=invitation_token))
+            return InertiaRedirect(
+                request, redirect_to=request.url_for("invitation.accept.page", token=invitation_token),
+            )
 
         return InertiaRedirect(request, redirect_to=request.url_for("dashboard"))
