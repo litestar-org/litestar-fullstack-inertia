@@ -3,16 +3,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, TypeAlias, Union  # noqa: UP035
 
-from httpx_oauth.oauth2 import BaseOAuth2, GetAccessTokenError, OAuth2Error, OAuth2Token
 from litestar import status_codes as status
 from litestar.exceptions import HTTPException, ValidationException
 from litestar.params import Parameter
-from litestar.plugins import InitPluginProtocol
+from litestar_oauth.clients.base import BaseOAuth2, OAuth2Token
+from litestar_oauth.exceptions import GetAccessTokenError, OAuth2Error
 
 if TYPE_CHECKING:
     import httpx
     from litestar import Request
-    from litestar.config.app import AppConfig
 
 
 AccessTokenState: TypeAlias = tuple[OAuth2Token, str | None]
@@ -38,13 +37,7 @@ class OAuth2AuthorizeCallbackError(OAuth2Error, HTTPException):
         extra: Union[Dict[str, Any], List[Any]] | None = None,  # noqa: UP007, UP006
     ) -> None:
         super().__init__(message=detail)
-        HTTPException.__init__(
-            self,
-            detail=detail,
-            status_code=status_code,
-            extra=extra,
-            headers=headers,
-        )
+        HTTPException.__init__(self, detail=detail, status_code=status_code, extra=extra, headers=headers)
         self.response = response
 
 
@@ -80,7 +73,7 @@ class OAuth2AuthorizeCallback:
         state_session_key: str | None = None,
     ) -> None:
         """Args:
-        client: An [OAuth2][httpx_oauth.oauth2.BaseOAuth2] client.
+        client: An [OAuth2][litestar_oauth.clients.base.BaseOAuth2] client.
         route_name: Name of the callback route, as defined in the `name` parameter of the route decorator.
         redirect_url: Full URL to the callback route.
         """
@@ -102,21 +95,23 @@ class OAuth2AuthorizeCallback:
     ) -> AccessTokenState:
         """Handle OAuth2 authorization callback.
 
+        Raises:
+            OAuth2AuthorizeCallbackError: If an error occurs during the callback process.
+            ValidationException: If the redirect URL is not provided.
+
         Returns:
             Tuple of access token and callback state.
         """
         if code is None or error is not None:
             raise OAuth2AuthorizeCallbackError(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=error if error is not None else None,
+                status_code=status.HTTP_400_BAD_REQUEST, detail=error if error is not None else None,
             )
 
         if self.state_session_key:
             expected_state = request.session.pop(self.state_session_key, None)
             if not expected_state or expected_state != callback_state:
                 raise OAuth2AuthorizeCallbackError(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Invalid OAuth state.",
+                    status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid OAuth state.",
                 )
 
         redirect_url = self.redirect_url
@@ -128,40 +123,13 @@ class OAuth2AuthorizeCallback:
             raise ValidationException(msg)
 
         try:
-            access_token = await self.client.get_access_token(
-                code,
-                redirect_url,
-                code_verifier,
-            )
+            access_token = await self.client.get_access_token(code, redirect_url, code_verifier)
         except GetAccessTokenError as e:
             raise OAuth2AuthorizeCallbackError(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=e.message,
-                response=e.response,
+                response=e.response,  # type: ignore[arg-type]
                 extra={"message": e.message},
             ) from e
 
         return access_token, callback_state
-
-
-class OAuth2ProviderPlugin(InitPluginProtocol):
-    """HTTPX OAuth2 Plugin configuration plugin."""
-
-    def on_app_init(self, app_config: AppConfig) -> AppConfig:
-        """Configure application for use with SQLAlchemy.
-
-        Args:
-            app_config: The :class:`AppConfig <.config.app.AppConfig>` instance.
-
-        Returns:
-            Updated application configuration.
-        """
-        app_config.signature_namespace.update(
-            {
-                "OAuth2AuthorizeCallback": OAuth2AuthorizeCallback,
-                "AccessTokenState": AccessTokenState,
-                "OAuth2Token": OAuth2Token,
-            },
-        )
-
-        return app_config

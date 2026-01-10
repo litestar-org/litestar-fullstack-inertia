@@ -25,10 +25,10 @@ dependencies = [
   "aiosqlite>=0.19.0",
   "httptools",
   "pwdlib[argon2]>=0.2.0",
-  "httpx-oauth>=0.15.0",
   "pyotp>=2.9.0",
   "qrcode[pil]>=7.4",
   "litestar-email[resend]>=0.2.0",
+  "litestar-oauth",
 ]
 description = "Opinionated template for a Litestar application."
 keywords = ["litestar", "sqlalchemy", "alembic", "fullstack", "api", "asgi", "vite", "inertia"]
@@ -36,7 +36,7 @@ license = { text = "MIT" }
 maintainers = [{ name = "Litestar Developers", email = "hello@litestar.dev" }]
 name = "app"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 version = "0.2.0"
 
 [project.urls]
@@ -438,3 +438,6 @@ sort_commits = "oldest"
 split_commits = false
 tag_pattern = "v[0-9]*"
 topo_order = false
+
+[tool.uv.sources]
+litestar-oauth = { git = "https://gitlab.bartab.fr/oss-public/litestar_oauth.git" }
