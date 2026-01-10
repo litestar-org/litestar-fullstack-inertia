@@ -57,7 +57,7 @@ class OAuthAccountController(Controller):
 
     @delete(path="/{provider:str}", name="oauth.unlink", status_code=303)
     async def unlink_oauth(
-        self, request: Request, provider: str, current_user: UserModel, oauth_account_service: UserOAuthAccountService
+        self, request: Request, provider: str, current_user: UserModel, oauth_account_service: UserOAuthAccountService,
     ) -> InertiaRedirect:
         """Unlink an OAuth provider from the user's account.
 

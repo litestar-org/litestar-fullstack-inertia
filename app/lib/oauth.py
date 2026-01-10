@@ -6,14 +6,12 @@ from typing import TYPE_CHECKING, Any, Dict, List, TypeAlias, Union  # noqa: UP0
 from litestar import status_codes as status
 from litestar.exceptions import HTTPException, ValidationException
 from litestar.params import Parameter
-from litestar.plugins import InitPluginProtocol
 from litestar_oauth.clients.base import BaseOAuth2, OAuth2Token
 from litestar_oauth.exceptions import GetAccessTokenError, OAuth2Error
 
 if TYPE_CHECKING:
     import httpx
     from litestar import Request
-    from litestar.config.app import AppConfig
 
 
 AccessTokenState: TypeAlias = tuple[OAuth2Token, str | None]
@@ -75,7 +73,7 @@ class OAuth2AuthorizeCallback:
         state_session_key: str | None = None,
     ) -> None:
         """Args:
-        client: An [OAuth2][httpx_oauth.oauth2.BaseOAuth2] client.
+        client: An [OAuth2][litestar_oauth.clients.base.BaseOAuth2] client.
         route_name: Name of the callback route, as defined in the `name` parameter of the route decorator.
         redirect_url: Full URL to the callback route.
         """
@@ -96,6 +94,10 @@ class OAuth2AuthorizeCallback:
         error: str | None = Parameter(query="error", required=False),
     ) -> AccessTokenState:
         """Handle OAuth2 authorization callback.
+
+        Raises:
+            OAuth2AuthorizeCallbackError: If an error occurs during the callback process.
+            ValidationException: If the redirect URL is not provided.
 
         Returns:
             Tuple of access token and callback state.
@@ -131,24 +133,3 @@ class OAuth2AuthorizeCallback:
             ) from e
 
         return access_token, callback_state
-
-
-class OAuth2ProviderPlugin(InitPluginProtocol):
-    """HTTPX OAuth2 Plugin configuration plugin."""
-
-    def on_app_init(self, app_config: AppConfig) -> AppConfig:
-        """Configure application for use with SQLAlchemy.
-
-        Args:
-            app_config: The :class:`AppConfig <.config.app.AppConfig>` instance.
-
-        Returns:
-            Updated application configuration.
-        """
-        app_config.signature_namespace.update({
-            "OAuth2AuthorizeCallback": OAuth2AuthorizeCallback,
-            "AccessTokenState": AccessTokenState,
-            "OAuth2Token": OAuth2Token,
-        })
-
-        return app_config
