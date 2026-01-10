@@ -48,7 +48,7 @@ install-bun:                                        ## Install latest version of
 .PHONY: install
 install: destroy clean                              ## Install the project, dependencies, and pre-commit for local development
 	@echo "${INFO} Starting fresh installation..."
-	@uv python pin 3.12 >/dev/null 2>&1
+	@uv python pin 3.13 >/dev/null 2>&1
 	@uv venv >/dev/null 2>&1
 	@uv sync --all-extras --dev
 	@if ! command -v bun >/dev/null 2>&1; then \
