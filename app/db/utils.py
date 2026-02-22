@@ -1,20 +1,20 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+from advanced_alchemy.utils.fixtures import open_fixture_async
+from sqlalchemy import select
+from sqlalchemy.orm import load_only
+from structlog import get_logger
+
+from app.config import alchemy
+from app.db.models import Role
+from app.domain.accounts.services import RoleService
+from app.lib.settings import get_settings
+
 
 async def load_database_fixtures() -> None:
     """Import/Synchronize Database Fixtures."""
-
-    from pathlib import Path
-
-    from advanced_alchemy.utils.fixtures import open_fixture_async
-    from sqlalchemy import select
-    from sqlalchemy.orm import load_only
-    from structlog import get_logger
-
-    from app.config import alchemy
-    from app.db.models import Role
-    from app.domain.accounts.services import RoleService
-    from app.lib.settings import get_settings
 
     settings = get_settings()
     logger = get_logger()

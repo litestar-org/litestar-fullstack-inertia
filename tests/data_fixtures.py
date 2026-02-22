@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
+from app.server.asgi import create_app
+
 if TYPE_CHECKING:
     from litestar import Litestar
     from pytest import MonkeyPatch
@@ -20,8 +22,6 @@ def fx_app(pytestconfig: pytest.Config, monkeypatch: MonkeyPatch) -> Litestar:
     Returns:
         An application instance, configured via plugin.
     """
-    from app.server.asgi import create_app
-
     return create_app()
 
 

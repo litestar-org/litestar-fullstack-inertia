@@ -4,6 +4,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID
 
+from advanced_alchemy.exceptions import IntegrityError, NotFoundError, RepositoryError
+from advanced_alchemy.extensions.litestar.store import SQLAlchemyStore
 from litestar import get
 from litestar.di import Provide
 from litestar.openapi.config import OpenAPIConfig
@@ -11,6 +13,61 @@ from litestar.openapi.plugins import ScalarRenderPlugin, SwaggerRenderPlugin
 from litestar.plugins import CLIPluginProtocol, InitPluginProtocol
 from litestar.static_files import create_static_files_router
 from litestar.stores.registry import StoreRegistry
+
+from app import config
+from app.__metadata__ import __version__ as current_version
+from app.cli import user_management_app
+from app.db.models import SessionStore
+from app.db.models import User as UserModel
+from app.domain.accounts import signals as account_signals
+from app.domain.accounts.controllers import (
+    AccessController,
+    EmailVerificationController,
+    MfaChallengeController,
+    MfaController,
+    OAuthAccountController,
+    PasswordResetController,
+    ProfileController,
+    RegistrationController,
+    UserController,
+    UserRoleController,
+)
+from app.domain.accounts.dependencies import provide_user
+from app.domain.accounts.guards import session_auth
+from app.domain.accounts.services import (
+    EmailTokenService,
+    RoleService,
+    UserOAuthAccountService,
+    UserRoleService,
+    UserService,
+)
+from app.domain.admin.controllers import (
+    AdminAuditController,
+    AdminDashboardController,
+    AdminTeamController,
+    AdminUserController,
+)
+from app.domain.admin.services import AuditLogService
+from app.domain.tags.controllers import TagController
+from app.domain.tags.services import TagService
+from app.domain.teams import signals as team_signals
+from app.domain.teams.controllers import (
+    InvitationAcceptController,
+    TeamController,
+    TeamInvitationController,
+    TeamMemberController,
+    UserInvitationsController,
+)
+from app.domain.teams.services import TeamInvitationService, TeamMemberService, TeamService
+from app.domain.web.controllers import WebController
+from app.lib import log
+from app.lib.exceptions import (
+    inertia_exception_handler,
+    integrity_error_handler,
+    not_found_error_handler,
+    repository_error_handler,
+)
+from app.lib.settings import Settings, get_settings
 
 
 @get("/health", exclude_from_auth=True, include_in_schema=False)
@@ -38,9 +95,6 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         """Initialize ``ApplicationConfigurator``."""
 
     def on_cli_init(self, cli: Group) -> None:
-        from app.cli import user_management_app
-        from app.lib.settings import get_settings
-
         settings = get_settings()
         self.app_slug = settings.app.slug
         cli.add_command(user_management_app)
@@ -54,64 +108,8 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         Returns:
             The modified :class:`AppConfig <.config.app.AppConfig>` instance.
         """
-
-        from advanced_alchemy.exceptions import IntegrityError, NotFoundError, RepositoryError
-        from advanced_alchemy.extensions.litestar.store import SQLAlchemyStore
-
-        from app import config
-        from app.__metadata__ import __version__ as current_version
-        from app.db.models import SessionStore
-        from app.db.models import User as UserModel
-        from app.domain.accounts import signals as account_signals
-        from app.domain.accounts.controllers import (
-            AccessController,
-            EmailVerificationController,
-            MfaChallengeController,
-            MfaController,
-            OAuthAccountController,
-            PasswordResetController,
-            ProfileController,
-            RegistrationController,
-            UserController,
-            UserRoleController,
-        )
-        from app.domain.accounts.dependencies import provide_user
-        from app.domain.accounts.guards import session_auth
-        from app.domain.accounts.services import (
-            EmailTokenService,
-            RoleService,
-            UserOAuthAccountService,
-            UserRoleService,
-            UserService,
-        )
-        from app.domain.admin.controllers import (
-            AdminAuditController,
-            AdminDashboardController,
-            AdminTeamController,
-            AdminUserController,
-        )
-        from app.domain.admin.services import AuditLogService
-        from app.domain.tags.controllers import TagController
-        from app.domain.tags.services import TagService
-        from app.domain.teams import signals as team_signals
-        from app.domain.teams.controllers import (
-            InvitationAcceptController,
-            TeamController,
-            TeamInvitationController,
-            TeamMemberController,
-            UserInvitationsController,
-        )
-        from app.domain.teams.services import TeamInvitationService, TeamMemberService, TeamService
-        from app.domain.web.controllers import WebController
-        from app.lib import log
-        from app.lib.exceptions import (
-            inertia_exception_handler,
-            integrity_error_handler,
-            not_found_error_handler,
-            repository_error_handler,
-        )
-        from app.lib.settings import Settings, get_settings
-        from app.server import plugins
+        # Keep lazy import to avoid the module cycle: app.server.plugins -> app.server.core.
+        from app.server import plugins  # noqa: PLC0415
 
         settings = get_settings()
         self.app_slug = settings.app.slug

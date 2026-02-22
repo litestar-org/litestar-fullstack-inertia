@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-import pathlib
 
 import pytest
 
+from app import config
 from app.lib import settings as base
+from app.server import plugins
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pytest import MonkeyPatch
 
 
@@ -25,7 +28,7 @@ def anyio_backend() -> str:
 
 
 @pytest.fixture(autouse=True)
-def _patch_settings(monkeypatch: MonkeyPatch, tmp_path: pathlib.Path) -> None:
+def _patch_settings(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     """Path the settings."""
 
     settings = base.Settings.from_env(".env.testing")
@@ -38,9 +41,6 @@ def _patch_settings(monkeypatch: MonkeyPatch, tmp_path: pathlib.Path) -> None:
     monkeypatch.setattr(base, "get_settings", get_settings)
 
     # Patch the Vite config dev_mode directly since config.py is loaded before tests
-    from app import config
-    from app.server import plugins
-
     monkeypatch.setattr(config.vite, "dev_mode", False)
     monkeypatch.setattr(config.vite.runtime, "dev_mode", False)
     # Also patch the plugin's config

@@ -6,6 +6,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 import pytest
+from litestar.exceptions import PermissionDeniedException
 from sqlalchemy.orm import undefer_group
 
 from app.db.models import TokenType
@@ -362,8 +363,6 @@ async def test_user_service_reset_password(sessionmaker: "async_sessionmaker[Asy
 
 async def test_user_service_reset_password_inactive_user(sessionmaker: "async_sessionmaker[AsyncSession]") -> None:
     """Cannot reset password for inactive user."""
-    from litestar.exceptions import PermissionDeniedException
-
     async with sessionmaker() as session:
         users_service = UserService(session=session)
 

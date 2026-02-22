@@ -1,31 +1,39 @@
 from __future__ import annotations
 
 import binascii
+import logging
 import os
 import sys
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Final
+from typing import Any, Final, Literal, cast
 
+import structlog
+from advanced_alchemy.extensions.litestar import AlembicAsyncConfig, AsyncSessionConfig, SQLAlchemyAsyncConfig
+from advanced_alchemy.types.file_object import storages
+from advanced_alchemy.types.file_object.backends.obstore import ObstoreBackend
 from advanced_alchemy.utils.text import slugify
+from dotenv import load_dotenv
+from litestar.cli._utils import console
+from litestar.config.compression import CompressionConfig
+from litestar.config.cors import CORSConfig
+from litestar.config.csrf import CSRFConfig
+from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.data_extractors import RequestExtractorField, ResponseExtractorField
+from litestar.exceptions import NotAuthorizedException, NotFoundException, PermissionDeniedException
+from litestar.logging.config import LoggingConfig, StructLoggingConfig, default_logger_factory
+from litestar.middleware.logging import LoggingMiddlewareConfig
+from litestar.middleware.session.server_side import ServerSideSessionConfig
+from litestar.plugins.structlog import StructlogConfig
+from litestar.template import TemplateConfig
 from litestar.utils.module_loader import module_to_os_path
+from litestar_email import EmailConfig, ResendConfig
+from litestar_vite import InertiaConfig, PathConfig, RuntimeConfig, TypeGenConfig, ViteConfig
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.utils.engine_factory import create_sqlalchemy_engine
 from app.utils.env import get_env
-
-if TYPE_CHECKING:
-    from advanced_alchemy.extensions.litestar import SQLAlchemyAsyncConfig
-    from litestar.config.compression import CompressionConfig
-    from litestar.config.cors import CORSConfig
-    from litestar.config.csrf import CSRFConfig
-    from litestar.middleware.session.server_side import ServerSideSessionConfig
-    from litestar.plugins.structlog import StructlogConfig
-    from litestar.template import TemplateConfig
-    from litestar_email import EmailConfig
-    from litestar_vite import ViteConfig
 
 DEFAULT_MODULE_NAME = "app"
 BASE_DIR: Final[Path] = module_to_os_path(DEFAULT_MODULE_NAME)
@@ -76,8 +84,6 @@ class DatabaseSettings:
         return self._engine_instance
 
     def get_config(self) -> SQLAlchemyAsyncConfig:
-        from advanced_alchemy.extensions.litestar import AlembicAsyncConfig, AsyncSessionConfig, SQLAlchemyAsyncConfig
-
         return SQLAlchemyAsyncConfig(
             engine_instance=self.get_engine(),
             before_send_handler="autocommit_include_redirects",
@@ -103,9 +109,8 @@ class ViteSettings:
     """Template directory."""
 
     def get_config(self, app_settings: AppSettings) -> ViteConfig:
-        from litestar_vite import InertiaConfig, PathConfig, RuntimeConfig, TypeGenConfig, ViteConfig
-
-        from app.domain.teams.schemas import CurrentTeam
+        # Avoid module init cycle: settings -> teams.schemas -> models.user -> settings.
+        from app.domain.teams.schemas import CurrentTeam  # noqa: PLC0415
 
         return ViteConfig(
             dev_mode=self.DEV_MODE,
@@ -193,15 +198,7 @@ class LogSettings:
         Returns:
             Configured StructlogConfig for Litestar application.
         """
-        import logging
-
-        import structlog
-        from litestar.exceptions import NotAuthorizedException, NotFoundException, PermissionDeniedException
-        from litestar.logging.config import LoggingConfig, StructLoggingConfig, default_logger_factory
-        from litestar.middleware.logging import LoggingMiddlewareConfig
-        from litestar.plugins.structlog import StructlogConfig
-
-        from app.lib import log as log_conf
+        from app.lib import log as log_conf  # noqa: PLC0415
 
         as_json = not log_conf.is_tty()
         disable_stack_trace: set[Any] = {
@@ -311,14 +308,12 @@ class EmailSettings:
     INVITATION_TOKEN_EXPIRES_DAYS: int = field(default_factory=get_env("EMAIL_INVITATION_TOKEN_EXPIRES_DAYS", 7))
     """Days until team invitation token expires."""
 
-    def get_email_config(self) -> "EmailConfig":
+    def get_email_config(self) -> EmailConfig:
         """Create EmailConfig for litestar-email plugin.
 
         Returns:
             Configured EmailConfig instance.
         """
-        from litestar_email import EmailConfig, ResendConfig
-
         # Map legacy backend names to plugin names
         backend_map = {"locmem": "memory"}
         backend = backend_map.get(self.BACKEND, self.BACKEND)
@@ -383,9 +378,6 @@ class StorageSettings:
         Raises:
             ValueError: If an unsupported storage backend is configured.
         """
-        from advanced_alchemy.types.file_object import storages
-        from advanced_alchemy.types.file_object.backends.obstore import ObstoreBackend
-
         backend = self.BACKEND
 
         if backend == "local":
@@ -497,13 +489,9 @@ class AppSettings:
         return bool(self.GOOGLE_OAUTH2_CLIENT_ID and self.GOOGLE_OAUTH2_CLIENT_SECRET)
 
     def get_compression_config(self) -> CompressionConfig:
-        from litestar.config.compression import CompressionConfig
-
         return CompressionConfig(backend="gzip")
 
     def get_csrf_config(self) -> CSRFConfig:
-        from litestar.config.csrf import CSRFConfig
-
         return CSRFConfig(
             secret=self.SECRET_KEY,
             cookie_secure=self.CSRF_COOKIE_SECURE,
@@ -512,15 +500,9 @@ class AppSettings:
         )
 
     def get_cors_config(self) -> CORSConfig:
-        from litestar.config.cors import CORSConfig
-
         return CORSConfig(allow_origins=self.ALLOWED_CORS_ORIGINS)
 
     def get_session_config(self) -> ServerSideSessionConfig:
-        from typing import Literal, cast
-
-        from litestar.middleware.session.server_side import ServerSideSessionConfig
-
         samesite = self.SESSION_COOKIE_SAMESITE.lower()
         if samesite not in {"lax", "strict", "none"}:
             samesite = "lax"
@@ -534,9 +516,6 @@ class AppSettings:
         )
 
     def get_template_config(self, template_dir: Path) -> TemplateConfig:
-        from litestar.contrib.jinja import JinjaTemplateEngine
-        from litestar.template import TemplateConfig
-
         return TemplateConfig(engine=JinjaTemplateEngine(directory=template_dir))
 
 
@@ -553,10 +532,6 @@ class Settings:
     @classmethod
     @lru_cache(maxsize=1, typed=True)
     def from_env(cls, dotenv_filename: str = ".env") -> Settings:
-        import structlog
-        from dotenv import load_dotenv
-        from litestar.cli._utils import console
-
         logger = structlog.get_logger()
         env_file = Path(f"{os.curdir}/{dotenv_filename}")
         env_file_exists = env_file.is_file()

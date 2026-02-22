@@ -2,12 +2,22 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+import anyio
 import click
+from advanced_alchemy.utils.text import slugify
+from rich import get_console
+
+from app.config import alchemy
+from app.db.models import UserRole
+from app.db.utils import load_database_fixtures
+from app.domain.accounts.dependencies import provide_roles_service, provide_users_service
+from app.domain.accounts.schemas import UserCreate, UserUpdate
+from app.domain.accounts.services import UserService
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
-    from app.domain.accounts.services import RoleService, UserService
+    from app.domain.accounts.services import RoleService
 
 
 @click.group(name="users", invoke_without_command=False, help="Manage application users and roles.")
@@ -54,13 +64,6 @@ def create_user(
     superuser: bool | None,
 ) -> None:
     """Create a user."""
-    import anyio
-    import click
-    from rich import get_console
-
-    from app.config import alchemy
-    from app.domain.accounts.dependencies import provide_users_service
-    from app.domain.accounts.schemas import UserCreate
     console = get_console()
 
     async def _create_user(
@@ -107,13 +110,6 @@ def promote_to_superuser(email: str) -> None:
     Args:
         email (str): The email address of the user to promote.
     """
-    import anyio
-    from rich import get_console
-
-    from app.config import alchemy
-    from app.domain.accounts.schemas import UserUpdate
-    from app.domain.accounts.services import UserService
-
     console = get_console()
 
     async def _promote_to_superuser(email: str) -> None:
@@ -145,14 +141,6 @@ def create_default_roles() -> None:
     Args:
         email (str): The email address of the user to promote.
     """
-    import anyio
-    from advanced_alchemy.utils.text import slugify
-    from rich import get_console
-
-    from app.config import alchemy
-    from app.db.models import UserRole
-    from app.db.utils import load_database_fixtures
-    from app.domain.accounts.dependencies import provide_roles_service, provide_users_service
     console = get_console()
 
     async def _create_default_roles() -> None:

@@ -5,8 +5,10 @@ from typing import TYPE_CHECKING
 from advanced_alchemy.base import UUIDAuditBase
 from advanced_alchemy.mixins import SlugKey, UniqueMixin
 from advanced_alchemy.utils.text import slugify
-from sqlalchemy import ColumnElement, String, Table
+from sqlalchemy import ColumnElement, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.db.models.team_tag import team_tag
 
 if TYPE_CHECKING:
     from collections.abc import Hashable
@@ -25,7 +27,7 @@ class Tag(UUIDAuditBase, SlugKey, UniqueMixin):
     # ORM Relationships
     # ------------
     teams: Mapped[list[Team]] = relationship(
-        secondary=lambda: _team_tag(),
+        secondary=lambda: team_tag,
         back_populates="tags",
     )
 
@@ -40,9 +42,3 @@ class Tag(UUIDAuditBase, SlugKey, UniqueMixin):
         slug: str | None = None,  # noqa: ARG003
     ) -> ColumnElement[bool]:
         return cls.slug == slugify(name)
-
-
-def _team_tag() -> Table:
-    from .team_tag import team_tag
-
-    return team_tag

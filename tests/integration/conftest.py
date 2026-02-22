@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 import pytest
 from advanced_alchemy.base import UUIDAuditBase
 from advanced_alchemy.utils.fixtures import open_fixture_async
+from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.engine import URL
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
@@ -146,8 +147,6 @@ async def fx_client(app: Litestar) -> AsyncIterator[AsyncClient]:
     (e.g., ViteSPAHandler initialization), with a custom middleware that
     prevents state bleeding between requests.
     """
-    from asgi_lifespan import LifespanManager
-
     manager = LifespanManager(app)  # type: ignore[arg-type]
     # Replace the wrapped app with one that creates fresh state per request
     manager.app = _fresh_state_lifespan_middleware(app, manager._state)  # type: ignore[assignment]

@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from litestar import Litestar
 
-if TYPE_CHECKING:
-    from litestar import Litestar
+from app.server import plugins
 
 
 def create_app() -> Litestar:
@@ -12,8 +11,4 @@ def create_app() -> Litestar:
     Returns:
         The ASGI application.
     """
-    from litestar import Litestar
-
-    from app.server import plugins
-
     return Litestar(plugins=[plugins.app_core])

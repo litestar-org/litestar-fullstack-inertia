@@ -7,6 +7,9 @@ from uuid import UUID
 
 import pytest
 
+from app.db.models import User, UserOauthAccount
+from app.domain.accounts.services import UserOAuthAccountService
+
 if TYPE_CHECKING:
     from httpx import AsyncClient
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -49,8 +52,6 @@ async def test_link_unknown_provider(client: "AsyncClient", user_inertia_headers
 
 async def test_can_unlink_with_password(session: "AsyncSession") -> None:
     """User with password can always unlink OAuth."""
-    from app.db.models import User
-    from app.domain.accounts.services import UserOAuthAccountService
 
     # Create a mock user with password
     user = User(
@@ -67,8 +68,6 @@ async def test_can_unlink_with_password(session: "AsyncSession") -> None:
 
 async def test_cannot_unlink_only_oauth_no_password(session: "AsyncSession") -> None:
     """User without password and only 1 OAuth cannot unlink."""
-    from app.db.models import User, UserOauthAccount
-    from app.domain.accounts.services import UserOAuthAccountService
 
     user_id = UUID("11108ac1-ffcb-411d-8b1e-d9183399f63b")
 
@@ -99,8 +98,6 @@ async def test_cannot_unlink_only_oauth_no_password(session: "AsyncSession") -> 
 
 async def test_can_unlink_multiple_oauth_no_password(session: "AsyncSession") -> None:
     """User without password but multiple OAuth can unlink one."""
-    from app.db.models import User, UserOauthAccount
-    from app.domain.accounts.services import UserOAuthAccountService
 
     user_id = UUID("22208ac1-ffcb-411d-8b1e-d9183399f63b")
 
@@ -139,8 +136,6 @@ async def test_can_unlink_multiple_oauth_no_password(session: "AsyncSession") ->
 
 async def test_link_new_oauth_account(session: "AsyncSession") -> None:
     """Can link a new OAuth account to existing user."""
-    from app.db.models import User
-    from app.domain.accounts.services import UserOAuthAccountService
 
     user_id = UUID("33308ac1-ffcb-411d-8b1e-d9183399f63b")
 
@@ -171,8 +166,6 @@ async def test_link_new_oauth_account(session: "AsyncSession") -> None:
 
 async def test_unlink_oauth_account(session: "AsyncSession") -> None:
     """Can unlink an OAuth account."""
-    from app.db.models import User, UserOauthAccount
-    from app.domain.accounts.services import UserOAuthAccountService
 
     user_id = UUID("55508ac1-ffcb-411d-8b1e-d9183399f63b")
 
@@ -203,8 +196,6 @@ async def test_unlink_oauth_account(session: "AsyncSession") -> None:
 
 async def test_get_by_provider_account_id_exists(session: "AsyncSession") -> None:
     """Can find OAuth account by provider and account_id."""
-    from app.db.models import User, UserOauthAccount
-    from app.domain.accounts.services import UserOAuthAccountService
 
     user_id = UUID("66608ac1-ffcb-411d-8b1e-d9183399f63b")
 
@@ -233,7 +224,6 @@ async def test_get_by_provider_account_id_exists(session: "AsyncSession") -> Non
 
 async def test_get_by_provider_account_id_not_found(session: "AsyncSession") -> None:
     """Returns None for nonexistent OAuth account."""
-    from app.domain.accounts.services import UserOAuthAccountService
 
     async with UserOAuthAccountService.new(session) as service:
         found = await service.get_by_provider_account_id("github", "nonexistent")
