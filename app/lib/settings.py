@@ -342,7 +342,7 @@ class StorageSettings:
 
     BACKEND: str = field(default_factory=get_env("STORAGE_BACKEND", "local"))
     """Storage backend: 'local', 's3', 'gcs', or 'azure'."""
-    UPLOAD_DIR: Path = field(default_factory=get_env("STORAGE_UPLOAD_DIR", Path("uploads")))
+    UPLOAD_DIR: Path = field(default_factory=get_env("STORAGE_UPLOAD_DIR", Path("static/uploads")))
     """Directory for file uploads (local backend only)."""
     BUCKET: str = field(default_factory=get_env("STORAGE_BUCKET", ""))
     """Cloud storage bucket name (s3/gcs/azure)."""

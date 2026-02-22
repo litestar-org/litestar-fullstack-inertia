@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+import pathlib
 
 import pytest
 
@@ -24,10 +25,12 @@ def anyio_backend() -> str:
 
 
 @pytest.fixture(autouse=True)
-def _patch_settings(monkeypatch: MonkeyPatch) -> None:
+def _patch_settings(monkeypatch: MonkeyPatch, tmp_path: pathlib.Path) -> None:
     """Path the settings."""
 
     settings = base.Settings.from_env(".env.testing")
+    settings.storage.UPLOAD_DIR = tmp_path / "uploads"
+    settings.storage.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
     def get_settings(dotenv_filename: str = ".env.testing") -> base.Settings:
         return settings

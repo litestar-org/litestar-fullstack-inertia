@@ -111,8 +111,9 @@ ENV/
 env.bak/
 venv.bak/
 .venv
-media/
-!media/.gitkeep
+static/
+static/uploads/
+uploads/
 
 # Spyder project settings
 .spyderproject
