@@ -2,44 +2,57 @@
 Litestar Fullstack
 ==================
 
-The Litestar Fullstack repository contains the reference code for a fully-capable, production-ready
-fullstack Litestar web application. It is intended to be used as a starting point for new projects
-and as a reference for how to build a large scale fullstack Litestar application.
+Litestar Fullstack Inertia is a production-ready reference application that combines
+`Litestar <https://litestar.dev>`_, `React 19 <https://react.dev/>`_,
+`Inertia.js <https://inertiajs.com/>`_, and `Vite <https://vitejs.dev/>`_ to build modern
+server-driven web applications.
 
-You can take pieces as needed, or use the entire thing as a starting point for your project.
-It includes the following capabilities out of the box:
+Use it as a complete starting point for new projects or as a reference implementation for
+auth flows, project architecture, and operational workflows.
 
-.. seealso:: It is built on the `Litestar <https://litestar.dev>`_, ReactJS, `Vite <https://vitejs.dev/>`_,
-  :doc:`TailwindCSS <https://tailwindcss.com/>`_ and comes with great features to reference:
+Highlights
+----------
 
-  - User creation, authentication, and authorization
-  - Fully featured frontend stack with ReactJS (supports Vue, Angular, and all other JS frameworks) and native Vite integration via
-    the `litestar-vite <https://github.com/cofin/litestar-vite>`_ plugin
-  - Fully featured backend API with Litestar
-    - Includes the utilization of :doc:`Guards <litestar:usage/security/guards>` and team-based authentication,
-    - Extensive CLI
-  - Advanced logging with :doc:`structlog <structlog:index>`
-  - SQLAlchemy ORMs, including the :doc:`Advanced Alchemy <advanced-alchemy:index>` helper library by `Jolt <https://jolt.rs>`_
-    - UUIDv7 based Primary Keys using `uuid-utils`
-  - AioSQL for raw queries without the ORM
-  - Alembic migrations
-  - Dockerized development and production environments
-  - Test suite
+- Inertia.js frontend delivery with React and TypeScript
+- Litestar backend with authentication, team-based access, and CLI tooling
+- SQLAlchemy + Alembic database workflow with production-oriented defaults
+- Dockerized development setup and test automation
 
-Installation
-------------
+.. grid:: 1 1 2 2
+   :gutter: 2
 
-To get started, check out :doc:`the installation guide <usage/installation>`.
+   .. grid-item-card:: Install the Project
+      :link: usage/installation
+      :link-type: doc
 
-Usage
------
+      Set up dependencies, local services, and the development environment.
 
-To see how to use the Litestar Fullstack, check out :doc:`the usage guide <usage/index>`.
+   .. grid-item-card:: Usage Guide
+      :link: usage/index
+      :link-type: doc
 
-Reference
----------
+      Follow the development and startup workflows for day-to-day work.
 
-We also provide an API reference which can be found at :doc:`api/index`.
+   .. grid-item-card:: API Reference
+      :link: api/index
+      :link-type: doc
+
+      Browse generated API docs for core modules, domains, and shared libraries.
+
+   .. grid-item-card:: Contributing
+      :link: contribution-guide
+      :link-type: doc
+
+      Review contribution guidelines, quality checks, and pull request workflow.
+
+.. grid:: 1
+   :gutter: 2
+
+   .. grid-item-card:: Changelog
+      :link: changelog
+      :link-type: doc
+
+      Track notable updates and release history.
 
 .. toctree::
     :titlesonly:

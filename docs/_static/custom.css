@@ -1,0 +1,22 @@
+/* Litestar brand palette mapped onto Shibuya theme tokens. */
+:root {
+  --litestar-brand-ink: #202235;
+  --litestar-brand-ink-hover: #2f3352;
+  --litestar-brand-accent: #edb641;
+  --litestar-brand-accent-hover: #d9a640;
+  --litestar-brand-surface: #f7f8fa;
+  --litestar-brand-border: #dcdfe4;
+
+  --sy-c-bg: #ffffff;
+  --sy-c-bg-weak: var(--litestar-brand-surface);
+  --sy-c-bg-2: #eef1f6;
+  --sy-c-text: var(--litestar-brand-ink);
+  --sy-c-link: var(--litestar-brand-ink);
+  --sy-c-link-hover: var(--litestar-brand-ink-hover);
+  --sy-c-border: var(--litestar-brand-border);
+  --sy-c-divider: var(--litestar-brand-border);
+
+  --sy-f-primary: var(--litestar-brand-accent);
+  --sy-f-primary-hover: var(--litestar-brand-accent-hover);
+  --sy-f-on-primary: #202235;
+}
