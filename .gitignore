@@ -182,14 +182,13 @@ requirements.txt
 .litestar.json
 
 # Gemini Agent System
-specs/active/
-specs/archive/
-.gemini/mcp-tools.txt
-.gemini/mcp-strategy.md
-!specs/active/.gitkeep
-!specs/archive/.gitkeep
-!specs/guides/
-!specs/guides/**/*.md
-!specs/guides/**/*.yaml
-!specs/template-spec/
-!specs/template-spec/**/*.md
+specs/
+.agent/
+.claude/
+.gemini/
+AGENT.md
+CLAUDE.md
+GEMINI.md
+# Flow specification files (local-only)
+.agent/
+.geminiignore
