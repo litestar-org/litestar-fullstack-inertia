@@ -8,7 +8,6 @@ from app.server.asgi import create_app
 
 if TYPE_CHECKING:
     from litestar import Litestar
-    from pytest import MonkeyPatch
 
     from app.db.models import Team, User
 
@@ -16,7 +15,7 @@ pytestmark = pytest.mark.anyio
 
 
 @pytest.fixture(name="app")
-def fx_app(pytestconfig: pytest.Config, monkeypatch: MonkeyPatch) -> Litestar:
+def fx_app(_patch_settings: None) -> Litestar:
     """App fixture.
 
     Returns:

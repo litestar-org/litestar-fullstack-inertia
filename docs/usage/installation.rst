@@ -19,6 +19,7 @@ This command does the following:
 - Install ``uv`` if it is not available in the path.
 - Create a virtual environment with all dependencies configured
 - Install node dependencies via ``bun``
+- Prepare the frontend toolchain used by ``litestar-vite`` and Inertia.
 
 Edit ``.env`` configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -49,6 +50,19 @@ To deploy migration to the database, execute:
 
 .. code-block:: bash
 
-    ❯ app database upgrade
-    2023-06-16T16:55:17.048183Z [info     ] Context impl PostgresqlImpl.
-    2023-06-16T16:55:17.048251Z [info     ] Will assume transactional DDL.
+    make start-infra
+    uv run app database upgrade
+    uv run app users create-roles
+
+Start the Development Server
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Run the application with Litestar autoreload enabled:
+
+.. code-block:: bash
+
+    uv run app run --reload
+
+In development mode, the ``litestar-vite`` plugin starts the Vite dev server,
+serves the Inertia frontend, and keeps generated page and schema types in sync
+with the backend route configuration.

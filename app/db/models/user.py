@@ -15,8 +15,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.lib.settings import get_settings
 
 if TYPE_CHECKING:
+    from .personal_access_token import PersonalAccessToken
     from .oauth_account import UserOauthAccount
     from .team_member import TeamMember
+    from .user_session import UserSession
     from .user_role import UserRole
 
 settings = get_settings()
@@ -85,6 +87,12 @@ class User(UUIDAuditBase):
     )
     oauth_accounts: Mapped[list[UserOauthAccount]] = relationship(
         back_populates="user", lazy="noload", cascade="all, delete", uselist=True,
+    )
+    tokens: Mapped[list[PersonalAccessToken]] = relationship(
+        back_populates="user", lazy="noload", cascade="all, delete-orphan", uselist=True,
+    )
+    sessions: Mapped[list[UserSession]] = relationship(
+        back_populates="user", lazy="noload", cascade="all, delete-orphan", uselist=True,
     )
 
     @hybrid_property

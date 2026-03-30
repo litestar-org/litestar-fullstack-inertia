@@ -193,3 +193,4 @@ GEMINI.md
 # Flow specification files (local-only)
 .agent/
 .geminiignore
+.agents/

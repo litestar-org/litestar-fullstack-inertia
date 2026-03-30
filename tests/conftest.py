@@ -29,7 +29,7 @@ def anyio_backend() -> str:
 
 @pytest.fixture(autouse=True)
 def _patch_settings(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
-    """Path the settings."""
+    """Patch settings and Vite runtime config for tests."""
 
     settings = base.Settings.from_env(".env.testing")
     settings.storage.UPLOAD_DIR = tmp_path / "uploads"

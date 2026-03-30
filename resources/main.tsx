@@ -10,13 +10,9 @@ axios.defaults.withCredentials = true
 
 createInertiaApp({
 	title: (title: string) => `${title} - ${appName}`,
-	// defaults: {
-	//     future: {
-	//         useScriptElementForInitialPage: true,
-	//     },
-	// },
-	resolve: (name: string) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob("./pages/**/*.tsx")),
-	setup({ el, App, props }: { el: HTMLElement; App: React.ComponentType; props: Record<string, unknown> }) {
+	resolve: (name: string) =>
+		resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob<{ default: React.ComponentType }>("./pages/**/*.tsx")),
+	setup({ el, App, props }) {
 		const appElement = (
 			<ThemeProvider defaultTheme="system" storageKey="ui-theme">
 				<App {...props} />
@@ -32,4 +28,4 @@ createInertiaApp({
 	progress: {
 		color: "#EDB641",
 	},
-} as unknown as Parameters<typeof createInertiaApp>[0])
+})

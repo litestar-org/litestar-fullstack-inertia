@@ -16,7 +16,7 @@
 
 # Litestar Fullstack Inertia
 
-A modern, production-ready fullstack reference application. It seamlessly integrates a **Litestar** (Python) backend with a **React 19** (TypeScript) frontend using **Inertia.js**—eliminating the complexity of building separate APIs and SPAs.
+A modern, production-ready fullstack reference application. It seamlessly integrates a **Litestar** (Python) backend with a **React 19** (TypeScript) frontend using **Inertia.js 3**—eliminating the complexity of building separate APIs and SPAs.
 
 ## 🚀 Overview
 
@@ -39,7 +39,7 @@ This project serves as a comprehensive template for building scalable web applic
 | :--- | :--- | :--- |
 | **Backend** | [Litestar](https://litestar.dev/) | High-performance ASGI framework. |
 | **Frontend** | [React 19](https://react.dev/) | UI library with TypeScript. |
-| **Glue** | [Inertia.js](https://inertiajs.com/) | Classic server-driven routing for SPAs. |
+| **Glue** | [Inertia.js 3](https://inertiajs.com/) | Classic server-driven routing for SPAs. |
 | **Database** | [SQLAlchemy 2.0](https://www.sqlalchemy.org/) | Modern async ORM. |
 | **Styling** | [Tailwind CSS](https://tailwindcss.com/) | Utility-first CSS framework. |
 | **UI Kit** | [shadcn/ui](https://ui.shadcn.com/) | Reusable components built with Radix UI. |
@@ -80,7 +80,7 @@ This project serves as a comprehensive template for building scalable web applic
     ```
 
 4. **Start Infrastructure**
-    Spin up PostgreSQL and Redis containers.
+    Spin up the local PostgreSQL container used for development.
 
     ```bash
     make start-infra

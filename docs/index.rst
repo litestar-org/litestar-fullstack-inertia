@@ -4,7 +4,7 @@ Litestar Fullstack
 
 Litestar Fullstack Inertia is a production-ready reference application that combines
 `Litestar <https://litestar.dev>`_, `React 19 <https://react.dev/>`_,
-`Inertia.js <https://inertiajs.com/>`_, and `Vite <https://vitejs.dev/>`_ to build modern
+`Inertia.js 3 <https://inertiajs.com/>`_, and `Vite <https://vitejs.dev/>`_ to build modern
 server-driven web applications.
 
 Use it as a complete starting point for new projects or as a reference implementation for
@@ -13,10 +13,10 @@ auth flows, project architecture, and operational workflows.
 Highlights
 ----------
 
-- Inertia.js frontend delivery with React and TypeScript
+- Inertia.js 3 frontend delivery with React and TypeScript
 - Litestar backend with authentication, team-based access, and CLI tooling
-- SQLAlchemy + Alembic database workflow with production-oriented defaults
-- Dockerized development setup and test automation
+- Advanced Alchemy service and repository layer with production-oriented defaults
+- Dockerized development setup and pytest-databases-backed integration tests
 
 .. grid:: 1 1 2 2
    :gutter: 2

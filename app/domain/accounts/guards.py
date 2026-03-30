@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from litestar.exceptions import PermissionDeniedException
@@ -10,7 +11,11 @@ from litestar_vite.inertia import share
 from app.config import alchemy, github_oauth2_client, google_oauth2_client
 from app.config import session as session_config
 from app.db.models import User as UserModel
-from app.domain.accounts.dependencies import provide_users_service
+from app.domain.accounts.dependencies import (
+    provide_personal_access_token_service,
+    provide_user_session_service,
+    provide_users_service,
+)
 from app.domain.accounts.schemas import User as UserSchema
 from app.lib.oauth import OAuth2AuthorizeCallback
 from app.lib.settings import get_settings
@@ -21,7 +26,7 @@ if TYPE_CHECKING:
     from litestar.connection import ASGIConnection
     from litestar.handlers.base import BaseRouteHandler
 
-    from app.domain.accounts.services import UserService
+    from app.domain.accounts.services import PersonalAccessTokenService, UserService, UserSessionService
 
 
 __all__ = (
@@ -29,9 +34,58 @@ __all__ = (
     "requires_active_user",
     "requires_registration_enabled",
     "requires_superuser",
+    "requires_token_ability",
     "requires_verified_user",
     "session_auth",
 )
+
+_TOKEN_AUTH_SCOPE_KEY = "_token_auth"
+
+
+@dataclass(slots=True)
+class TokenAuthContext:
+    token_id: str
+    abilities: tuple[str, ...]
+
+
+def _clear_token_auth(connection: ASGIConnection[Any, Any, Any, Any]) -> None:
+    connection.scope.pop(_TOKEN_AUTH_SCOPE_KEY, None)
+
+
+def _set_token_auth(
+    connection: ASGIConnection[Any, Any, Any, Any], *, token_id: str, abilities: list[str],
+) -> None:
+    connection.scope[_TOKEN_AUTH_SCOPE_KEY] = TokenAuthContext(token_id=token_id, abilities=tuple(abilities))
+
+
+def get_token_auth_context(connection: ASGIConnection[Any, Any, Any, Any]) -> TokenAuthContext | None:
+    """Return bearer-token auth details for the current request, if any."""
+    context = connection.scope.get(_TOKEN_AUTH_SCOPE_KEY)
+    return context if isinstance(context, TokenAuthContext) else None
+
+
+def requires_token_ability(required_ability: str):
+    """Guard factory for routes that should enforce a bearer-token ability when token auth is used."""
+
+    def guard(connection: ASGIConnection[Any, Any, Any, Any], _: BaseRouteHandler) -> None:
+        token_auth = get_token_auth_context(connection)
+        if token_auth is None:
+            return
+        if "*" in token_auth.abilities or required_ability in token_auth.abilities:
+            return
+        raise PermissionDeniedException(detail=f"Token is missing required ability: {required_ability}")
+
+    return guard
+
+
+def _get_bearer_token(connection: ASGIConnection[Any, Any, Any, Any]) -> str | None:
+    authorization = connection.headers.get("Authorization")
+    if not authorization:
+        return None
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token:
+        return None
+    return token.strip()
 
 
 def requires_registration_enabled(connection: ASGIConnection, _: BaseRouteHandler) -> None:
@@ -118,21 +172,49 @@ async def current_user_from_session(
         User: User record mapped to the JWT identifier
     """
 
-    if (user_id := session.get("user_id")) is None:
-        share(connection, "auth", {"isAuthenticated": False})
-        return None
-    service_provider: AsyncGenerator[UserService, None] = provide_users_service(
-        alchemy.provide_session(connection.app.state, connection.scope),
-    )
+    db_session = alchemy.provide_session(connection.app.state, connection.scope)
+    user_provider: AsyncGenerator[UserService, None] = provide_users_service(db_session)
+    token_provider: AsyncGenerator[PersonalAccessTokenService, None] = provide_personal_access_token_service(db_session)
+    session_provider: AsyncGenerator[UserSessionService, None] = provide_user_session_service(db_session)
     try:
-        service = await anext(service_provider)
-        user = await service.get_one_or_none(email=user_id)
-        if user and user.is_active:
-            share(connection, "auth", {"isAuthenticated": True, "user": service.to_schema(user, schema_type=UserSchema)})
-            return user
+        users_service = await anext(user_provider)
+
+        if (user_id := session.get("user_id")) is not None:
+            user = await users_service.get_one_or_none(email=user_id)
+            if user and user.is_active:
+                _clear_token_auth(connection)
+                tracked_session_id = connection.cookies.get(get_settings().app.SESSION_COOKIE_NAME) or connection.get_session_id()
+                if tracked_session_id:
+                    sessions_service = await anext(session_provider)
+                    await sessions_service.track_session(
+                        user=user,
+                        session_id=tracked_session_id,
+                        ip_address=connection.client.host if connection.client else None,
+                        user_agent=connection.headers.get("user-agent"),
+                    )
+                share(connection, "auth", {"isAuthenticated": True, "user": users_service.to_schema(user, schema_type=UserSchema)})
+                return user
+            session.pop("user_id", None)
+
+        if connection.url.path.startswith("/api/") and (plain_token := _get_bearer_token(connection)):
+            token_service = await anext(token_provider)
+            token = await token_service.verify_token(plain_token)
+            if token is not None:
+                user = await users_service.get_one_or_none(id=token.user_id)
+                if user and user.is_active:
+                    _set_token_auth(connection, token_id=str(token.id), abilities=token.abilities)
+                    share(
+                        connection,
+                        "auth",
+                        {"isAuthenticated": True, "user": users_service.to_schema(user, schema_type=UserSchema)},
+                    )
+                    return user
+
+        _clear_token_auth(connection)
     finally:
-        await service_provider.aclose()
-    session.pop("user_id", None)
+        await user_provider.aclose()
+        await token_provider.aclose()
+        await session_provider.aclose()
     share(connection, "auth", {"isAuthenticated": False})
     return None
 

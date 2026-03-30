@@ -7,17 +7,13 @@ from uuid import UUID
 
 from advanced_alchemy.extensions.litestar.providers import create_service_dependencies, create_service_provider
 from litestar import Controller, Request, delete, get, patch, post
-from litestar.di import Provide
 from litestar.params import Dependency, Parameter
 from litestar_vite.inertia import InertiaRedirect, flash
-from sqlalchemy import select
 from sqlalchemy.orm import joinedload, selectinload
 
 from app.db.models import Team as TeamModel
 from app.db.models import TeamMember, TeamRoles
 from app.db.models import User as UserModel
-from app.db.models.team_member import TeamMember as TeamMemberModel
-from app.domain.accounts.dependencies import provide_users_service
 from app.domain.accounts.guards import requires_active_user
 from app.domain.accounts.services import UserService
 from app.domain.teams.guards import requires_team_admin, requires_team_membership, requires_team_ownership
@@ -94,11 +90,7 @@ class TeamController(Controller):
         Returns:
             Teams list with user roles and total count.
         """
-        if not teams_service.can_view_all(current_user):
-            filters.append(
-                TeamModel.id.in_(select(TeamMemberModel.team_id).where(TeamMemberModel.user_id == current_user.id)),  # type: ignore[arg-type]
-            )
-        results, total = await teams_service.list_and_count(*filters)
+        results, total = await teams_service.list_visible_to_user(current_user, *filters)
         teams = []
         for team in results:
             membership = next((m for m in team.members if m.user_id == current_user.id), None)
@@ -162,7 +154,7 @@ class TeamController(Controller):
         path="/teams/{team_slug:str}/",
         dependencies={
             "team_invitations_service": create_service_provider(TeamInvitationService),
-            "users_service": Provide(provide_users_service),
+            "users_service": create_service_provider(UserService),
         },
     )
     async def get_team(
@@ -191,10 +183,7 @@ class TeamController(Controller):
         invitee_flags: dict[str, bool] = {}
         if invitations:
             emails = {inv.email for inv in invitations}
-            result = await users_service.repository.session.execute(
-                select(UserModel.email).where(UserModel.email.in_(emails)),
-            )
-            existing_emails = {row[0] for row in result}
+            existing_emails = await users_service.existing_email_set(emails)
             invitee_flags = {email: email in existing_emails for email in emails}
 
         return TeamDetailPage(
@@ -253,7 +242,7 @@ class TeamController(Controller):
                 ],
             ),
             "team_invitations_service": create_service_provider(TeamInvitationService),
-            "users_service": Provide(provide_users_service),
+            "users_service": create_service_provider(UserService),
         },
     )
     async def get_team_settings(
@@ -281,10 +270,7 @@ class TeamController(Controller):
         invitee_flags: dict[str, bool] = {}
         if invitations:
             emails = {inv.email for inv in invitations}
-            result = await users_service.repository.session.execute(
-                select(UserModel.email).where(UserModel.email.in_(emails)),
-            )
-            existing_emails = {row[0] for row in result}
+            existing_emails = await users_service.existing_email_set(emails)
             invitee_flags = {email: email in existing_emails for email in emails}
 
         return TeamDetailPage(

@@ -21,13 +21,15 @@ Common Commands
    * - ``make install``
      - Fresh install of all dependencies (Python + JS) and environment setup.
    * - ``make start-infra``
-     - Start Dockerized services (PostgreSQL, Redis).
-   * - ``make run``
-     - Start the full stack (Backend + Vite) in development mode.
+     - Start the local PostgreSQL infrastructure used for development.
+   * - ``uv run app run --reload``
+     - Start the full stack in development mode with Litestar autoreload and Vite HMR managed by ``litestar-vite``.
    * - ``make test``
-     - Run the full test suite with ``pytest``.
+     - Run the full test suite with ``pytest`` and ``pytest-xdist``.
    * - ``make lint``
      - Run all linters (Ruff, Mypy, Biome, Slotscheck).
+   * - ``make build``
+     - Build production frontend assets and the Python wheel.
    * - ``make upgrade``
      - Upgrade all dependencies and pre-commit hooks.
 
@@ -53,13 +55,18 @@ Testing Strategy
 We use **pytest** with **anyio** for async support.
 
 - **Unit Tests**: Isolated logic tests.
-- **Integration Tests**: Full API and Database integration tests using `pytest-databases`.
-- **Frontend Tests**: Component testing via Vitest (configured in ``vite.config.ts``).
+- **Integration Tests**: Full API and database integration tests backed by ``pytest-databases`` and a disposable PostgreSQL container.
+- **Frontend Build Verification**: Vite production builds and ``litestar-vite`` type generation are used as the primary frontend verification path in this repository.
 
 .. code-block:: shell
 
     # Run tests with coverage
     make coverage
+
+.. code-block:: shell
+
+    # Build frontend assets and refresh generated Litestar/Vite types
+    make build
 
 Full Makefile
 -------------

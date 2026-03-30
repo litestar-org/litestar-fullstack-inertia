@@ -11,6 +11,10 @@ from app.lib.schema import CamelizedBaseStruct
 __all__ = (
     "AccountLogin",
     "AccountRegister",
+    "ApiTokenAbility",
+    "ApiTokenPage",
+    "BrowserSessionInfo",
+    "BrowserSessionsLogoutOthers",
     "EmailSent",
     "ForgotPasswordRequest",
     "MfaBackupCodes",
@@ -22,6 +26,10 @@ __all__ = (
     "PasswordResetToken",
     "PasswordUpdate",
     "PasswordVerify",
+    "PersonalAccessTokenCreate",
+    "PersonalAccessTokenCreated",
+    "PersonalAccessTokenItem",
+    "ProfilePage",
     "ProfileUpdate",
     "User",
     "UserCreate",
@@ -87,6 +95,72 @@ class User(CamelizedBaseStruct):
     roles: list[UserRole] = msgspec.field(default_factory=list)
     oauth_accounts: list[OauthAccount] = msgspec.field(default_factory=list)
     avatar_url: str | None = None
+
+
+class BrowserSessionInfo(CamelizedBaseStruct):
+    """A single active browser session."""
+
+    id: UUID
+    session_id: str
+    ip_address: str | None = None
+    browser: str
+    os: str
+    device_type: str
+    last_activity: datetime
+    is_current: bool = False
+
+
+class ProfilePage(CamelizedBaseStruct):
+    """Profile page props."""
+
+    browser_sessions: list[BrowserSessionInfo] = msgspec.field(default_factory=list)
+
+
+class BrowserSessionsLogoutOthers(CamelizedBaseStruct):
+    """Payload for logging out every session except the current one."""
+
+    password: str
+
+
+class ApiTokenAbility(CamelizedBaseStruct):
+    """Available token ability option."""
+
+    value: str
+    label: str
+    description: str
+
+
+class PersonalAccessTokenItem(CamelizedBaseStruct):
+    """Display-safe personal access token summary."""
+
+    id: UUID
+    name: str
+    abilities: list[str] = msgspec.field(default_factory=list)
+    created_at: datetime
+    last_used_at: datetime | None = None
+    expires_at: datetime | None = None
+
+
+class ApiTokenPage(CamelizedBaseStruct):
+    """API token management page props."""
+
+    tokens: list[PersonalAccessTokenItem] = msgspec.field(default_factory=list)
+    available_abilities: list[ApiTokenAbility] = msgspec.field(default_factory=list)
+    default_abilities: list[str] = msgspec.field(default_factory=list)
+
+
+class PersonalAccessTokenCreate(CamelizedBaseStruct):
+    """Request payload for creating a personal access token."""
+
+    name: str
+    abilities: list[str] = msgspec.field(default_factory=list)
+
+
+class PersonalAccessTokenCreated(CamelizedBaseStruct):
+    """Response returned once after creating a token."""
+
+    token: str
+    item: PersonalAccessTokenItem
 
 
 class UserCreate(CamelizedBaseStruct):

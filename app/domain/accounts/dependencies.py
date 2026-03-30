@@ -7,11 +7,13 @@ from typing import TYPE_CHECKING, Any
 from advanced_alchemy.extensions.litestar.providers import create_service_provider
 from sqlalchemy.orm import joinedload, load_only, selectinload
 
-from app.db.models import Role, Team, TeamMember, UserOauthAccount, UserRole
+from app.db.models import PersonalAccessToken, Role, Team, TeamMember, UserOauthAccount, UserRole, UserSession
 from app.db.models import User as UserModel
 from app.domain.accounts.services import (
+    PersonalAccessTokenService,
     EmailTokenService,
     RoleService,
+    UserSessionService,
     UserOAuthAccountService,
     UserRoleService,
     UserService,
@@ -58,3 +60,7 @@ provide_user_oauth_account_service = create_service_provider(UserOAuthAccountSer
 provide_user_roles_service = create_service_provider(UserRoleService)
 
 provide_email_token_service = create_service_provider(EmailTokenService)
+
+provide_personal_access_token_service = create_service_provider(PersonalAccessTokenService, load=[PersonalAccessToken.user])
+
+provide_user_session_service = create_service_provider(UserSessionService, load=[UserSession.user])

@@ -1,5 +1,6 @@
 """User Account Controllers."""
 
+from app.domain.accounts.controllers._api_tokens import ApiTokenController
 from app.domain.accounts.controllers._access import AccessController
 from app.domain.accounts.controllers._email import EmailVerificationController
 from app.domain.accounts.controllers._mfa import MfaController
@@ -13,6 +14,7 @@ from app.domain.accounts.controllers._users import UserController
 
 __all__ = (
     "AccessController",
+    "ApiTokenController",
     "EmailVerificationController",
     "MfaChallengeController",
     "MfaController",

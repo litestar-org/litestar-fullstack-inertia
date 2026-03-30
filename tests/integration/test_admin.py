@@ -28,39 +28,33 @@ async def test_admin_dashboard_requires_auth(client: "AsyncClient") -> None:
 async def test_admin_dashboard_requires_superuser(
     client: "AsyncClient", user_inertia_headers: dict[str, str],
 ) -> None:
-    """Regular users should be denied access to admin routes.
-
-    Note: Due to session handling in tests, this may redirect to login.
-    The guard properly raises PermissionDeniedException but the test client
-    session state doesn't persist properly between fixture setup and test.
-    """
+    """Regular users should be redirected away from admin routes."""
     response = await client.get("/admin/", headers=user_inertia_headers)
-    # Accept either 403 (direct denial) or 307 redirect to login (session issue)
-    assert response.status_code in (403, 307)
+    assert response.status_code == 307
 
 
 async def test_admin_users_requires_superuser(
     client: "AsyncClient", user_inertia_headers: dict[str, str],
 ) -> None:
-    """Regular users should be denied access to admin user routes."""
+    """Regular users should be redirected away from admin user routes."""
     response = await client.get("/admin/users/", headers=user_inertia_headers)
-    assert response.status_code in (403, 307)
+    assert response.status_code == 307
 
 
 async def test_admin_teams_requires_superuser(
     client: "AsyncClient", user_inertia_headers: dict[str, str],
 ) -> None:
-    """Regular users should be denied access to admin team routes."""
+    """Regular users should be redirected away from admin team routes."""
     response = await client.get("/admin/teams/", headers=user_inertia_headers)
-    assert response.status_code in (403, 307)
+    assert response.status_code == 307
 
 
 async def test_admin_audit_requires_superuser(
     client: "AsyncClient", user_inertia_headers: dict[str, str],
 ) -> None:
-    """Regular users should be denied access to admin audit routes."""
+    """Regular users should be redirected away from admin audit routes."""
     response = await client.get("/admin/audit/", headers=user_inertia_headers)
-    assert response.status_code in (403, 307)
+    assert response.status_code == 307
 
 
 # ============================================================================
@@ -148,8 +142,7 @@ async def test_admin_users_create(
         headers=superuser_inertia_headers,
         follow_redirects=False,
     )
-    # Should redirect after creation
-    assert response.status_code in (200, 302, 303)
+    assert response.status_code == 303
 
 
 async def test_admin_users_update(
@@ -164,8 +157,7 @@ async def test_admin_users_update(
         headers=superuser_inertia_headers,
         follow_redirects=False,
     )
-    # Should redirect after update
-    assert response.status_code in (200, 302, 303)
+    assert response.status_code == 303
 
 
 async def test_admin_users_lock(
@@ -179,8 +171,7 @@ async def test_admin_users_lock(
         headers=superuser_inertia_headers,
         follow_redirects=False,
     )
-    # Should redirect after lock
-    assert response.status_code in (200, 302, 303)
+    assert response.status_code == 303
 
 
 async def test_admin_users_unlock(
@@ -194,8 +185,7 @@ async def test_admin_users_unlock(
         headers=superuser_inertia_headers,
         follow_redirects=False,
     )
-    # Should redirect after unlock
-    assert response.status_code in (200, 302, 303)
+    assert response.status_code == 303
 
 
 # ============================================================================
@@ -246,8 +236,7 @@ async def test_admin_teams_update(
         headers=superuser_inertia_headers,
         follow_redirects=False,
     )
-    # Should redirect after update
-    assert response.status_code in (200, 302, 303)
+    assert response.status_code == 303
 
 
 async def test_admin_teams_delete(
@@ -261,8 +250,7 @@ async def test_admin_teams_delete(
         headers=superuser_inertia_headers,
         follow_redirects=False,
     )
-    # Should redirect after delete
-    assert response.status_code in (200, 302, 303)
+    assert response.status_code == 303
 
 
 # ============================================================================

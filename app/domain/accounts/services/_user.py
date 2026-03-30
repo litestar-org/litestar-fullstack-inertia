@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 import pyotp
 import qrcode  # type: ignore[import-untyped]
+from advanced_alchemy.filters import CollectionFilter
 from advanced_alchemy.repository import SQLAlchemyAsyncRepository
 from advanced_alchemy.service import ModelDictT, SQLAlchemyAsyncRepositoryService, is_dict, schema_dump
 from advanced_alchemy.types import FileObject
@@ -85,6 +86,21 @@ class UserService(SQLAlchemyAsyncRepositoryService[User]):
 
     repository_type = Repo
     default_role = "Application Access"
+
+    async def existing_email_set(self, emails: set[str] | list[str] | tuple[str, ...]) -> set[str]:
+        """Return the subset of emails that already belong to users.
+
+        Args:
+            emails: Candidate email addresses to check.
+
+        Returns:
+            Set of email addresses that already exist in storage.
+        """
+        email_values = sorted(set(emails))
+        if not email_values:
+            return set()
+        users = await self.list(CollectionFilter(field_name="email", values=email_values))
+        return {user.email for user in users}
 
     async def to_model_on_create(self, data: ModelDictT[User]) -> ModelDictT[User]:
         """Transform data before creating a user.

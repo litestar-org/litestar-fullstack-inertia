@@ -15,6 +15,7 @@ async def test_superuser_role_access(
     client: "AsyncClient",
     user_inertia_headers: dict[str, str],
     superuser_token_headers: dict[str, str],
+    superuser_inertia_headers: dict[str, str],
 ) -> None:
     """Test that assigning/revoking superuser role changes team visibility.
 
@@ -58,10 +59,7 @@ async def test_superuser_role_access(
     assert len(data["props"]["content"]["teams"]) == 3
 
     # Superuser should see all teams
-    superuser_response = await client.get("/teams", headers={
-        **superuser_token_headers,
-        "X-Inertia": "true",
-    })
+    superuser_response = await client.get("/teams", headers=superuser_inertia_headers)
     assert superuser_response.status_code == 200
     superuser_data = superuser_response.json()
     assert len(superuser_data["props"]["content"]["teams"]) == 3

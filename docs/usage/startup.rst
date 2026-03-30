@@ -13,6 +13,7 @@ When ``VITE_DEV_MODE`` is ``True`` (default in ``.env.local.example``):
 1. The **Granian** ASGI server starts the Python application.
 2. The **litestar-vite** plugin launches the **Vite** dev server in a subprocess.
 3. HMR (Hot Module Replacement) is enabled for instant frontend updates.
+4. Inertia page props and schema type artifacts are refreshed through the ``litestar-vite`` integration.
 
 .. dropdown:: Starting the server in dev mode
 
@@ -37,7 +38,7 @@ Production
 
 In production, frontend assets must be built beforehand. The server will serve these static files directly.
 
-1. **Build Assets**: Compiles TypeScript/React to static JS/CSS.
+1. **Build Assets**: Compiles TypeScript/React to static JS/CSS and refreshes generated frontend types.
 2. **Run Server**: Starts Granian without the Vite subprocess.
 
 .. code-block:: bash

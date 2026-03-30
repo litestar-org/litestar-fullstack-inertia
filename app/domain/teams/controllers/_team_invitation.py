@@ -6,18 +6,15 @@ from typing import TYPE_CHECKING, Annotated
 
 from advanced_alchemy.extensions.litestar.providers import create_service_provider
 from litestar import Controller, Request, delete, get, post
-from litestar.di import Provide
 from litestar.exceptions import PermissionDeniedException
 from litestar.params import Parameter
 from litestar_vite.inertia import InertiaRedirect, flash
-from sqlalchemy import select
 from sqlalchemy.orm import joinedload, selectinload
 
 from app.db.models import Team as TeamModel
 from app.db.models import TeamInvitation as TeamInvitationModel
 from app.db.models import TeamMember, TeamRoles
 from app.db.models import User as UserModel
-from app.domain.accounts.dependencies import provide_users_service
 from app.domain.accounts.guards import requires_active_user
 from app.domain.accounts.services import UserService
 from app.domain.teams.guards import requires_team_admin
@@ -55,7 +52,7 @@ class TeamInvitationController(Controller):
             load=[joinedload(TeamInvitationModel.team), joinedload(TeamInvitationModel.invited_by)],
         ),
         "team_members_service": create_service_provider(TeamMemberService),
-        "users_service": Provide(provide_users_service),
+        "users_service": create_service_provider(UserService),
     }
     signature_namespace = {
         "TeamService": TeamService,
@@ -98,10 +95,7 @@ class TeamInvitationController(Controller):
         invitee_flags: dict[str, bool] = {}
         if invitations:
             emails = {inv.email for inv in invitations}
-            result = await users_service.repository.session.execute(
-                select(UserModel.email).where(UserModel.email.in_(emails)),
-            )
-            existing_emails = {row[0] for row in result}
+            existing_emails = await users_service.existing_email_set(emails)
             invitee_flags = {email: email in existing_emails for email in emails}
 
         return TeamInvitationsPage(

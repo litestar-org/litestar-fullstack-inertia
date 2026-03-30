@@ -8,6 +8,7 @@ from advanced_alchemy.base import UUIDAuditBase
 from advanced_alchemy.utils.fixtures import open_fixture_async
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 from sqlalchemy.engine import URL
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
@@ -26,20 +27,19 @@ if TYPE_CHECKING:
 
     from app.db.models import Team, User
 
-here = Path(__file__).parent
 pytestmark = pytest.mark.anyio
 
 
-@pytest.fixture(name="engine")
+@pytest.fixture(name="engine", scope="session")
 async def fx_engine(
     postgres_service: "PostgresService",
-) -> AsyncEngine:
+) -> AsyncGenerator[AsyncEngine, None]:
     """Postgresql instance for end-to-end testing.
 
     Returns:
         Async SQLAlchemy engine instance.
     """
-    return create_async_engine(
+    engine = create_async_engine(
         URL(
             drivername="postgresql+asyncpg",
             username=postgres_service.user,
@@ -52,11 +52,23 @@ async def fx_engine(
         echo=False,
         poolclass=NullPool,
     )
+    yield engine
+    await engine.dispose()
 
 
-@pytest.fixture(name="sessionmaker")
+@pytest.fixture(name="sessionmaker", scope="session")
 def fx_session_maker_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
     return async_sessionmaker(bind=engine, expire_on_commit=False)
+
+
+@pytest.fixture(autouse=True, scope="session")
+async def _initialize_schema(engine: AsyncEngine) -> AsyncIterator[None]:
+    """Create the database schema once for the integration test session."""
+    metadata = UUIDAuditBase.registry.metadata
+    async with engine.begin() as conn:
+        await conn.run_sync(metadata.drop_all)
+        await conn.run_sync(metadata.create_all)
+    yield
 
 
 @pytest.fixture(name="session")
@@ -65,8 +77,19 @@ async def fx_session(sessionmaker: async_sessionmaker[AsyncSession]) -> AsyncGen
         yield session
 
 
+async def _truncate_tables(engine: AsyncEngine) -> None:
+    """Remove all rows from every mapped table without rebuilding the schema."""
+    metadata = UUIDAuditBase.registry.metadata
+    table_names = ", ".join(f'"{table.name}"' for table in metadata.sorted_tables)
+    if not table_names:
+        return
+    async with engine.begin() as conn:
+        await conn.execute(text(f"TRUNCATE TABLE {table_names} RESTART IDENTITY CASCADE"))
+
+
 @pytest.fixture(autouse=True)
 async def _seed_db(
+    _initialize_schema: None,
     engine: AsyncEngine,
     sessionmaker: async_sessionmaker[AsyncSession],
     raw_users: list[User | dict[str, Any]],
@@ -84,10 +107,7 @@ async def _seed_db(
 
     settings = get_settings()
     fixtures_path = Path(settings.db.FIXTURE_PATH)
-    metadata = UUIDAuditBase.registry.metadata
-    async with engine.begin() as conn:
-        await conn.run_sync(metadata.drop_all)
-        await conn.run_sync(metadata.create_all)
+    await _truncate_tables(engine)
     async with RoleService.new(sessionmaker()) as service:
         fixture = await open_fixture_async(fixtures_path, "role")
         for obj in fixture:
@@ -101,6 +121,18 @@ async def _seed_db(
         await teams_services.repository.session.commit()
 
     yield
+
+
+@pytest.fixture(name="auth_headers_factory")
+def fx_auth_headers_factory(
+    client: AsyncClient,
+) -> Callable[..., Awaitable[dict[str, str]]]:
+    """Return a helper for creating authenticated request headers."""
+
+    async def factory(username: str, password: str, *, inertia: bool = False) -> dict[str, str]:
+        return await _get_auth_headers(client, username, password, inertia=inertia)
+
+    return factory
 
 
 @pytest.fixture(autouse=True)

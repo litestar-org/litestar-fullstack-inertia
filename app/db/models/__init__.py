@@ -1,6 +1,7 @@
 from .audit_log import AuditAction, AuditLog
 from .email_token import EmailToken, TokenType
 from .oauth_account import UserOauthAccount
+from .personal_access_token import PersonalAccessToken
 from .role import Role
 from .session_store import SessionStore
 from .tag import Tag
@@ -10,12 +11,14 @@ from .team_member import TeamMember
 from .team_roles import TeamRoles
 from .team_tag import team_tag
 from .user import User
+from .user_session import UserSession
 from .user_role import UserRole
 
 __all__ = (
     "AuditAction",
     "AuditLog",
     "EmailToken",
+    "PersonalAccessToken",
     "Role",
     "SessionStore",
     "Tag",
@@ -26,6 +29,7 @@ __all__ = (
     "TokenType",
     "User",
     "UserOauthAccount",
+    "UserSession",
     "UserRole",
     "team_tag",
 )

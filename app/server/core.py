@@ -22,6 +22,7 @@ from app.db.models import User as UserModel
 from app.domain.accounts import signals as account_signals
 from app.domain.accounts.controllers import (
     AccessController,
+    ApiTokenController,
     EmailVerificationController,
     MfaChallengeController,
     MfaController,
@@ -160,6 +161,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
             health_check,
             uploads_router,
             AccessController,
+            ApiTokenController,
             EmailVerificationController,
             MfaChallengeController,
             MfaController,

@@ -12,6 +12,7 @@ from advanced_alchemy.service import (
     schema_dump,
 )
 from advanced_alchemy.utils.text import slugify
+from sqlalchemy import select
 from uuid_utils import uuid7
 
 from app.db.models import Team, TeamMember, TeamRoles
@@ -21,6 +22,7 @@ from app.db.models.user import User  # noqa: TC001
 if TYPE_CHECKING:
     from uuid import UUID
 
+    from advanced_alchemy.filters import FilterTypes
     from advanced_alchemy.service import ModelDictT
 
 __all__ = ("TeamService",)
@@ -36,6 +38,21 @@ class TeamService(SQLAlchemyAsyncRepositoryService[Team]):
 
     repository_type = Repo
     match_fields = ["name"]
+
+    async def list_visible_to_user(self, user: User, *filters: FilterTypes) -> tuple[list[Team], int]:
+        """List teams visible to the provided user.
+
+        Args:
+            user: Current user requesting teams.
+            *filters: Additional Advanced Alchemy filters.
+
+        Returns:
+            Tuple of visible teams and their total count.
+        """
+        visible_filters = list(filters)
+        if not self.can_view_all(user):
+            visible_filters.append(Team.id.in_(select(TeamMember.team_id).where(TeamMember.user_id == user.id)))  # type: ignore[arg-type]
+        return await self.list_and_count(*visible_filters)
 
     async def to_model_on_create(self, data: ModelDictT[Team]) -> ModelDictT[Team]:
         """Transform data before creating a team with slug, owner, and tags.

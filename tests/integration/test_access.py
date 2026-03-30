@@ -4,24 +4,21 @@ from httpx import AsyncClient
 pytestmark = pytest.mark.anyio
 
 
-async def get_csrf_token(client: AsyncClient, path: str = "/login/") -> str:
-    """Get CSRF token by visiting a page first."""
-    response = await client.get(path, follow_redirects=True)
-    return response.cookies.get("XSRF-TOKEN") or client.cookies.get("XSRF-TOKEN") or ""
-
-
 @pytest.mark.parametrize(
-    ("username", "password", "expected_redirect"),
+    ("username", "password"),
     (
-        ("superuser@example.com", "Test_Password1!", True),
-        ("user@example.com", "Test_Password2!", True),
+        ("superuser@example.com", "Test_Password1!"),
+        ("user@example.com", "Test_Password2!"),
     ),
 )
-async def test_user_login(client: AsyncClient, username: str, password: str, expected_redirect: bool) -> None:
+async def test_user_login(
+    client: AsyncClient,
+    auth_headers_factory,
+    username: str,
+    password: str,
+) -> None:
     """Test successful login redirects to dashboard."""
-    # Get CSRF token first
-    csrf_token = await get_csrf_token(client)
-    headers = {"X-XSRF-TOKEN": csrf_token} if csrf_token else {}
+    headers = await auth_headers_factory(username, password)
 
     response = await client.post(
         "/login/",
@@ -42,15 +39,13 @@ async def test_user_login(client: AsyncClient, username: str, password: str, exp
         ("inactive@example.com", "Old_Password2!"),  # inactive user
     ),
 )
-async def test_user_login_failure(client: AsyncClient, username: str, password: str) -> None:
+async def test_user_login_failure(client: AsyncClient, auth_headers_factory, username: str, password: str) -> None:
     """Test failed login attempts.
 
     With Inertia.js, failed login redirects back to login page with flash message.
     The key security check is that we don't get redirected to dashboard.
     """
-    # Get CSRF token first
-    csrf_token = await get_csrf_token(client)
-    headers: dict[str, str] = {"X-XSRF-TOKEN": csrf_token} if csrf_token else {}
+    headers = await auth_headers_factory(username, password)
 
     response = await client.post(
         "/login/",
@@ -71,11 +66,9 @@ async def test_user_login_failure(client: AsyncClient, username: str, password: 
         ("superuser@example.com", "Test_Password1!"),
     ),
 )
-async def test_user_logout(client: AsyncClient, username: str, password: str) -> None:
+async def test_user_logout(client: AsyncClient, auth_headers_factory, username: str, password: str) -> None:
     """Test logout flow."""
-    # Get CSRF token first
-    csrf_token = await get_csrf_token(client)
-    headers = {"X-XSRF-TOKEN": csrf_token} if csrf_token else {}
+    headers = await auth_headers_factory(username, password)
 
     # Login first
     response = await client.post(

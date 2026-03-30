@@ -11,10 +11,11 @@ from litestar.exceptions import PermissionDeniedException, ValidationException
 from litestar_vite.inertia import InertiaRedirect, flash
 from sqlalchemy.orm import undefer_group
 
-from app.domain.accounts.dependencies import provide_users_service
+from app.domain.accounts.dependencies import provide_user_session_service, provide_users_service
 from app.domain.accounts.schemas import AccountLogin, PasswordConfirm
-from app.domain.accounts.services import UserService
+from app.domain.accounts.services import UserService, UserSessionService
 from app.lib import crypt
+from app.lib.settings import get_settings
 from app.lib.schema import NoProps
 
 if TYPE_CHECKING:
@@ -31,8 +32,15 @@ class AccessController(Controller):
     """User login and registration."""
 
     include_in_schema = False
-    dependencies = {"users_service": Provide(provide_users_service)}
-    signature_namespace = {"UserService": UserService, "AccountLogin": AccountLogin}
+    dependencies = {
+        "users_service": Provide(provide_users_service),
+        "user_session_service": Provide(provide_user_session_service),
+    }
+    signature_namespace = {
+        "UserService": UserService,
+        "UserSessionService": UserSessionService,
+        "AccountLogin": AccountLogin,
+    }
     cache = False
     exclude_from_auth = True
 
@@ -93,12 +101,15 @@ class AccessController(Controller):
         return InertiaRedirect(request, request.url_for("dashboard"))
 
     @post(name="logout", path="/logout/", exclude_from_auth=False)
-    async def logout(self, request: Request) -> InertiaRedirect:
+    async def logout(self, request: Request, user_session_service: UserSessionService) -> InertiaRedirect:
         """Log out the current user.
 
         Returns:
             Redirect to login page.
         """
+        current_session_id = request.cookies.get(get_settings().app.SESSION_COOKIE_NAME) or request.get_session_id()
+        if current_session_id:
+            await user_session_service.destroy_session(session_id=current_session_id)
         flash(request, "You have been logged out.", category="info")
         request.clear_session()
         return InertiaRedirect(request, request.url_for("login"))
