@@ -16,7 +16,7 @@ from app.db.models import TeamInvitation as TeamInvitationModel
 from app.db.models import TeamMember, TeamRoles
 from app.db.models import User as UserModel
 from app.domain.accounts.dependencies import provide_users_service
-from app.domain.accounts.guards import requires_active_user
+from app.domain.accounts.guards import requires_active_user, requires_token_ability
 from app.domain.accounts.services import UserService
 from app.domain.teams.guards import requires_team_admin
 from app.domain.teams.schemas import Team, TeamMemberModify
@@ -66,7 +66,12 @@ class TeamMemberController(Controller):
         "Team": Team,
     }
 
-    @post(operation_id="AddMemberToTeam", name="teams:add-member", path="/api/teams/{team_slug:str}/members/add")
+    @post(
+        operation_id="AddMemberToTeam",
+        name="teams:add-member",
+        path="/api/teams/{team_slug:str}/members/add",
+        guards=[requires_token_ability("teams:write")],
+    )
     async def add_member_to_team(
         self,
         request: Request,
@@ -130,6 +135,7 @@ class TeamMemberController(Controller):
         description="Removes a member from a team",
         path="/api/teams/{team_slug:str}/members/remove",
         status_code=200,
+        guards=[requires_token_ability("teams:write")],
     )
     async def remove_member_from_team(
         self,

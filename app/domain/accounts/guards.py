@@ -31,6 +31,7 @@ if TYPE_CHECKING:
 
 __all__ = (
     "current_user_from_session",
+    "get_token_auth_context",
     "requires_active_user",
     "requires_registration_enabled",
     "requires_superuser",
@@ -79,7 +80,7 @@ def requires_token_ability(required_ability: str):
 
 
 def _get_bearer_token(connection: ASGIConnection[Any, Any, Any, Any]) -> str | None:
-    authorization = connection.headers.get("Authorization")
+    authorization = connection.headers.get("authorization")
     if not authorization:
         return None
     scheme, _, token = authorization.partition(" ")

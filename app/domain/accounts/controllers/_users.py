@@ -11,7 +11,7 @@ from litestar.di import Provide
 from litestar.params import Dependency, Parameter
 
 from app.domain.accounts.dependencies import provide_users_service
-from app.domain.accounts.guards import requires_superuser
+from app.domain.accounts.guards import requires_superuser, requires_token_ability
 from app.domain.accounts.schemas import User, UserCreate, UserUpdate
 from app.domain.accounts.services import UserService
 
@@ -48,6 +48,7 @@ class UserController(Controller):
         description="Retrieve the users.",
         path="/api/users",
         cache=60,
+        guards=[requires_token_ability("users:read")],
     )
     async def list_users(
         self, users_service: UserService, filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
@@ -65,6 +66,7 @@ class UserController(Controller):
         name="users:get",
         path="/api/users/{user_id:uuid}",
         summary="Retrieve the details of a user.",
+        guards=[requires_token_ability("users:read")],
     )
     async def get_user(
         self,
@@ -86,6 +88,7 @@ class UserController(Controller):
         cache_control=None,
         description="A user who can login and use the system.",
         path="/api/users",
+        guards=[requires_token_ability("users:write")],
     )
     async def create_user(self, users_service: UserService, data: UserCreate) -> User:
         """Create a new user account.
@@ -96,7 +99,12 @@ class UserController(Controller):
         db_obj = await users_service.create(data.to_dict())
         return users_service.to_schema(db_obj, schema_type=User)
 
-    @patch(operation_id="UpdateUser", name="users:update", path="/api/users/{user_id:uuid}")
+    @patch(
+        operation_id="UpdateUser",
+        name="users:update",
+        path="/api/users/{user_id:uuid}",
+        guards=[requires_token_ability("users:write")],
+    )
     async def update_user(
         self,
         data: UserUpdate,
@@ -117,6 +125,7 @@ class UserController(Controller):
         path="/api/users/{user_id:uuid}",
         summary="Remove User",
         description="Removes a user and all associated data from the system.",
+        guards=[requires_token_ability("users:write")],
     )
     async def delete_user(
         self,

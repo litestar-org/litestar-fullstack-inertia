@@ -8,7 +8,7 @@ from litestar.params import Parameter
 from litestar.repository.exceptions import ConflictError
 
 from app.domain.accounts.dependencies import provide_roles_service, provide_user_roles_service, provide_users_service
-from app.domain.accounts.guards import requires_superuser
+from app.domain.accounts.guards import requires_superuser, requires_token_ability
 from app.domain.accounts.schemas import UserRoleAdd, UserRoleRevoke
 from app.domain.accounts.services import RoleService, UserRoleService, UserService
 from app.lib.schema import Message
@@ -42,7 +42,12 @@ class UserRoleController(Controller):
         "UserRoleRevoke": UserRoleRevoke,
     }
 
-    @post(operation_id="AssignUserRole", name="users:assign-role", path="/api/roles/{role_slug:str}/assign")
+    @post(
+        operation_id="AssignUserRole",
+        name="users:assign-role",
+        path="/api/roles/{role_slug:str}/assign",
+        guards=[requires_token_ability("roles:write")],
+    )
     async def assign_role(
         self,
         roles_service: RoleService,
@@ -69,6 +74,7 @@ class UserRoleController(Controller):
         summary="Remove Role",
         description="Removes an assigned role from a user.",
         path="/api/roles/{role_slug:str}/revoke",
+        guards=[requires_token_ability("roles:write")],
     )
     async def revoke_role(
         self,

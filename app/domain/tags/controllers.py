@@ -10,7 +10,7 @@ from litestar import Controller, delete, get, patch, post
 from litestar.params import Dependency, Parameter
 
 from app.db.models import Tag as TagModel
-from app.domain.accounts.guards import requires_active_user, requires_superuser
+from app.domain.accounts.guards import requires_active_user, requires_superuser, requires_token_ability
 from app.domain.tags.schemas import Tag, TagCreate, TagUpdate
 from app.domain.tags.services import TagService
 
@@ -46,6 +46,7 @@ class TagController(Controller):
         summary="List Tags",
         description="Retrieve the tags.",
         path="/api/tags",
+        guards=[requires_token_ability("tags:read")],
     )
     async def list_tags(
         self,
@@ -65,6 +66,7 @@ class TagController(Controller):
         name="tags:get",
         path="/api/tags/{tag_id:uuid}",
         summary="Retrieve the details of a tag.",
+        guards=[requires_token_ability("tags:read")],
     )
     async def get_tag(
         self,
@@ -85,8 +87,8 @@ class TagController(Controller):
         summary="Create a new tag.",
         cache_control=None,
         description="A tag is a place where you can upload and group collections of databases.",
-        guards=[requires_superuser],
         path="/api/tags",
+        guards=[requires_superuser, requires_token_ability("tags:write")],
     )
     async def create_tag(
         self,
@@ -105,7 +107,7 @@ class TagController(Controller):
         operation_id="UpdateTag",
         name="tags:update",
         path="/api/tags/{tag_id:uuid}",
-        guards=[requires_superuser],
+        guards=[requires_superuser, requires_token_ability("tags:write")],
     )
     async def update_tag(
         self,
@@ -127,7 +129,7 @@ class TagController(Controller):
         path="/api/tags/{tag_id:uuid}",
         summary="Remove Tag",
         description="Removes a tag and its associations",
-        guards=[requires_superuser],
+        guards=[requires_superuser, requires_token_ability("tags:write")],
     )
     async def delete_tag(
         self,

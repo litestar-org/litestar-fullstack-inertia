@@ -14,7 +14,7 @@ from sqlalchemy.orm import joinedload, selectinload
 from app.db.models import Team as TeamModel
 from app.db.models import TeamMember, TeamRoles
 from app.db.models import User as UserModel
-from app.domain.accounts.guards import requires_active_user
+from app.domain.accounts.guards import requires_active_user, requires_token_ability
 from app.domain.accounts.services import UserService
 from app.domain.teams.guards import requires_team_admin, requires_team_membership, requires_team_ownership
 from app.domain.teams.schemas import (
@@ -75,6 +75,7 @@ class TeamController(Controller):
 
     @get(
         component="team/list",
+        guards=[requires_token_ability("teams:read")],
         name="teams.list",
         operation_id="ListTeams",
         path="/teams/",
@@ -110,6 +111,7 @@ class TeamController(Controller):
 
     @get(
         component="team/create",
+        guards=[requires_token_ability("teams:write")],
         name="teams.create",
         operation_id="CreateTeamPage",
         path="/teams/create/",
@@ -123,6 +125,7 @@ class TeamController(Controller):
         return NoProps()
 
     @post(
+        guards=[requires_token_ability("teams:write")],
         name="teams.add",
         operation_id="CreateTeam",
         summary="Create a new team.",
@@ -150,7 +153,7 @@ class TeamController(Controller):
         component="team/show",
         name="teams.show",
         operation_id="GetTeam",
-        guards=[requires_team_membership],
+        guards=[requires_token_ability("teams:read"), requires_team_membership],
         path="/teams/{team_slug:str}/",
         dependencies={
             "team_invitations_service": create_service_provider(TeamInvitationService),
@@ -231,7 +234,7 @@ class TeamController(Controller):
         component="team/settings",
         name="teams.settings",
         operation_id="GetTeamSettings",
-        guards=[requires_team_admin],
+        guards=[requires_token_ability("teams:read"), requires_team_admin],
         path="/teams/{team_slug:str}/settings/",
         dependencies={
             "teams_service": create_service_provider(
@@ -317,7 +320,7 @@ class TeamController(Controller):
         component="team/edit",
         name="teams.edit",
         operation_id="UpdateTeam",
-        guards=[requires_team_admin],
+        guards=[requires_token_ability("teams:write"), requires_team_admin],
         path="/teams/{team_slug:str}/",
     )
     async def update_team(
@@ -343,7 +346,7 @@ class TeamController(Controller):
     @delete(
         name="teams.remove",
         operation_id="DeleteTeam",
-        guards=[requires_team_ownership],
+        guards=[requires_token_ability("teams:write"), requires_team_ownership],
         path="/teams/{team_slug:str}/",
         status_code=303,
     )

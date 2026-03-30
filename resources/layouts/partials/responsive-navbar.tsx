@@ -1,5 +1,5 @@
 import { Link, router, usePage } from "@inertiajs/react"
-import { ChevronDownIcon, CircleUserIcon, LogOutIcon, UserRoundCogIcon } from "lucide-react"
+import { ChevronDownIcon, CircleUserIcon, KeyRound, LogOutIcon, UserRoundCogIcon } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -8,7 +8,8 @@ import { route } from "@/lib/generated/routes"
 import { getFirstWord, getGravatarUrl, strLimit } from "@/lib/utils"
 
 const ResponsiveNavbar = () => {
-	const { auth } = usePage<FullSharedProps>().props
+	const page = usePage<FullSharedProps>()
+	const { auth } = page.props
 	return (
 		<nav className="block border-b px-4 py-2 sm:hidden">
 			<div className="flex items-center justify-between py-1">
@@ -56,6 +57,12 @@ const ResponsiveNavbar = () => {
 										<Link className="flex items-center" href={route("profile.show")}>
 											<UserRoundCogIcon className="mr-2 size-4" />
 											Profile
+										</Link>
+									</DropdownMenuItem>
+									<DropdownMenuItem className="flex items-center justify-between">
+										<Link className="flex items-center" href="/api-tokens/">
+											<KeyRound className="mr-2 size-4" />
+											API Tokens
 										</Link>
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />

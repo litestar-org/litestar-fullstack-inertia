@@ -1,5 +1,5 @@
 import { type InertiaLinkProps, Link, router, usePage } from "@inertiajs/react"
-import { LogInIcon, ShieldCheck, UserRoundCogIcon } from "lucide-react"
+import { KeyRound, LogInIcon, ShieldCheck, UserRoundCogIcon } from "lucide-react"
 import { Icons } from "@/components/icons"
 import { TeamSwitcher } from "@/components/team-switcher"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -11,7 +11,10 @@ import { isCurrentRoute, route } from "@/lib/generated/routes"
 import { cn, getGravatarUrl, getInitials } from "@/lib/utils"
 
 export default function Navbar() {
-	const { auth } = usePage<FullSharedProps>().props
+	const page = usePage<FullSharedProps>()
+	const auth = page.props.auth
+	type SharedUser = NonNullable<NonNullable<FullSharedProps["auth"]>["user"]> & { isSuperuser?: boolean }
+	const user = auth?.user as SharedUser | undefined
 
 	return (
 		<>
@@ -34,21 +37,21 @@ export default function Navbar() {
 								About
 							</NavLink>
 						</div>
-						{auth?.user ? (
+						{user ? (
 							<div className="flex items-center gap-x-1">
 								<TeamSwitcher className="mr-5" />
 								<div className="mr-3 min-h-[1em] w-px self-stretch bg-gradient-to-tr from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-400" />
 								<DropdownMenu modal={false}>
 									<DropdownMenuTrigger asChild>
 										<Avatar className="size-8">
-											<AvatarImage src={auth.user.avatarUrl ?? getGravatarUrl(auth.user.email)} />
-											<AvatarFallback>{getInitials(auth.user.email)}</AvatarFallback>
+											<AvatarImage src={user.avatarUrl ?? getGravatarUrl(user.email)} />
+											<AvatarFallback>{getInitials(user.email)}</AvatarFallback>
 										</Avatar>
 									</DropdownMenuTrigger>
 									<DropdownMenuContent className="mr-8 w-60">
 										<DropdownMenuLabel>
-											<div>{auth.user.name}</div>
-											<div className="font-normal text-muted-foreground text-sm">{auth.user.email}</div>
+											<div>{user.name}</div>
+											<div className="font-normal text-muted-foreground text-sm">{user.email}</div>
 										</DropdownMenuLabel>
 										<DropdownMenuSeparator />
 										<DropdownMenuItem>
@@ -57,7 +60,13 @@ export default function Navbar() {
 												Profile
 											</Link>
 										</DropdownMenuItem>
-										{auth.user.isSuperuser && (
+										<DropdownMenuItem>
+											<Link className="flex w-full items-center" href="/api-tokens/">
+												<KeyRound className="mr-2 size-4" />
+												API Tokens
+											</Link>
+										</DropdownMenuItem>
+										{user.isSuperuser && (
 											<DropdownMenuItem>
 												<Link className="flex w-full items-center" href="/admin">
 													<ShieldCheck className="mr-2 size-4" />

@@ -14,7 +14,7 @@ from litestar_vite.inertia import InertiaRedirect, flash
 from sqlalchemy.orm import undefer_group
 
 from app.domain.accounts.dependencies import provide_user_session_service, provide_users_service
-from app.domain.accounts.guards import requires_active_user
+from app.domain.accounts.guards import requires_active_user, requires_token_ability
 from app.domain.accounts.schemas import BrowserSessionInfo, BrowserSessionsLogoutOthers, PasswordUpdate, ProfilePage, ProfileUpdate, User
 from app.domain.accounts.services import UserService, UserSessionService
 from app.lib import crypt
@@ -45,7 +45,7 @@ class ProfileController(Controller):
     }
     guards = [requires_active_user]
 
-    @get(component="profile/edit", name="profile.show", path="/profile/")
+    @get(component="profile/edit", guards=[requires_token_ability("profile:read")], name="profile.show", path="/profile/")
     async def profile(
         self,
         request: Request,
@@ -75,7 +75,7 @@ class ProfileController(Controller):
             ],
         )
 
-    @patch(component="profile/edit", name="profile.update", path="/profile/")
+    @patch(component="profile/edit", guards=[requires_token_ability("profile:write")], name="profile.update", path="/profile/")
     async def update_profile(self, current_user: UserModel, data: ProfileUpdate, users_service: UserService) -> User:
         """Update the current user's profile information.
 
@@ -85,7 +85,12 @@ class ProfileController(Controller):
         db_obj = await users_service.update(data, item_id=current_user.id)
         return users_service.to_schema(db_obj, schema_type=User)
 
-    @patch(component="profile/edit", name="password.update", path="/profile/password-update/")
+    @patch(
+        component="profile/edit",
+        guards=[requires_token_ability("profile:write")],
+        name="password.update",
+        path="/profile/password-update/",
+    )
     async def update_password(
         self, current_user: UserModel, data: PasswordUpdate, users_service: UserService,
     ) -> Message:
@@ -97,7 +102,7 @@ class ProfileController(Controller):
         await users_service.update_password(data.to_dict(), db_obj=current_user)
         return Message(message="Your password was successfully modified.")
 
-    @delete(name="account.remove", path="/profile/", status_code=303)
+    @delete(guards=[requires_token_ability("profile:write")], name="account.remove", path="/profile/", status_code=303)
     async def remove_account(
         self, request: Request, current_user: UserModel, users_service: UserService,
     ) -> InertiaRedirect:
@@ -111,7 +116,9 @@ class ProfileController(Controller):
         flash(request, "Your account has been removed from the system.", category="info")
         return InertiaRedirect(request, request.url_for("landing"))
 
-    @post(path="/profile/avatar/", name="profile.avatar.upload", status_code=303)
+    @post(
+        guards=[requires_token_ability("profile:write")], path="/profile/avatar/", name="profile.avatar.upload", status_code=303,
+    )
     async def upload_avatar(
         self,
         request: Request,
@@ -136,7 +143,9 @@ class ProfileController(Controller):
         flash(request, "Avatar updated successfully.", category="success")
         return InertiaRedirect(request, request.url_for("profile.show"))
 
-    @delete(path="/profile/avatar/", name="profile.avatar.delete", status_code=303)
+    @delete(
+        guards=[requires_token_ability("profile:write")], path="/profile/avatar/", name="profile.avatar.delete", status_code=303,
+    )
     async def delete_avatar(
         self,
         request: Request,
@@ -152,7 +161,12 @@ class ProfileController(Controller):
         flash(request, "Avatar removed. Using Gravatar.", category="success")
         return InertiaRedirect(request, request.url_for("profile.show"))
 
-    @post(path="/profile/browser-sessions/logout-others/", name="browser-sessions.logout-others", status_code=303)
+    @post(
+        guards=[requires_token_ability("profile:write")],
+        path="/profile/browser-sessions/logout-others/",
+        name="browser-sessions.logout-others",
+        status_code=303,
+    )
     async def logout_other_browser_sessions(
         self,
         request: Request,

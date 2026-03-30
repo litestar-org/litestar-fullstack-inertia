@@ -1,5 +1,5 @@
-import { Head } from "@inertiajs/react"
-import { ImageIcon, KeyRound, Link2, Shield, Trash2, User } from "lucide-react"
+import { Head, usePage } from "@inertiajs/react"
+import { ImageIcon, KeyRound, Link2, Monitor, Shield, Trash2, User } from "lucide-react"
 import { useState } from "react"
 import { Container } from "@/components/container"
 import { Header } from "@/components/header"
@@ -9,11 +9,24 @@ import AvatarForm from "@/pages/profile/partials/avatar-form"
 import ConnectedAccountsForm from "@/pages/profile/partials/connected-accounts-form"
 import DeleteUserForm from "@/pages/profile/partials/delete-user-form"
 import MfaForm from "@/pages/profile/partials/mfa-form"
+import BrowserSessionsForm from "@/pages/profile/partials/browser-sessions-form"
 import UpdatePasswordForm from "@/pages/profile/partials/update-password-form"
 import UpdateProfileInformationForm from "@/pages/profile/partials/update-profile-information-form"
+import type { FullSharedProps } from "@/lib/generated/page-props"
+
+interface BrowserSession {
+	id: string
+	sessionId: string
+	ipAddress?: string | null
+	browser: string
+	os: string
+	deviceType: string
+	lastActivity: string
+	isCurrent: boolean
+}
 
 interface Props {
-	mustVerifyEmail: boolean
+	browserSessions?: BrowserSession[]
 	status?: string
 }
 
@@ -43,6 +56,12 @@ const sidebarItems: SettingsSidebarItem[] = [
 		description: "Secure your account with MFA",
 	},
 	{
+		id: "browser-sessions",
+		label: "Browser Sessions",
+		icon: Monitor,
+		description: "Review active devices and log out others",
+	},
+	{
 		id: "connected-accounts",
 		label: "Connected Accounts",
 		icon: Link2,
@@ -57,8 +76,9 @@ const sidebarItems: SettingsSidebarItem[] = [
 ]
 
 const title = "User Profile"
-export default function Edit({ mustVerifyEmail, status }: Props) {
+export default function Edit({ browserSessions = [], status }: Props) {
 	const [activeSection, setActiveSection] = useState("avatar")
+	const { mustVerifyEmail } = usePage<FullSharedProps>().props
 
 	return (
 		<>
@@ -72,13 +92,16 @@ export default function Edit({ mustVerifyEmail, status }: Props) {
 							<AvatarForm />
 						</div>
 						<div id="profile-information">
-							<UpdateProfileInformationForm mustVerifyEmail={mustVerifyEmail} status={status} />
+							<UpdateProfileInformationForm mustVerifyEmail={mustVerifyEmail ?? false} status={status} />
 						</div>
 						<div id="update-password">
 							<UpdatePasswordForm />
 						</div>
 						<div id="mfa">
 							<MfaForm />
+						</div>
+						<div id="browser-sessions">
+							<BrowserSessionsForm sessions={browserSessions} />
 						</div>
 						<div id="connected-accounts">
 							<ConnectedAccountsForm />
