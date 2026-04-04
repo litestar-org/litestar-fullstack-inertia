@@ -102,11 +102,11 @@ class BrowserSessionInfo(CamelizedBaseStruct):
 
     id: UUID
     session_id: str
-    ip_address: str | None = None
     browser: str
     os: str
     device_type: str
     last_activity: datetime
+    ip_address: str | None = None
     is_current: bool = False
 
 
@@ -135,8 +135,8 @@ class PersonalAccessTokenItem(CamelizedBaseStruct):
 
     id: UUID
     name: str
-    abilities: list[str] = msgspec.field(default_factory=list)
     created_at: datetime
+    abilities: list[str] = msgspec.field(default_factory=list)
     last_used_at: datetime | None = None
     expires_at: datetime | None = None
 

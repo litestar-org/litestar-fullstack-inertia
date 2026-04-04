@@ -2,11 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-__all__ = (
-    "DEFAULT_TOKEN_ABILITIES",
-    "TOKEN_ABILITY_DEFINITIONS",
-    "TOKEN_ABILITY_KEYS",
-)
+__all__ = ("DEFAULT_TOKEN_ABILITIES", "TOKEN_ABILITY_DEFINITIONS", "TOKEN_ABILITY_KEYS")
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,19 +21,26 @@ TOKEN_ABILITY_DEFINITIONS: tuple[TokenAbilityDefinition, ...] = (
         default_enabled=True,
     ),
     TokenAbilityDefinition(
-        key="tags:write",
-        label="Manage Tags",
-        description="Create, update, and delete tag records through the API.",
+        key="tags:write", label="Manage Tags", description="Create, update, and delete tag records through the API."
     ),
     TokenAbilityDefinition(
-        key="teams:write",
-        label="Manage Team Members",
-        description="Add and remove members on teams you administer.",
+        key="teams:read", label="Read Teams", description="List and view team records through the application."
     ),
     TokenAbilityDefinition(
-        key="users:read",
-        label="Read Users",
-        description="List and view user records. Superuser checks still apply.",
+        key="teams:write", label="Manage Team Members", description="Add and remove members on teams you administer."
+    ),
+    TokenAbilityDefinition(
+        key="profile:read",
+        label="Read Profile",
+        description="View profile and browser-session information for the authenticated user.",
+    ),
+    TokenAbilityDefinition(
+        key="profile:write",
+        label="Manage Profile",
+        description="Update profile data, password, avatar, and browser sessions for the authenticated user.",
+    ),
+    TokenAbilityDefinition(
+        key="users:read", label="Read Users", description="List and view user records. Superuser checks still apply."
     ),
     TokenAbilityDefinition(
         key="users:write",

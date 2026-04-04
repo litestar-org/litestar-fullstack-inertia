@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from advanced_alchemy.repository import SQLAlchemyAsyncRepository
 from advanced_alchemy.service import SQLAlchemyAsyncRepositoryService
-from sqlalchemy import delete, select
+from sqlalchemy import delete, or_, select
 
 from app.db.models import SessionStore, UserSession
 from app.lib.settings import get_settings
@@ -142,7 +142,7 @@ class UserSessionService(SQLAlchemyAsyncRepositoryService[UserSession]):
             select(SessionStore).where(
                 SessionStore.namespace == get_settings().app.slug,
                 SessionStore.key.in_([row.session_id for row in rows]),
-                SessionStore.expires_at > datetime.now(UTC),
+                or_(SessionStore.expires_at.is_(None), SessionStore.expires_at > datetime.now(UTC)),
             ),
         )
         active_keys = {row.key for row in active_store_rows}

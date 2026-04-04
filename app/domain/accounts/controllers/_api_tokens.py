@@ -93,7 +93,7 @@ class ApiTokenController(Controller):
             ),
         )
 
-    @delete(name="api-tokens.delete", path="/api-tokens/{token_id:uuid}/")
+    @delete(name="api-tokens.delete", path="/api-tokens/{token_id:uuid}/", status_code=200)
     async def revoke_token(
         self,
         current_user: UserModel,

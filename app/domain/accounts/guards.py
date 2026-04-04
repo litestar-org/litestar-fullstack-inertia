@@ -3,9 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from litestar.exceptions import PermissionDeniedException
+from litestar.exceptions import NotAuthorizedException, PermissionDeniedException
+from litestar.middleware.authentication import AuthenticationResult
 from litestar.middleware.session.server_side import ServerSideSessionBackend
 from litestar.security.session_auth import SessionAuth
+from litestar.security.session_auth.middleware import SessionAuthMiddleware
+from litestar.types.empty import Empty
 from litestar_vite.inertia import share
 
 from app.config import alchemy, github_oauth2_client, google_oauth2_client
@@ -49,13 +52,24 @@ class TokenAuthContext:
     abilities: tuple[str, ...]
 
 
+class SessionOrBearerAuthMiddleware(SessionAuthMiddleware):
+    async def authenticate_request(self, connection: ASGIConnection[Any, Any, Any, Any]) -> AuthenticationResult:
+        if not connection.session or connection.scope["session"] is Empty:
+            user = await self.retrieve_user_handler({}, connection)
+            if not user:
+                connection.scope["session"] = Empty
+                raise NotAuthorizedException("no session data found")
+
+            return AuthenticationResult(user=user, auth=get_token_auth_context(connection) or {})
+
+        return await super().authenticate_request(connection)
+
+
 def _clear_token_auth(connection: ASGIConnection[Any, Any, Any, Any]) -> None:
     connection.scope.pop(_TOKEN_AUTH_SCOPE_KEY, None)
 
 
-def _set_token_auth(
-    connection: ASGIConnection[Any, Any, Any, Any], *, token_id: str, abilities: list[str],
-) -> None:
+def _set_token_auth(connection: ASGIConnection[Any, Any, Any, Any], *, token_id: str, abilities: list[str]) -> None:
     connection.scope[_TOKEN_AUTH_SCOPE_KEY] = TokenAuthContext(token_id=token_id, abilities=tuple(abilities))
 
 
@@ -158,7 +172,7 @@ def requires_verified_user(connection: ASGIConnection, _: BaseRouteHandler) -> N
 
 
 async def current_user_from_session(
-    session: dict[str, Any], connection: ASGIConnection[Any, Any, Any, Any],
+    session: dict[str, Any], connection: ASGIConnection[Any, Any, Any, Any]
 ) -> UserModel | None:
     """Lookup current user from server session state.
 
@@ -184,7 +198,9 @@ async def current_user_from_session(
             user = await users_service.get_one_or_none(email=user_id)
             if user and user.is_active:
                 _clear_token_auth(connection)
-                tracked_session_id = connection.cookies.get(get_settings().app.SESSION_COOKIE_NAME) or connection.get_session_id()
+                tracked_session_id = (
+                    connection.cookies.get(get_settings().app.SESSION_COOKIE_NAME) or connection.get_session_id()
+                )
                 if tracked_session_id:
                     sessions_service = await anext(session_provider)
                     await sessions_service.track_session(
@@ -193,7 +209,11 @@ async def current_user_from_session(
                         ip_address=connection.client.host if connection.client else None,
                         user_agent=connection.headers.get("user-agent"),
                     )
-                share(connection, "auth", {"isAuthenticated": True, "user": users_service.to_schema(user, schema_type=UserSchema)})
+                share(
+                    connection,
+                    "auth",
+                    {"isAuthenticated": True, "user": users_service.to_schema(user, schema_type=UserSchema)},
+                )
                 return user
             session.pop("user_id", None)
 
@@ -222,12 +242,23 @@ async def current_user_from_session(
 
 session_auth = SessionAuth[UserModel, ServerSideSessionBackend](
     session_backend_config=session_config,
+    authentication_middleware_class=SessionOrBearerAuthMiddleware,
     retrieve_user_handler=current_user_from_session,
-    exclude=["^/schema", "^/health", "^/login", "^/register", "^/forgot-password", "^/reset-password", "^/verify-email", "^/mfa-challenge", "^/o/"],
+    exclude=[
+        "^/schema",
+        "^/health",
+        "^/login",
+        "^/register",
+        "^/forgot-password",
+        "^/reset-password",
+        "^/verify-email",
+        "^/mfa-challenge",
+        "^/o/",
+    ],
 )
 github_oauth_callback = OAuth2AuthorizeCallback(
-    github_oauth2_client, route_name="github.complete", state_session_key="oauth_state:auth:github",
+    github_oauth2_client, route_name="github.complete", state_session_key="oauth_state:auth:github"
 )
 google_oauth_callback = OAuth2AuthorizeCallback(
-    google_oauth2_client, route_name="google.complete", state_session_key="oauth_state:auth:google",
+    google_oauth2_client, route_name="google.complete", state_session_key="oauth_state:auth:google"
 )

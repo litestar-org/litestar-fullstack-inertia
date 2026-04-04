@@ -14,9 +14,7 @@ def _page_content(response_json: dict[str, Any]) -> dict[str, Any]:
 
 
 async def test_api_tokens_page_create_revoke_and_bearer_usage(
-    client: AsyncClient,
-    user_inertia_headers: dict[str, str],
-    user_token_headers: dict[str, str],
+    client: AsyncClient, user_inertia_headers: dict[str, str], user_token_headers: dict[str, str]
 ) -> None:
     response = await client.get("/api-tokens/", headers=user_inertia_headers)
     assert response.status_code == 200
@@ -25,9 +23,7 @@ async def test_api_tokens_page_create_revoke_and_bearer_usage(
     assert content["availableAbilities"]
 
     response = await client.post(
-        "/api-tokens/",
-        headers=user_token_headers,
-        json={"name": "CLI", "abilities": ["teams:read"]},
+        "/api-tokens/", headers=user_token_headers, json={"name": "CLI", "abilities": ["tags:read"]}
     )
     assert response.status_code in (200, 201)
     created = response.json()
@@ -35,8 +31,9 @@ async def test_api_tokens_page_create_revoke_and_bearer_usage(
     assert created["item"]["name"] == "CLI"
     token_id = created["item"]["id"]
 
-    bearer_headers = {"Authorization": f"Bearer {created['token']}", "X-Inertia": "true"}
-    response = await client.get("/teams/", headers=bearer_headers, follow_redirects=False)
+    client.cookies.clear()
+    bearer_headers = {"Authorization": f"Bearer {created['token']}"}
+    response = await client.get("/api/tags", headers=bearer_headers, follow_redirects=False)
     assert response.status_code == 200
 
     response = await client.get("/api-tokens/", headers=user_inertia_headers)
@@ -49,27 +46,22 @@ async def test_api_tokens_page_create_revoke_and_bearer_usage(
     assert response.status_code == 200
     assert response.json()["message"] == "API token revoked."
 
-    response = await client.get("/api/users", headers={"Authorization": f"Bearer {created['token']}"}, follow_redirects=False)
+    client.cookies.clear()
+    response = await client.get(
+        "/api/tags", headers={"Authorization": f"Bearer {created['token']}"}, follow_redirects=False
+    )
     assert response.status_code == 401
 
 
-async def test_api_tokens_enforce_route_abilities(
-    client: AsyncClient,
-    user_token_headers: dict[str, str],
-) -> None:
+async def test_api_tokens_enforce_route_abilities(client: AsyncClient, user_token_headers: dict[str, str]) -> None:
     response = await client.post(
-        "/api-tokens/",
-        headers=user_token_headers,
-        json={"name": "Profile only", "abilities": ["profile:read"]},
+        "/api-tokens/", headers=user_token_headers, json={"name": "Profile only", "abilities": ["profile:read"]}
     )
     assert response.status_code in (200, 201)
     token = response.json()["token"]
 
-    response = await client.get(
-        "/teams/",
-        headers={"Authorization": f"Bearer {token}", "X-Inertia": "true"},
-        follow_redirects=False,
-    )
+    client.cookies.clear()
+    response = await client.get("/api/tags", headers={"Authorization": f"Bearer {token}"}, follow_redirects=False)
     assert response.status_code == 403
 
 

@@ -74,8 +74,12 @@ class PersonalAccessTokenService(SQLAlchemyAsyncRepositoryService[PersonalAccess
         if db_obj is None:
             return None
 
-        db_obj.last_used_at = datetime.now(UTC)
-        await self.repository.session.commit()
+        last_used_at = datetime.now(UTC)
+        db_obj = await self.update(
+            item_id=db_obj.id,
+            data={"last_used_at": last_used_at},
+            auto_commit=True,
+        )
         return db_obj
 
     async def list_for_user(self, user_id: UUID) -> list[PersonalAccessToken]:

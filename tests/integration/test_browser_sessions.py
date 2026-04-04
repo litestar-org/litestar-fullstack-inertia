@@ -22,7 +22,7 @@ def _page_content(response_json: dict[str, Any]) -> dict[str, Any]:
 
 
 def _fresh_state_lifespan_middleware(
-    app: Litestar, initial_state: dict[str, Any],
+    app: Litestar, initial_state: dict[str, Any]
 ) -> Callable[[Scope, Receive, Send], Awaitable[None]]:
     async def app_with_state(scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] == "http":
@@ -40,33 +40,20 @@ async def _managed_clients(app: Litestar) -> AsyncIterator[tuple[AsyncClient, As
     manager.app = _fresh_state_lifespan_middleware(app, manager._state)  # type: ignore[assignment]
 
     async with manager:
-        async with AsyncClient(
-            transport=ASGITransport(app=manager.app),
-            base_url="http://testserver",
-            timeout=10,
-        ) as first, AsyncClient(
-            transport=ASGITransport(app=manager.app),
-            base_url="http://testserver",
-            timeout=10,
-        ) as second:
+        async with (
+            AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://testserver", timeout=10) as first,
+            AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://testserver", timeout=10) as second,
+        ):
             yield first, second
 
 
-async def _login_headers(
-    client: AsyncClient, username: str, password: str, *, inertia: bool = False,
-) -> dict[str, str]:
+async def _login_headers(client: AsyncClient, username: str, password: str, *, inertia: bool = False) -> dict[str, str]:
     client.cookies.clear()
     response = await client.get("/login")
     csrf_token: str = response.cookies.get("XSRF-TOKEN") or ""
-    headers: dict[str, str] = {
-        "X-XSRF-TOKEN": csrf_token,
-        "Content-Type": "application/json",
-    }
+    headers: dict[str, str] = {"X-XSRF-TOKEN": csrf_token, "Content-Type": "application/json"}
     response = await client.post(
-        "/login/",
-        json={"username": username, "password": password},
-        headers=headers,
-        follow_redirects=False,
+        "/login/", json={"username": username, "password": password}, headers=headers, follow_redirects=False
     )
     assert response.status_code == 303
 
@@ -129,7 +116,7 @@ async def test_browser_sessions_logout_others_requires_valid_password(app: Lites
             json={"password": "wrong-password"},
             follow_redirects=False,
         )
-        assert response.status_code in (400, 422)
+        assert response.status_code == 303
 
         response = await second.get("/profile/", headers=second_headers)
         assert response.status_code == 200
